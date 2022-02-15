@@ -59,7 +59,7 @@ namespace RTS_Cam
         #region MapLimits
 
         public bool limitMap = true;
-        public TerrainData terrainData;
+        public GameObject planeObject;
         public float limitX = 50f; //x limit of map
         public float limitY = 50f; //z limit of map
 
@@ -309,11 +309,11 @@ namespace RTS_Cam
             if (!limitMap)
                 return;
 
-            if (terrainData)
+            if (planeObject)
             {
-                m_Transform.position = new Vector3(Mathf.Clamp(m_Transform.position.x, 0, terrainData.size.x),
+                m_Transform.position = new Vector3(Mathf.Clamp(m_Transform.position.x, -planeObject.transform.lossyScale.x, planeObject.transform.lossyScale.x),
                     m_Transform.position.y,
-                    Mathf.Clamp(m_Transform.position.z, 0, terrainData.size.z));
+                    Mathf.Clamp(m_Transform.position.z, -planeObject.transform.lossyScale.z, planeObject.transform.lossyScale.z));
             }
             else
             {

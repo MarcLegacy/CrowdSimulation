@@ -79,7 +79,7 @@ namespace RTS_Cam
             {
                 camera.limitX = EditorGUILayout.FloatField("Limit X: ", camera.limitX);
                 camera.limitY = EditorGUILayout.FloatField("Limit Y: ", camera.limitY);
-                camera.terrainData = EditorGUILayout.ObjectField("Terrain Data: ", camera.terrainData, typeof(TerrainData)) as TerrainData;
+                camera.planeObject = EditorGUILayout.ObjectField("Terrain Data: ", camera.planeObject, typeof(GameObject)) as GameObject;
             }
 
             GUILayout.Label("Follow target", EditorStyles.boldLabel);
