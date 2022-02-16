@@ -264,7 +264,7 @@ namespace RTS_Cam
         {
             float distanceToGround = DistanceToGround();
             if(useScrollwheelZooming)
-                zoomPos += ScrollWheel * Time.deltaTime * scrollWheelZoomingSensitivity;
+                zoomPos -= ScrollWheel * Time.deltaTime * scrollWheelZoomingSensitivity;
             if (useKeyboardZooming)
                 zoomPos += ZoomDirection * Time.deltaTime * keyboardZoomingSensitivity;
 
@@ -311,9 +311,9 @@ namespace RTS_Cam
 
             if (planeObject)
             {
-                m_Transform.position = new Vector3(Mathf.Clamp(m_Transform.position.x, -planeObject.transform.lossyScale.x, planeObject.transform.lossyScale.x),
+                m_Transform.position = new Vector3(Mathf.Clamp(m_Transform.position.x, -planeObject.transform.localScale.x * 5f, planeObject.transform.localScale.x * 5f),
                     m_Transform.position.y,
-                    Mathf.Clamp(m_Transform.position.z, -planeObject.transform.lossyScale.z, planeObject.transform.lossyScale.z));
+                    Mathf.Clamp(m_Transform.position.z, -planeObject.transform.localScale.z * 5f, planeObject.transform.localScale.z *5f));
             }
             else
             {

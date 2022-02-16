@@ -18,6 +18,19 @@ public class MyGrid<TGridObject>
     private Vector3 originPosition;
     private TGridObject[,] gridArray;
 
+    public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
+        Func<MyGrid<TGridObject>, int, int, TGridObject> createGridObject)
+        : this(width, height, cellSize, originPosition)
+    {
+        for (int x = 0; x < gridArray.GetLength(0); x++)
+        {
+            for (int y = 0; y < gridArray.GetLength(1); y++)
+            {
+                gridArray[x, y] = createGridObject(this, x, y);
+            }
+        }
+    }
+
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition)
     {
         this.width = width;
@@ -26,36 +39,6 @@ public class MyGrid<TGridObject>
         this.originPosition = originPosition;
 
         gridArray = new TGridObject[width, height];
-
-        bool showDebug = true;
-        if (showDebug)
-        {
-            ShowDebug();
-        }
-    }
-
-    public MyGrid(int width, int height, float cellSize, Vector3 originPosition, Func<MyGrid<TGridObject>, int, int, TGridObject> createGridObject)
-    {
-        this.width = width;
-        this.height = height;
-        this.cellSize = cellSize;
-        this.originPosition = originPosition;
-
-        gridArray = new TGridObject[width, height];
-
-        for (int x = 0; x < gridArray.GetLength(0); x++)
-        {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
-            {
-                gridArray[x, y] = createGridObject(this, x, y);
-            }
-        }
-
-        bool showDebug = true;
-        if (showDebug)
-        {
-            ShowDebug();
-        }
     }
 
     public void ShowDebug()
@@ -70,7 +53,7 @@ public class MyGrid<TGridObject>
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.black, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.black, 100f);
 
-                Utilities.DrawArrow(GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f, Vector3.right, cellSize * 0.5f, Color.black);
+                //Utilities.DrawArrow(GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f, Vector3.right, cellSize * 0.5f, Color.black);
             }
         }
 
@@ -144,7 +127,7 @@ public class MyGrid<TGridObject>
         {
             Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": Trying to set a value on (" + x + ", " + y +
                              ") in a grid of size (" + gridArray.GetLength(0) + ", " + gridArray.GetLength(1) + ")");
-            return default(TGridObject);
+            return default;
         }
     }
 
