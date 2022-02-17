@@ -12,7 +12,7 @@ public class MyGrid<TGridObject>
         public int y;
     }
 
-    private readonly int width;
+    private int width;
     private int height;
     private float cellSize;
     private Vector3 originPosition;
@@ -49,11 +49,9 @@ public class MyGrid<TGridObject>
         {
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
-                debugTextArray[x, y] = Utilities.CreateWorldText(gridArray[x, y]?.ToString(), null, GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f, (int)cellSize * 2, Color.black, TextAnchor.MiddleCenter);
+                debugTextArray[x, y] = Utilities.CreateWorldText(gridArray[x, y]?.ToString(), null, GetCellCenterPosition(x, y), (int)cellSize * 2, Color.black, TextAnchor.MiddleCenter);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.black, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.black, 100f);
-
-                //Utilities.DrawArrow(GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f, Vector3.right, cellSize * 0.5f, Color.black);
             }
         }
 
@@ -98,13 +96,15 @@ public class MyGrid<TGridObject>
 
     public Vector2Int GetGridPosition(Vector3 worldPosition)
     {
-        Vector2Int gridPosition = new Vector2Int
-        {
-            x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize), 
-            y = Mathf.FloorToInt((worldPosition - originPosition).z / cellSize)
-        };
+        int x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
+        int y = Mathf.FloorToInt((worldPosition - originPosition).z / cellSize);
 
-        return gridPosition;
+        return GetGridPosition(x, y);
+    }
+
+    public Vector2Int GetGridPosition(int x, int y)
+    {
+        return new Vector2Int(x, y);
     }
 
     public TGridObject GetGridObject(Vector3 worldPosition)
@@ -125,7 +125,7 @@ public class MyGrid<TGridObject>
         }
         else
         {
-            Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": Trying to set a value on (" + x + ", " + y +
+            Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": Trying to get a value on (" + x + ", " + y +
                              ") in a grid of size (" + gridArray.GetLength(0) + ", " + gridArray.GetLength(1) + ")");
             return default;
         }
@@ -153,6 +153,21 @@ public class MyGrid<TGridObject>
             Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": Trying to set a value on (" + x + ", " + y +
                              ") in a grid of size (" + gridArray.GetLength(0) + ", " + gridArray.GetLength(1) + ")");
         }
+    }
+
+    public Vector3 GetCellCenterPosition(Vector3 worldPosition)
+    {
+        return GetCellCenterPosition(GetGridPosition(worldPosition));
+    }
+
+    public Vector3 GetCellCenterPosition(Vector2Int gridPosition)
+    {
+        return GetCellCenterPosition(gridPosition.x, gridPosition.y);
+    }
+
+    public Vector3 GetCellCenterPosition(int x, int y)
+    {
+        return GetWorldPosition(x, y) + new Vector3(cellSize, 0, cellSize) * 0.5f;
     }
 
     public void TriggerGridObjectChanged(int x, int y)

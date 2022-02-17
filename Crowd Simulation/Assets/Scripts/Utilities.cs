@@ -1,3 +1,4 @@
+using System.Reflection;
 using UnityEngine;
 
 public class Utilities
@@ -39,13 +40,21 @@ public class Utilities
 
     public static void DrawArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null, float duration = 100f)
     {
+        if (direction == Vector3.zero)
+        {
+            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": direction == Vector3.zero");
+            return;
+        }
+
         float arrowHeadLength = 0.5f * size;
         float arrowHeadAngle = 20.0f;
-        Vector3 endPosition = position + (direction * size);
+        Vector3 startPosition = new Vector3(position.x - direction.x * size * 0.5f, position.y - direction.y * size * 0.5f,
+            position.z - direction.z * size * 0.5f);
+        Vector3 endPosition = startPosition + (direction * size);
 
         if (color == null) color = Color.white;
 
-        Debug.DrawLine(position, endPosition, (Color)color, duration);
+        Debug.DrawLine(startPosition, endPosition, (Color)color, duration);
 
         Vector3 right = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
         Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);

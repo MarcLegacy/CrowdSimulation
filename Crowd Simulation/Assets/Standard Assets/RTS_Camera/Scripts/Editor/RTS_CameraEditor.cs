@@ -79,11 +79,11 @@ namespace RTS_Cam
             {
                 camera.limitX = EditorGUILayout.FloatField("Limit X: ", camera.limitX);
                 camera.limitY = EditorGUILayout.FloatField("Limit Y: ", camera.limitY);
-                camera.planeObject = EditorGUILayout.ObjectField("Map Object: ", camera.planeObject, typeof(GameObject)) as GameObject;
+                camera.planeObject = EditorGUILayout.ObjectField("Map Object: ", camera.planeObject, typeof(GameObject), true) as GameObject;
             }
 
             GUILayout.Label("Follow target", EditorStyles.boldLabel);
-            camera.targetFollow = EditorGUILayout.ObjectField("Target to follow: ", camera.targetFollow, typeof(Transform)) as Transform;
+            camera.targetFollow = EditorGUILayout.ObjectField("Target to follow: ", camera.targetFollow, typeof(Transform), true) as Transform;
             camera.targetOffset = EditorGUILayout.Vector3Field("Target offset: ", camera.targetOffset);
             camera.followingSpeed = EditorGUILayout.FloatField("Following speed: ", camera.followingSpeed);
         }

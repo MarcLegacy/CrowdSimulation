@@ -240,14 +240,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 514380636}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bedd269283329c64fa1a66d6bbe0fa6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 10
-  gridHeight: 10
-  cellSize: 4
+  gridWidth: 40
+  gridHeight: 40
+  cellSize: 5
+  mapObject: {fileID: 589120681}
+  baseObject: {fileID: 1847212265}
+  showDebug: 1
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -353,10 +356,59 @@ Transform:
   m_GameObject: {fileID: 589120681}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 1, z: 10}
+  m_LocalScale: {x: 20, y: 1, z: 20}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1059563914
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1059563916}
+  - component: {fileID: 1059563915}
+  m_Layer: 0
+  m_Name: UnitController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1059563915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059563914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ea47c009fe06b04daf266e5526b0541, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
+  mapObject: {fileID: 589120681}
+  totalUnitsSpawned: 1000
+  totalUnitsPerSpawn: 100
+  unitMoveSpeed: 10
+  testing: {fileID: 514380637}
+--- !u!4 &1059563916
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059563914}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.239337, y: 38.70135, z: -84.079865}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1454467468
 GameObject:
@@ -390,7 +442,7 @@ MonoBehaviour:
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
   avoidanceDistance: 50
-  obstacleAmount: 50
+  obstacleAmount: 100
   obstacleScale: {x: 1, y: 10}
   colorA: {r: 0.3773585, g: 0.18867925, b: 0, a: 0}
   colorB: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 0}
@@ -533,7 +585,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1591757378}
   m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
-  m_LocalPosition: {x: -2, y: 8.29, z: -5.74}
+  m_LocalPosition: {x: 0, y: 15, z: -80}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -628,10 +680,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efb8fbc3b13c43a44a70aa9ced135db9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 10
-  gridHeight: 10
-  cellSize: 10
+  gridWidth: 40
+  gridHeight: 40
+  cellSize: 5
   mapObject: {fileID: 589120681}
+  showDebug: 0
 --- !u!4 &1754963907
 Transform:
   m_ObjectHideFlags: 0
@@ -680,7 +733,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8702966537788411531, guid: 84ba49b4c99663546973cf7209857f9b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -80
       objectReference: {fileID: 0}
     - target: {fileID: 8702966537788411531, guid: 84ba49b4c99663546973cf7209857f9b, type: 3}
       propertyPath: m_LocalRotation.w

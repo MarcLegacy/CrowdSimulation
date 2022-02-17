@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
@@ -12,6 +13,8 @@ public class ObstacleDetector : MonoBehaviour
     public int gridHeight = 10;
     public float cellSize = 10f;
     public GameObject mapObject;
+    public bool showDebug = false;
+
     private MyGrid<int> grid;
 
     private void Start()
@@ -20,7 +23,7 @@ public class ObstacleDetector : MonoBehaviour
             mapObject.transform.position.y, mapObject.transform.position.z - (mapObject.transform.localScale.z * 5f));
         grid = new MyGrid<int>(gridWidth, gridHeight, cellSize, originPosition);
 
-        grid.ShowDebug();
+        if (showDebug) grid.ShowDebug();
 
         StartCoroutine(DelayedSetObstacleScores(grid, "Obstacles", 0.1f));
     }
@@ -28,6 +31,7 @@ public class ObstacleDetector : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
     }
 
     // Because for an unknown reason, the code doesn't work inside this Start().
@@ -47,7 +51,7 @@ public class ObstacleDetector : MonoBehaviour
         {
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
-                Vector3 cellPosition = grid.GetWorldPosition(x, y) + new Vector3(grid.GetCellSize(), 0, grid.GetCellSize()) * 0.5f;
+                Vector3 cellPosition = grid.GetCellCenterPosition(x, y);
                 Collider[] obstacles =
                     Physics.OverlapBox(cellPosition, Vector3.one * grid.GetCellSize() * 0.5f, Quaternion.identity, terrainMask);
 
