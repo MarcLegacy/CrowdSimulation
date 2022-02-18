@@ -61,4 +61,9 @@ public class Utilities
         Debug.DrawLine(endPosition, endPosition + (right * arrowHeadLength), (Color)color, duration);
         Debug.DrawLine(endPosition, endPosition + (left * arrowHeadLength), (Color)color, duration);
     }
+
+    public static Vector3 GetRandomPosition(Vector3 positionA, Vector3 positionB)
+    {
+        return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
+    }
 }

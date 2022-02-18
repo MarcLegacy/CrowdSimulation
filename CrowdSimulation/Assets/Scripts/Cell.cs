@@ -1,18 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Xml.XPath;
 using UnityEngine;
 
 public class Cell
 {
-    public Cell cameFromCell;
     public byte cost;
     public ushort bestCost;
     public GridDirection bestDirection;
 
     private MyGrid<Cell> grid;
-    private int x;
-    private int y;
+    private readonly int x;
+    private readonly int y;
 
     public Cell(MyGrid<Cell> grid, int x, int y)
     {
@@ -26,7 +22,7 @@ public class Cell
 
     public override string ToString()
     {
-        return cost.ToString() + "\n" + bestCost.ToString();
+        return cost + "\n" + bestCost;
     }
 
     public Vector2Int GetGridPosition()

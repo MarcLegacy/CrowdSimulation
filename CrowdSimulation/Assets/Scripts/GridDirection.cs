@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class GridDirection
 {
-    public readonly Vector2Int vector;
+    public readonly Vector2Int vector2D;
 
     public static readonly GridDirection None = new GridDirection(0, 0);
     public static readonly GridDirection North = new GridDirection(0, 1);
@@ -20,17 +20,17 @@ public class GridDirection
 
     private GridDirection(int x, int y)
     {
-        vector = new Vector2Int(x, y);
+        vector2D = new Vector2Int(x, y);
     }
 
     public static implicit operator Vector2Int(GridDirection direction)
     {
-        return direction.vector;
+        return direction.vector2D;
     }
 
-    public static GridDirection GetDirection(Vector2Int vector)
+    public static GridDirection GetDirection(Vector2Int vector2D)
     {
-        return CardinalAndIntercardinalDirections.DefaultIfEmpty(None).FirstOrDefault(direction => direction == vector);
+        return CardinalAndIntercardinalDirections.DefaultIfEmpty(None).FirstOrDefault(direction => direction == vector2D);
     }
 
     public static readonly List<GridDirection> CardinalDirections = new List<GridDirection>

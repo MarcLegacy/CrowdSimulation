@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class FlowField
 {
-    private const string MASKSTRING = "Obstacles";
+    private const string MASK_STRING = "Obstacles";
 
     public MyGrid<Cell> grid;
 
@@ -21,7 +21,7 @@ public class FlowField
 
     public void CalculateFlowField(Cell destinationCell)
     {
-        CreateCostField(MASKSTRING);
+        CreateCostField(MASK_STRING);
         CreateIntegrationField(destinationCell);
         CreateVectorField();
     }
@@ -35,7 +35,7 @@ public class FlowField
         {
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
-                Vector3 cellPosition = grid.GetCellCenterPosition(x, y);
+                Vector3 cellPosition = grid.GetCellCenterWorldPosition(x, y);
                 Collider[] obstacles =
                     Physics.OverlapBox(cellPosition, Vector3.one * grid.GetCellSize() * 0.5f, Quaternion.identity, terrainMask);
 
@@ -112,8 +112,8 @@ public class FlowField
             {
                 if (gridArray[x, y].bestDirection != GridDirection.None)
                 {
-                    Utilities.DrawArrow(grid.GetCellCenterPosition(x, y),
-                        new Vector3(gridArray[x, y].bestDirection.vector.x, 0, gridArray[x, y].bestDirection.vector.y), grid.GetCellSize() * 0.5f,
+                    Utilities.DrawArrow(grid.GetCellCenterWorldPosition(x, y),
+                        new Vector3(gridArray[x, y].bestDirection.vector2D.x, 0, gridArray[x, y].bestDirection.vector2D.y), grid.GetCellSize() * 0.5f,
                         Color.black);
                 }
             }
@@ -142,8 +142,8 @@ public class FlowField
         foreach (Vector2Int direction in directions)
         {
             Vector2Int neighborPosition = cell.GetGridPosition() + direction;
-            if (neighborPosition.x >= 0 && neighborPosition.x < grid.GetWidth() && neighborPosition.y >= 0 &&
-                neighborPosition.y < grid.GetHeight())
+            if (neighborPosition.x >= 0 && neighborPosition.x < grid.GetGridWidth() && neighborPosition.y >= 0 &&
+                neighborPosition.y < grid.GetGridHeight())
             {
                 neighborCells.Add(grid.GetGridObject(neighborPosition));
             }

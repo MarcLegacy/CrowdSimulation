@@ -51,7 +51,7 @@ public class ObstacleDetector : MonoBehaviour
         {
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
-                Vector3 cellPosition = grid.GetCellCenterPosition(x, y);
+                Vector3 cellPosition = grid.GetCellCenterWorldPosition(x, y);
                 Collider[] obstacles =
                     Physics.OverlapBox(cellPosition, Vector3.one * grid.GetCellSize() * 0.5f, Quaternion.identity, terrainMask);
 

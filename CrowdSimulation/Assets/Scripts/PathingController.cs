@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Testing : MonoBehaviour
+public class PathingController : MonoBehaviour
 {
     public int gridWidth = 10;
     public int gridHeight = 10;
@@ -11,6 +11,19 @@ public class Testing : MonoBehaviour
     public bool showDebug = false;
 
     public FlowField flowField;
+
+    #region Singleton
+    public static PathingController GetInstance()
+    {
+        if (instance == null)
+        {
+            instance = FindObjectOfType<PathingController>();
+        }
+        return instance;
+    }
+
+    private static PathingController instance;
+    #endregion
 
     private void Start()
     {
@@ -31,7 +44,7 @@ public class Testing : MonoBehaviour
     {
         //if (Input.GetMouseButtonDown(0))
         //{
-        //    Vector2Int gridPosition = grid.GetGridPosition(Utilities.GetMouseWorldPosition());
+        //    Vector2Int gridPosition = grid.GetCellGridPosition(Utilities.GetMouseWorldPosition());
         //    GridObject gridObject = grid.GetGridObject(gridPosition);
         //    gridObject?.AddValue(1);
         //    //grid.SetGridObject(gridPosition, grid.GetGridObject(gridPosition) + 1);

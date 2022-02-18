@@ -212,6 +212,7 @@ Transform:
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -261,6 +262,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -278,7 +280,7 @@ GameObject:
   - component: {fileID: 589120683}
   - component: {fileID: 589120682}
   m_Layer: 0
-  m_Name: Plane
+  m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -309,6 +311,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -357,6 +360,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 20, y: 1, z: 20}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -391,11 +395,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
-  mapObject: {fileID: 589120681}
   totalUnitsSpawned: 1000
   totalUnitsPerSpawn: 100
   unitMoveSpeed: 10
-  testing: {fileID: 514380637}
+  pathingController: {fileID: 0}
 --- !u!4 &1059563916
 Transform:
   m_ObjectHideFlags: 0
@@ -406,6 +409,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5.239337, y: 38.70135, z: -84.079865}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 8
@@ -441,11 +445,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
-  avoidanceDistance: 50
+  avoidanceDistance: 30
   obstacleAmount: 100
   obstacleScale: {x: 1, y: 10}
-  colorA: {r: 0.3773585, g: 0.18867925, b: 0, a: 0}
-  colorB: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 0}
+  colorA: {r: 0.38679248, g: 0.23692253, b: 0.13318796, a: 0}
+  colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
 --- !u!4 &1454467470
 Transform:
   m_ObjectHideFlags: 0
@@ -456,6 +460,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
@@ -503,6 +508,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 45.58344, y: 17.54879, z: -8.5982}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -587,6 +593,7 @@ Transform:
   m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
   m_LocalPosition: {x: 0, y: 15, z: -80}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -695,6 +702,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7

@@ -14,8 +14,8 @@ public class ObstacleSpawner : MonoBehaviour
     public Color colorA;
     public Color colorB;
 
-    private const float MAPDISTANCE = 5f;
-    private const int MAXPOSITIONINGTRIES = 5;
+    private const float MAP_DISTANCE = 5f;
+    private const int MAX_POSITIONING_TRIES = 5;
 
     private void Start()
     {
@@ -40,11 +40,11 @@ public class ObstacleSpawner : MonoBehaviour
 
     private void PositionObstacle(GameObject obstacle)
     {
-        Vector2 mapGridSize = new Vector2(mapObject.transform.localScale.x * MAPDISTANCE, mapObject.transform.localScale.z * MAPDISTANCE);
+        Vector2 mapGridSize = new Vector2(mapObject.transform.localScale.x * MAP_DISTANCE, mapObject.transform.localScale.z * MAP_DISTANCE);
         obstacle.transform.position = baseObject.transform.position;
         int positioningTries = 0;
 
-        while (Vector3.Distance(baseObject.transform.position, obstacle.transform.position) < avoidanceDistance && positioningTries < MAXPOSITIONINGTRIES)
+        while (Vector3.Distance(baseObject.transform.position, obstacle.transform.position) < avoidanceDistance && positioningTries < MAX_POSITIONING_TRIES)
         {
             obstacle.transform.position =
                 new Vector3(Random.Range(mapObject.transform.position.x - mapGridSize.x, mapObject.transform.position.x + mapGridSize.x), 0,
@@ -52,7 +52,7 @@ public class ObstacleSpawner : MonoBehaviour
             positioningTries++;
         }
 
-        if (positioningTries >= MAXPOSITIONINGTRIES)
+        if (positioningTries >= MAX_POSITIONING_TRIES)
         {
             Destroy(obstacle);
         }
