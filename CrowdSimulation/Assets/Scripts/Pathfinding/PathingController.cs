@@ -8,7 +8,8 @@ public class PathingController : MonoBehaviour
     public float cellSize = 10f;
     public GameObject mapObject;
     public GameObject baseObject;
-    public bool showDebug = false;
+    public bool showGridAndCost = false;
+    public bool showArrows = false;
 
     public FlowField flowField;
 
@@ -35,29 +36,48 @@ public class PathingController : MonoBehaviour
             mapObject.transform.position.y, mapObject.transform.position.z - (mapObject.transform.localScale.z * 5f));
         flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
 
-        if (showDebug) flowField.ShowDebug();
+        if (showGridAndCost) flowField.GetGrid().ShowDebug();
 
-        StartCoroutine(DelayedSetObstacleScores(flowField.grid, 0.1f));
+        StartCoroutine(DelayedSetObstacleScores(flowField.GetGrid(), 0.1f));
     }
 
     private void Update()
     {
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    Vector2Int gridPosition = grid.GetCellGridPosition(Utilities.GetMouseWorldPosition());
-        //    GridObject gridObject = grid.GetGridObject(gridPosition);
-        //    gridObject?.AddValue(1);
-        //    //grid.SetGridObject(gridPosition, grid.GetGridObject(gridPosition) + 1);
-        //}
+        if (Input.GetMouseButtonDown(0))
+        {
+            flowField.CalculateFlowField(flowField.GetGrid().GetCell(Utilities.GetMouseWorldPosition()));
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (showArrows)
+        {
+            if (flowField?.GetGrid() == null) return;
+
+            FlowFieldCell[,] gridArray = flowField.GetGrid().GetGridArray();
+            for (int x = 0; x < gridArray.GetLength(0); x++)
+            {
+                for (int y = 0; y < gridArray.GetLength(1); y++)
+                {
+                    if (gridArray[x, y].bestDirection != GridDirection.None)
+                    {
+                        Utilities.DrawArrow(flowField.GetGrid().GetCellCenterWorldPosition(x, y),
+                            new Vector3(gridArray[x, y].bestDirection.vector2D.x, 0, gridArray[x, y].bestDirection.vector2D.y),
+                            flowField.GetGrid().GetCellSize() * 0.5f, Color.black);
+                    }
+                }
+            }
+        }
     }
 
     // Because for an unknown reason, the code doesn't work inside this Start().
-    IEnumerator DelayedSetObstacleScores(MyGrid<Cell> grid, float delayedTime)
+    IEnumerator DelayedSetObstacleScores(MyGrid<FlowFieldCell> grid, float delayedTime)
     {
         yield return new WaitForSeconds(delayedTime);
 
-        flowField.CalculateFlowField(flowField.GetCell(baseObject.transform.position));
-        flowField.DrawArrowField();
+        flowField.CalculateFlowField(flowField.GetGrid().GetCell(baseObject.transform.position));
+        //flowField.DrawArrowField();
     }
 
 }
@@ -79,7 +99,7 @@ public class PathingController : MonoBehaviour
 //    public void AddValue(int addedValue)
 //    {
 //        value += addedValue;
-//        grid.TriggerGridObjectChanged(x, y);
+//        grid.TriggerCellChanged(x, y);
 //    }
 
 //    public override string ToString()

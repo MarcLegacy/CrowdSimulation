@@ -1,8 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
 using Unity.Entities;
 using UnityEngine;
+using Quaternion = UnityEngine.Quaternion;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class ObstacleSpawner : MonoBehaviour
 {
@@ -14,47 +18,48 @@ public class ObstacleSpawner : MonoBehaviour
     public Color colorA;
     public Color colorB;
 
-    private const float MAP_DISTANCE = 5f;
-    private const int MAX_POSITIONING_TRIES = 5;
+    private const float SCALE_TO_SIZE_MULTIPLIER = 5f;
 
     private void Start()
     {
         for (int i = 0; i < obstacleAmount; i++)
         {
-            PositionObstacle(CreateObstacle());
+            CreateObstacle();
         }
     }
 
-    private GameObject CreateObstacle()
+    private void CreateObstacle()
     {
+        Vector3 position = FindRandomPosition();
+        if (position == Vector3.zero) return;
+
         GameObject obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        obstacle.transform.position = position;
         obstacle.transform.localScale =
             new Vector3(Random.Range(obstacleScale.x, obstacleScale.y), 1f, Random.Range(obstacleScale.x, obstacleScale.y));
         obstacle.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
         obstacle.GetComponent<MeshRenderer>().materials[0].color = new Color(Random.Range(colorA.r, colorB.r), Random.Range(colorA.g, colorB.g),
             Random.Range(colorA.b, colorB.b));
         obstacle.layer = 6;
-
-        return obstacle;
     }
 
-    private void PositionObstacle(GameObject obstacle)
+    private Vector3 FindRandomPosition()
     {
-        Vector2 mapGridSize = new Vector2(mapObject.transform.localScale.x * MAP_DISTANCE, mapObject.transform.localScale.z * MAP_DISTANCE);
-        obstacle.transform.position = baseObject.transform.position;
+        Vector2 mapGridSize = new Vector2(mapObject.transform.localScale.x * SCALE_TO_SIZE_MULTIPLIER,
+            mapObject.transform.localScale.z * SCALE_TO_SIZE_MULTIPLIER);
+        Vector3 position;
         int positioningTries = 0;
 
-        while (Vector3.Distance(baseObject.transform.position, obstacle.transform.position) < avoidanceDistance && positioningTries < MAX_POSITIONING_TRIES)
+        do 
         {
-            obstacle.transform.position =
+            position =
                 new Vector3(Random.Range(mapObject.transform.position.x - mapGridSize.x, mapObject.transform.position.x + mapGridSize.x), 0,
                     Random.Range(mapObject.transform.position.z - mapGridSize.y, mapObject.transform.position.z + mapGridSize.y));
             positioningTries++;
-        }
+        } 
+        while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES &&
+                 Vector3.Distance(baseObject.transform.position, position) < avoidanceDistance);
 
-        if (positioningTries >= MAX_POSITIONING_TRIES)
-        {
-            Destroy(obstacle);
-        }
+        return positioningTries <= GlobalConstants.MAX_POSITIONING_TRIES ? position : Vector3.zero;
     }
 }

@@ -25,7 +25,7 @@ public class ObstacleDetector : MonoBehaviour
 
         if (showDebug) grid.ShowDebug();
 
-        StartCoroutine(DelayedSetObstacleScores(grid, "Obstacles", 0.1f));
+        StartCoroutine(DelayedSetObstacleScores(grid, GlobalConstants.OBSTACLES_STRING, 0.1f));
     }
 
     // Update is called once per frame
@@ -57,7 +57,7 @@ public class ObstacleDetector : MonoBehaviour
 
                 if (obstacles.GetLength(0) > 0)
                 {
-                    grid.SetGridObject(x, y, 255);
+                    grid.SetCell(x, y, 255);
                 }
             }
         }

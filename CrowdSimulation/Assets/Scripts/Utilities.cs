@@ -1,7 +1,7 @@
 using System.Reflection;
 using UnityEngine;
 
-public class Utilities
+public static class Utilities
 {
     // CodeMonkey function
     public static TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3), int fontSize = 40,
@@ -38,7 +38,7 @@ public class Utilities
         return Physics.Raycast(ray, out RaycastHit raycastHit) ? raycastHit.point : Vector3.zero;
     }
 
-    public static void DrawArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null, float duration = 100f)
+    public static void DrawArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null)
     {
         if (direction == Vector3.zero)
         {
@@ -54,15 +54,16 @@ public class Utilities
 
         if (color == null) color = Color.white;
 
-        Debug.DrawLine(startPosition, endPosition, (Color)color, duration);
+        Gizmos.color = (Color) color;
+        Gizmos.DrawLine(startPosition, endPosition);
 
         Vector3 right = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
         Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
-        Debug.DrawLine(endPosition, endPosition + (right * arrowHeadLength), (Color)color, duration);
-        Debug.DrawLine(endPosition, endPosition + (left * arrowHeadLength), (Color)color, duration);
+        Gizmos.DrawLine(endPosition, endPosition + (right * arrowHeadLength));
+        Gizmos.DrawLine(endPosition, endPosition + (left * arrowHeadLength));
     }
 
-    public static Vector3 GetRandomPosition(Vector3 positionA, Vector3 positionB)
+    public static Vector3 GetRandomPositionInBox(Vector3 positionA, Vector3 positionB)
     {
         return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
     }

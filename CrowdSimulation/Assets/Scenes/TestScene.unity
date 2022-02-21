@@ -228,7 +228,7 @@ GameObject:
   - component: {fileID: 514380638}
   - component: {fileID: 514380637}
   m_Layer: 0
-  m_Name: Testing
+  m_Name: PathController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -251,7 +251,8 @@ MonoBehaviour:
   cellSize: 5
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
-  showDebug: 1
+  showGridAndCost: 1
+  showArrows: 1
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -396,9 +397,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
   totalUnitsSpawned: 1000
-  totalUnitsPerSpawn: 100
+  numUnitsPerSpawn: 100
   unitMoveSpeed: 10
-  pathingController: {fileID: 0}
+  pathingController: {fileID: 514380637}
 --- !u!4 &1059563916
 Transform:
   m_ObjectHideFlags: 0
