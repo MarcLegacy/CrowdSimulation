@@ -27,19 +27,19 @@ public class FlowField
             return;
         }
 
+        double startTimer = Time.realtimeSinceStartupAsDouble;
         ResetCells();
         CalculateCostField(GlobalConstants.OBSTACLES_STRING);
         CalculateIntegrationField(destinationCell);
         CalculateVectorField();
+        Debug.Log("Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) + "s");
     }
 
     private void ResetCells()
     {
-        FlowFieldCell[,] gridArray = grid.GetGridArray();
-
-        for (int x = 0; x < gridArray.GetLength(0); x++)
+        for (int x = 0; x < grid.GetGridWidth(); x++)
         {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
+            for (int y = 0; y < grid.GetGridHeight(); y++)
             {
                 grid.GetCell(x, y).ResetCell();
             }
@@ -86,11 +86,9 @@ public class FlowField
 
     private void CalculateVectorField()
     {
-        FlowFieldCell[,] gridArray = grid.GetGridArray();
-
-        for (int x = 0; x < gridArray.GetLength(0); x++)
+        for (int x = 0; x < grid.GetGridWidth(); x++)
         {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
+            for (int y = 0; y < grid.GetGridHeight(); y++)
             {
                 FlowFieldCell currentCell = grid.GetCell(x, y);
                 List<FlowFieldCell> currentNeighborCells = grid.GetNeighborCells(currentCell.GetGridPosition(), GridDirection.AllDirections);

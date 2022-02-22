@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class MyGrid<TGridObject>
 {
-    public event EventHandler<OnCellValueChangedEventArgs> OnCellChanged;
+    public event EventHandler<OnCellValueChangedEventArgs> OnCellValueChanged;
     public class OnCellValueChangedEventArgs : EventArgs
     {
         public int x;
@@ -59,7 +59,7 @@ public class MyGrid<TGridObject>
         Debug.DrawLine(GetCellWorldPosition(0, height), GetCellWorldPosition(width, height), Color.black, 100f);
         Debug.DrawLine(GetCellWorldPosition(width, 0), GetCellWorldPosition(width, height), Color.black, 100f);
 
-        OnCellChanged += (sender, eventArgs) =>
+        OnCellValueChanged += (sender, eventArgs) =>
         {
             debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
         };
@@ -139,7 +139,7 @@ public class MyGrid<TGridObject>
         if (x >= 0 && x < width && y >= 0 && y < height)
         {
             gridArray[x, y] = value;
-            OnCellChanged?.Invoke(this, new OnCellValueChangedEventArgs {x = x, y = y});
+            OnCellValueChanged?.Invoke(this, new OnCellValueChangedEventArgs {x = x, y = y});
         }
         else
         {
@@ -196,9 +196,9 @@ public class MyGrid<TGridObject>
         List<TGridObject> cells = new List<TGridObject>();
         int terrainMask = LayerMask.GetMask(maskString);
 
-        for (int x = 0; x < gridArray.GetLength(0); x++)
+        for (int x = 0; x < width; x++)
         {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
+            for (int y = 0; y < height; y++)
             {
                 Vector3 cellPosition = GetCellCenterWorldPosition(x, y);
                 Collider[] obstacles =
@@ -216,6 +216,6 @@ public class MyGrid<TGridObject>
 
     public void TriggerCellChanged(int x, int y)
     {
-        OnCellChanged?.Invoke(this, new OnCellValueChangedEventArgs { x = x, y = y });
+        OnCellValueChanged?.Invoke(this, new OnCellValueChangedEventArgs { x = x, y = y });
     }
 }

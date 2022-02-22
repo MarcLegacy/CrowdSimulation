@@ -18,8 +18,6 @@ public class ObstacleSpawner : MonoBehaviour
     public Color colorA;
     public Color colorB;
 
-    private const float SCALE_TO_SIZE_MULTIPLIER = 5f;
-
     private void Start()
     {
         for (int i = 0; i < obstacleAmount; i++)
@@ -45,8 +43,8 @@ public class ObstacleSpawner : MonoBehaviour
 
     private Vector3 FindRandomPosition()
     {
-        Vector2 mapGridSize = new Vector2(mapObject.transform.localScale.x * SCALE_TO_SIZE_MULTIPLIER,
-            mapObject.transform.localScale.z * SCALE_TO_SIZE_MULTIPLIER);
+        Vector2 mapGridSize = new Vector2(mapObject.transform.localScale.x * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER,
+            mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER);
         Vector3 position;
         int positioningTries = 0;
 

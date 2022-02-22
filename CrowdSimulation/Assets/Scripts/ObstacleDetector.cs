@@ -19,8 +19,10 @@ public class ObstacleDetector : MonoBehaviour
 
     private void Start()
     {
-        Vector3 originPosition = new Vector3(mapObject.transform.position.x - (mapObject.transform.localScale.x * 5f),
-            mapObject.transform.position.y, mapObject.transform.position.z - (mapObject.transform.localScale.z * 5f));
+        Vector3 originPosition =
+            new Vector3(mapObject.transform.position.x - (mapObject.transform.localScale.x * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER),
+                mapObject.transform.position.y,
+                mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
         grid = new MyGrid<int>(gridWidth, gridHeight, cellSize, originPosition);
 
         if (showDebug) grid.ShowDebug();

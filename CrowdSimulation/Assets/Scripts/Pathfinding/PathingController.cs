@@ -3,15 +3,16 @@ using UnityEngine;
 
 public class PathingController : MonoBehaviour
 {
-    public int gridWidth = 10;
-    public int gridHeight = 10;
-    public float cellSize = 10f;
-    public GameObject mapObject;
-    public GameObject baseObject;
-    public bool showGridAndCost = false;
-    public bool showArrows = false;
+    [SerializeField] private int gridWidth = 10;
+    [SerializeField] private int gridHeight = 10;
+    [SerializeField] private float cellSize = 10f;
+    [SerializeField] private GameObject mapObject;
+    [SerializeField] private GameObject baseObject;
+    [SerializeField] private bool showGridAndCost = false;
+    [SerializeField] private bool showArrows = false;
 
-    public FlowField flowField;
+    [HideInInspector] public FlowField flowField;
+    [HideInInspector] public AStar AStar;
 
     #region Singleton
     public static PathingController GetInstance()
@@ -31,14 +32,18 @@ public class PathingController : MonoBehaviour
         //grid = new MyGrid<GridObject>(gridWidth, gridHeight, cellSize, transform.position, (g, x, y) => new GridObject(g, x, y));
         //grid = new MyGrid<int>(gridWidth, gridHeight, cellSize, originPosition);
 
-        //grid.ShowDebug();
-        Vector3 originPosition = new Vector3(mapObject.transform.position.x - (mapObject.transform.localScale.x * 5f),
-            mapObject.transform.position.y, mapObject.transform.position.z - (mapObject.transform.localScale.z * 5f));
+        Vector3 originPosition =
+            new Vector3(mapObject.transform.position.x - (mapObject.transform.localScale.x * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER),
+                mapObject.transform.position.y,
+                mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
         flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
 
-        if (showGridAndCost) flowField.GetGrid().ShowDebug();
-
         StartCoroutine(DelayedSetObstacleScores(flowField.GetGrid(), 0.1f));
+
+        AStar = new AStar(gridWidth, gridHeight, cellSize, originPosition);
+        StartCoroutine(DelayedCalculateCellCost(GlobalConstants.OBSTACLES_STRING, 0.1f));
+
+        if (showGridAndCost) AStar.GetGrid().ShowDebug();
     }
 
     private void Update()
@@ -77,7 +82,13 @@ public class PathingController : MonoBehaviour
         yield return new WaitForSeconds(delayedTime);
 
         flowField.CalculateFlowField(flowField.GetGrid().GetCell(baseObject.transform.position));
-        //flowField.DrawArrowField();
+    }
+
+    IEnumerator DelayedCalculateCellCost(string maskString, float delayedTime)
+    {
+        yield return new WaitForSeconds(delayedTime);
+
+        //AStar.CalculateCellCost(maskString);
     }
 
 }
