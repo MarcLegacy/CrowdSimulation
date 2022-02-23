@@ -27,12 +27,11 @@ public class FlowField
             return;
         }
 
-        double startTimer = Time.realtimeSinceStartupAsDouble;
         ResetCells();
         CalculateCostField(GlobalConstants.OBSTACLES_STRING);
         CalculateIntegrationField(destinationCell);
         CalculateVectorField();
-        Debug.Log("Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) + "s");
+
     }
 
     private void ResetCells()

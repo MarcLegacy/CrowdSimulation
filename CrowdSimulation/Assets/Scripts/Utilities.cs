@@ -53,7 +53,7 @@ public static class Utilities
             cachedQuaternionEulerArr[i] = Quaternion.Euler(0, 0, i);
         }
     }
-    private static Quaternion GetQuaternionEuler(float rotFloat)
+    public static Quaternion GetQuaternionEuler(float rotFloat)
     {
         int rot = Mathf.RoundToInt(rotFloat);
         rot = rot % 360;
@@ -85,17 +85,21 @@ public static class Utilities
         bool skewed = baseSize.x != baseSize.y;
         if (skewed)
         {
-            vertices[vIndex0] = pos + GetQuaternionEuler(rot) * new Vector3(-baseSize.x, baseSize.y);
-            vertices[vIndex1] = pos + GetQuaternionEuler(rot) * new Vector3(-baseSize.x, -baseSize.y);
-            vertices[vIndex2] = pos + GetQuaternionEuler(rot) * new Vector3(baseSize.x, baseSize.y);
+            vertices[vIndex0] = pos + GetQuaternionEuler(rot) * new Vector3(-baseSize.x, 0, baseSize.z);
+            vertices[vIndex1] = pos + GetQuaternionEuler(rot) * new Vector3(-baseSize.x, 0, -baseSize.z);
+            vertices[vIndex2] = pos + GetQuaternionEuler(rot) * new Vector3(baseSize.x, 0, -baseSize.z);
             vertices[vIndex3] = pos + GetQuaternionEuler(rot) * baseSize;
         }
         else
         {
-            vertices[vIndex0] = pos + GetQuaternionEuler(rot - 270) * baseSize;
-            vertices[vIndex1] = pos + GetQuaternionEuler(rot - 180) * baseSize;
-            vertices[vIndex2] = pos + GetQuaternionEuler(rot - 90) * baseSize;
-            vertices[vIndex3] = pos + GetQuaternionEuler(rot - 0) * baseSize;
+            //vertices[vIndex0] = pos + GetQuaternionEuler(rot - 270) * baseSize;
+            //vertices[vIndex1] = pos + GetQuaternionEuler(rot - 180) * baseSize;
+            //vertices[vIndex2] = pos + GetQuaternionEuler(rot - 90) * baseSize;
+            //vertices[vIndex3] = pos + GetQuaternionEuler(rot - 0) * baseSize;
+            vertices[vIndex0] = new Vector3(pos.x - baseSize.x, 0, pos.z + baseSize.z);
+            vertices[vIndex1] = new Vector3(pos.x - baseSize.x, 0, pos.z - baseSize.z);
+            vertices[vIndex2] = new Vector3(pos.x + baseSize.x, 0, pos.z + baseSize.z);
+            vertices[vIndex3] = new Vector3(pos.x + baseSize.x, 0, pos.z - baseSize.z);
         }
 
         // Relocate UVs

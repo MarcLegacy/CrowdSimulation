@@ -25,7 +25,7 @@ public class ObstacleDetector : MonoBehaviour
                 mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
         grid = new MyGrid<int>(gridWidth, gridHeight, cellSize, originPosition);
 
-        if (showDebug) grid.ShowDebug();
+        if (showDebug) grid.ShowDebugText();
 
         StartCoroutine(DelayedSetObstacleScores(grid, GlobalConstants.OBSTACLES_STRING, 0.1f));
     }

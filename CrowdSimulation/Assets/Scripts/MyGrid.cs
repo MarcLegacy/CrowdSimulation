@@ -42,7 +42,7 @@ public class MyGrid<TGridObject>
         gridArray = new TGridObject[width, height];
     }
 
-    public void ShowDebug()
+    public void ShowDebugText()
     {
         TextMesh[,] debugTextArray = new TextMesh[width, height];
 
@@ -51,18 +51,32 @@ public class MyGrid<TGridObject>
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
                 debugTextArray[x, y] = Utilities.CreateWorldText(gridArray[x, y]?.ToString(), null, GetCellCenterWorldPosition(x, y), (int)cellSize * 2, Color.black, TextAnchor.MiddleCenter);
-                Debug.DrawLine(GetCellWorldPosition(x, y), GetCellWorldPosition(x, y + 1), Color.black, 100f);
-                Debug.DrawLine(GetCellWorldPosition(x, y), GetCellWorldPosition(x + 1, y), Color.black, 100f);
             }
         }
-
-        Debug.DrawLine(GetCellWorldPosition(0, height), GetCellWorldPosition(width, height), Color.black, 100f);
-        Debug.DrawLine(GetCellWorldPosition(width, 0), GetCellWorldPosition(width, height), Color.black, 100f);
 
         OnCellValueChanged += (sender, eventArgs) =>
         {
             debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
         };
+    }
+
+    public void ShowGrid(Color? color = null)
+    {
+        if (color == null) color = Color.black;
+
+        Gizmos.color = (Color) color;
+        
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Gizmos.DrawLine(GetCellWorldPosition(x, y), GetCellWorldPosition(x, y + 1));
+                Gizmos.DrawLine(GetCellWorldPosition(x, y), GetCellWorldPosition(x + 1, y));
+            }
+        }
+
+        Gizmos.DrawLine(GetCellWorldPosition(0, height), GetCellWorldPosition(width, height));
+        Gizmos.DrawLine(GetCellWorldPosition(width, 0), GetCellWorldPosition(width, height));
     }
 
     public int GetGridWidth()

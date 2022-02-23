@@ -7,10 +7,12 @@ public class HeatMap : MonoBehaviour
     private const int MAX_VALUE = 100;
 
     private MyGrid<int> grid;
+    private Mesh mesh;
 
     public void SetGrid(MyGrid<int> grid)
     {
         this.grid = grid;
+        mesh = new Mesh();
         UpdateHeatMap();
 
         grid.OnCellValueChanged += GridOnCellValueValueChanged;
@@ -31,19 +33,19 @@ public class HeatMap : MonoBehaviour
             for (int y = 0; y < grid.GetGridHeight(); y++)
             {
                 int index = x * grid.GetGridHeight() + y;
-                Vector3 quadSize = new Vector3(1, 1) * grid.GetCellSize();
+                Vector3 quadSize = new Vector3(1, 0, 1) * grid.GetCellSize();
                 int gridValue = grid.GetCell(x, y);
                 float gridValueNormalized = (float) gridValue / MAX_VALUE;
                 Vector2 gridValueUV = new Vector2(gridValueNormalized, 0f);
 
-                Utilities.AddToMeshArrays(vertices, uv, triangles, index, grid.GetCellWorldPosition(x, y) + quadSize * 0.5f, 0f, quadSize, Vector2.zero, Vector2.zero);
+                Utilities.AddToMeshArrays(vertices, uv, triangles, index, grid.GetCellWorldPosition(x, y) + quadSize * 0.5f, 0f, quadSize, gridValueUV, gridValueUV);
             }
         }
-
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
 
         mesh.vertices = vertices;
         mesh.uv = uv;
         mesh.triangles = triangles;
+
+        GetComponent<MeshFilter>().mesh = mesh;
     }
 }
