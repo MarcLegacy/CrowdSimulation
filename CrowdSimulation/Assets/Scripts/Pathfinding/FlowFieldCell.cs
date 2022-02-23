@@ -7,11 +7,11 @@ public class FlowFieldCell
 {
     public byte cost;
     public ushort bestCost;
+    public readonly int x;
+    public readonly int y;
     public GridDirection bestDirection;
 
     private MyGrid<FlowFieldCell> grid;
-    private readonly int x;
-    private readonly int y;
 
     public FlowFieldCell(MyGrid<FlowFieldCell> grid, int x, int y)
     {

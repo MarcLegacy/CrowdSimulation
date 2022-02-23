@@ -51,7 +51,7 @@ public class FlowField
         foreach (FlowFieldCell cell in grid.GetCellsWithObjects(maskString))
         {
             cell.cost = byte.MaxValue;
-            grid.TriggerCellChanged(cell.GetGridPosition().x, cell.GetGridPosition().y);
+            grid.TriggerCellChanged(cell.x, cell.y);
         }
     }
 
@@ -80,7 +80,7 @@ public class FlowField
                 }
             }
 
-            grid.TriggerCellChanged(currentCell.GetGridPosition().x, currentCell.GetGridPosition().y);
+            grid.TriggerCellChanged(currentCell.x, currentCell.y);
         }
     }
 

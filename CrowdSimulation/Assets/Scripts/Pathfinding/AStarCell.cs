@@ -2,20 +2,22 @@ using UnityEngine;
 
 public class AStarCell
 {
+    public bool isWalkable;
+    public readonly int x;
+    public readonly int y;
     public int fCost;
     public int gCost;
     public int hCost;
     public AStarCell cameFromCell;
 
     private MyGrid<AStarCell> grid;
-    private readonly int x;
-    private readonly int y;
 
     public AStarCell(MyGrid<AStarCell> grid, int x, int y)
     {
         this.grid = grid;
         this.x = x;
         this.y = y;
+        isWalkable = true;
     }
 
     public Vector2Int GetGridPosition()
@@ -25,7 +27,7 @@ public class AStarCell
 
     public override string ToString()
     {
-        return fCost + "\n" + gCost + "\n" + hCost;
+        return "g: " + gCost + "\nh: " + hCost + "\nf: " + fCost;
     }
 
     public void CalculateFCost()

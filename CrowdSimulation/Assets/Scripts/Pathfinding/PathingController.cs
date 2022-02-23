@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PathingController : MonoBehaviour
@@ -13,6 +14,8 @@ public class PathingController : MonoBehaviour
 
     [HideInInspector] public FlowField flowField;
     [HideInInspector] public AStar AStar;
+
+    private List<AStarCell> path;
 
     #region Singleton
     public static PathingController GetInstance()
@@ -51,6 +54,8 @@ public class PathingController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             flowField.CalculateFlowField(flowField.GetGrid().GetCell(Utilities.GetMouseWorldPosition()));
+
+            path = AStar.FindPath(Vector3.zero, Utilities.GetMouseWorldPosition());
         }
     }
 
@@ -58,20 +63,38 @@ public class PathingController : MonoBehaviour
     {
         if (showArrows)
         {
-            if (flowField?.GetGrid() == null) return;
+            //if (flowField == null) return;
 
-            FlowFieldCell[,] gridArray = flowField.GetGrid().GetGridArray();
-            for (int x = 0; x < gridArray.GetLength(0); x++)
+            //MyGrid<FlowFieldCell> grid = flowField.GetGrid();
+
+            //if (grid == null) return;
+
+            //for (int x = 0; x < grid.GetGridWidth(); x++)
+            //{
+            //    for (int y = 0; y < grid.GetGridHeight(); y++)
+            //    {
+            //        GridDirection gridDirection = grid.GetCell(x, y).bestDirection;
+
+            //        if (gridDirection != GridDirection.None)
+            //        {
+            //            Utilities.DrawArrow(grid.GetCellCenterWorldPosition(x, y),
+            //                new Vector3(gridDirection.vector2D.x, 0, gridDirection.vector2D.y), grid.GetCellSize() * 0.5f, Color.black);
+            //        }
+            //    }
+            //}
+
+            if (AStar == null) return;
+
+            MyGrid<AStarCell> grid = AStar.GetGrid();
+
+            if (path == null || grid == null) return;
+
+            for (int i = 0; i < path.Count - 1; i++)
             {
-                for (int y = 0; y < gridArray.GetLength(1); y++)
-                {
-                    if (gridArray[x, y].bestDirection != GridDirection.None)
-                    {
-                        Utilities.DrawArrow(flowField.GetGrid().GetCellCenterWorldPosition(x, y),
-                            new Vector3(gridArray[x, y].bestDirection.vector2D.x, 0, gridArray[x, y].bestDirection.vector2D.y),
-                            flowField.GetGrid().GetCellSize() * 0.5f, Color.black);
-                    }
-                }
+                Vector2 gridDirection = path[i + 1].GetGridPosition() - path[i].GetGridPosition();
+
+                Utilities.DrawArrow(grid.GetCellCenterWorldPosition(path[i].GetGridPosition()),
+                    new Vector3(gridDirection.x, 0f, gridDirection.y), grid.GetCellSize() * 0.5f, Color.black);
             }
         }
     }
@@ -88,7 +111,7 @@ public class PathingController : MonoBehaviour
     {
         yield return new WaitForSeconds(delayedTime);
 
-        //AStar.CalculateCellCost(maskString);
+        AStar.SetUnWalkableCells(maskString);
     }
 
 }

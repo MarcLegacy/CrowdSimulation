@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Xml.XPath;
 using UnityEditor.Build.Pipeline.Tasks;
 using UnityEngine;
@@ -23,6 +24,14 @@ public class AStar
         return grid;
     }
 
+    public List<AStarCell> FindPath(Vector3 startWorldPosition, Vector3 endWorldPosition)
+    {
+        return FindPath(grid.GetCellGridPosition(startWorldPosition), grid.GetCellGridPosition(endWorldPosition));
+    }
+    public List<AStarCell> FindPath(Vector2Int startGridPosition, Vector2Int endGridPosition)
+    {
+        return FindPath(startGridPosition.x, startGridPosition.y, endGridPosition.x, endGridPosition.y);
+    }
     public List<AStarCell> FindPath(int startX, int startY, int endX, int endY)
     {
         AStarCell startCell = grid.GetCell(startX, startY);
@@ -34,6 +43,7 @@ public class AStar
         startCell.gCost = 0;
         startCell.hCost = CalculateHCost(startCell, endCell);
         startCell.CalculateFCost();
+        grid.TriggerCellChanged(startCell.x, startCell.y);
 
         while (openList.Count > 0)
         {
@@ -50,6 +60,11 @@ public class AStar
                 GridDirection.CardinalAndIntercardinalDirections))
             {
                 if (closedList.Contains(neighborCell)) continue;
+                if (!neighborCell.isWalkable)
+                {
+                    closedList.Add(neighborCell);
+                    continue;
+                }
 
                 int tentativeGCost = currentCell.gCost + CalculateHCost(currentCell, neighborCell);
                 if (tentativeGCost < neighborCell.gCost)
@@ -62,20 +77,22 @@ public class AStar
                     if (!openList.Contains(neighborCell))
                     {
                         openList.Add(neighborCell);
+
+                        grid.TriggerCellChanged(neighborCell.x, neighborCell.y);
                     }
                 }
             }
         }
 
+        Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": " + "No path found!");
         return null;
     }
 
-    public void CalculateGCost(string maskString)
+    public void SetUnWalkableCells(string maskString)
     {
         foreach (AStarCell cell in grid.GetCellsWithObjects(maskString))
         {
-            cell.gCost = byte.MaxValue;
-            grid.TriggerCellChanged(cell.GetGridPosition().x, cell.GetGridPosition().y);
+            cell.isWalkable = false;
         }
     }
 
@@ -86,14 +103,16 @@ public class AStar
             for (int y = 0; y < grid.GetGridHeight(); y++)
             {
                 grid.GetCell(x, y).ResetCell();
+
+                grid.TriggerCellChanged(x, y);
             }
         }
     }
 
     private int CalculateHCost(AStarCell a, AStarCell b)
     {
-        int xDistance = Mathf.Abs(a.GetGridPosition().x - b.GetGridPosition().x);
-        int yDistance = Mathf.Abs(a.GetGridPosition().y - b.GetGridPosition().y);
+        int xDistance = Mathf.Abs(a.x - b.x);
+        int yDistance = Mathf.Abs(a.y - b.y);
         int remaining = Mathf.Abs(xDistance - yDistance);
 
         return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
@@ -123,6 +142,9 @@ public class AStar
             currentCell = currentCell.cameFromCell;
         }
         path.Reverse();
+
         return path;
     }
+
+    
 }

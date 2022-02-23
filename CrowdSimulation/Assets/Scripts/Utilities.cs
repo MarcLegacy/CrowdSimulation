@@ -4,34 +4,7 @@ using UnityEngine;
 
 public static class Utilities
 {
-    // CodeMonkey Function
-    public static TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3), int fontSize = 40,
-        Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left,
-        int sortingOrder = 5000)
-    {
-        if (color == null) color = Color.white;
 
-        return CreateWorldText(parent, text, localPosition, fontSize, (Color)color, textAnchor, textAlignment, sortingOrder);
-    }
-
-    // CodeMonkey Function
-    public static TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition, int fontSize, Color color,
-        TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
-    {
-        GameObject gameObject = new GameObject("World_Text", typeof(TextMesh));
-        Transform transform = gameObject.transform;
-        transform.SetParent(parent, false);
-        transform.localPosition = localPosition;
-        transform.RotateAround(localPosition, new Vector3(1, 0), 90);
-        TextMesh textMesh = gameObject.GetComponent<TextMesh>();
-        textMesh.anchor = textAnchor;
-        textMesh.alignment = textAlignment;
-        textMesh.text = text;
-        textMesh.fontSize = fontSize;
-        textMesh.color = color;
-        textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
-        return textMesh;
-    }
 
     public static Vector3 GetMouseWorldPosition()
     {
@@ -69,7 +42,27 @@ public static class Utilities
         return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
     }
 
-    // CodeMonkey Function
+    #region CodeMonkeyFunctions
+    private static Quaternion[] cachedQuaternionEulerArr;
+    private static void CacheQuaternionEuler()
+    {
+        if (cachedQuaternionEulerArr != null) return;
+        cachedQuaternionEulerArr = new Quaternion[360];
+        for (int i = 0; i < 360; i++)
+        {
+            cachedQuaternionEulerArr[i] = Quaternion.Euler(0, 0, i);
+        }
+    }
+    private static Quaternion GetQuaternionEuler(float rotFloat)
+    {
+        int rot = Mathf.RoundToInt(rotFloat);
+        rot = rot % 360;
+        if (rot < 0) rot += 360;
+        //if (rot >= 360) rot -= 360;
+        if (cachedQuaternionEulerArr == null) CacheQuaternionEuler();
+        return cachedQuaternionEulerArr[rot];
+    }
+
     public static void CreateEmptyMeshArrays(int quadCount, out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
     {
         vertices = new Vector3[4 * quadCount];
@@ -77,7 +70,6 @@ public static class Utilities
         triangles = new int[6 * quadCount];
     }
 
-    // CodeMonkey Function
     public static void AddToMeshArrays(Vector3[] vertices, Vector2[] uvs, int[] triangles, int index, Vector3 pos, float rot, Vector3 baseSize,
         Vector2 uv00, Vector2 uv11)
     {
@@ -124,23 +116,31 @@ public static class Utilities
         triangles[tIndex + 5] = vIndex2;
     }
 
-    private static Quaternion[] cachedQuaternionEulerArr;
-    private static void CacheQuaternionEuler()
+    public static TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3), int fontSize = 40,
+        Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left,
+        int sortingOrder = 5000)
     {
-        if (cachedQuaternionEulerArr != null) return;
-        cachedQuaternionEulerArr = new Quaternion[360];
-        for (int i = 0; i < 360; i++)
-        {
-            cachedQuaternionEulerArr[i] = Quaternion.Euler(0, 0, i);
-        }
+        if (color == null) color = Color.white;
+
+        return CreateWorldText(parent, text, localPosition, fontSize, (Color)color, textAnchor, textAlignment, sortingOrder);
     }
-    private static Quaternion GetQuaternionEuler(float rotFloat)
+
+    public static TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition, int fontSize, Color color,
+        TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
     {
-        int rot = Mathf.RoundToInt(rotFloat);
-        rot = rot % 360;
-        if (rot < 0) rot += 360;
-        //if (rot >= 360) rot -= 360;
-        if (cachedQuaternionEulerArr == null) CacheQuaternionEuler();
-        return cachedQuaternionEulerArr[rot];
+        GameObject gameObject = new GameObject("World_Text", typeof(TextMesh));
+        Transform transform = gameObject.transform;
+        transform.SetParent(parent, false);
+        transform.localPosition = localPosition;
+        transform.RotateAround(localPosition, new Vector3(1, 0), 90);
+        TextMesh textMesh = gameObject.GetComponent<TextMesh>();
+        textMesh.anchor = textAnchor;
+        textMesh.alignment = textAlignment;
+        textMesh.text = text;
+        textMesh.fontSize = fontSize;
+        textMesh.color = color;
+        textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
+        return textMesh;
     }
+    #endregion
 }
