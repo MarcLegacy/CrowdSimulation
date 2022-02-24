@@ -88,6 +88,23 @@ public class AStar
         return null;
     }
 
+    public void DrawPathArrows(List<AStarCell> path)
+    {
+        if (path == null)
+        {
+            Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": " + "path == null");
+            return;
+        }
+
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            Vector2 gridDirection = path[i + 1].GetGridPosition() - path[i].GetGridPosition();
+
+            Utilities.DrawArrow(grid.GetCellCenterWorldPosition(path[i].GetGridPosition()),
+                new Vector3(gridDirection.x, 0f, gridDirection.y), grid.GetCellSize() * 0.5f, Color.black);
+        }
+    }
+
     public void SetUnWalkableCells(string maskString)
     {
         foreach (AStarCell cell in grid.GetCellsWithObjects(maskString))

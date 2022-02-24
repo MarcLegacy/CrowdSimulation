@@ -94,6 +94,11 @@ public class MyGrid<TGridObject>
         return cellSize;
     }
 
+    public Vector3 GetGridOriginPosition()
+    {
+        return originPosition;
+    }
+
     public TGridObject[,] GetGridArray()
     {
         return gridArray;
@@ -208,7 +213,19 @@ public class MyGrid<TGridObject>
     public List<TGridObject> GetCellsWithObjects(string maskString)
     {
         List<TGridObject> cells = new List<TGridObject>();
-        int terrainMask = LayerMask.GetMask(maskString);
+
+        foreach(Vector2Int gridPosition in GetGridPositionsWithObjects(maskString))
+        {
+            cells.Add(GetCell(gridPosition.x, gridPosition.y));
+        }
+
+        return cells;
+    }
+
+    public List<Vector2Int> GetGridPositionsWithObjects(string maskString)
+    {
+        List<Vector2Int> gridPositions = new List<Vector2Int>();
+        int layerMask = LayerMask.GetMask(maskString);
 
         for (int x = 0; x < width; x++)
         {
@@ -216,16 +233,16 @@ public class MyGrid<TGridObject>
             {
                 Vector3 cellPosition = GetCellCenterWorldPosition(x, y);
                 Collider[] obstacles =
-                    Physics.OverlapBox(cellPosition, Vector3.one * cellSize * 0.5f, Quaternion.identity, terrainMask);
+                    Physics.OverlapBox(cellPosition, Vector3.one * cellSize * 0.5f, Quaternion.identity, layerMask);
 
-                if (obstacles.GetLength(0) > 0)
+                if (obstacles.Length > 0)
                 {
-                    cells.Add(GetCell(x, y));
+                    gridPositions.Add(new Vector2Int(x, y));
                 }
             }
         }
 
-        return cells;
+        return gridPositions;
     }
 
     public void TriggerCellChanged(int x, int y)

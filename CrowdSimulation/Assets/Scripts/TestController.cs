@@ -9,7 +9,7 @@ public class TestController : MonoBehaviour
     [SerializeField] private int gridHeight = 10;
     [SerializeField] private float cellSize = 10f;
     [SerializeField] private GameObject mapObject;
-    [SerializeField] private HeatMap heatMap;
+    [SerializeField] private HeatMapManager heatMapManager;
     private MyGrid<int> grid;
 
     private void Start()
@@ -20,7 +20,7 @@ public class TestController : MonoBehaviour
                 mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
         grid = new MyGrid<int>(gridWidth, gridHeight, cellSize, originPosition);
 
-        heatMap.SetGrid(grid);
+
 
         //Mesh mesh = new Mesh();
 

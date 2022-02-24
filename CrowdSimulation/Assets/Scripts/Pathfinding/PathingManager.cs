@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class PathingController : MonoBehaviour
+public class PathingManager : MonoBehaviour
 {
     [SerializeField] private int gridWidth = 10;
     [SerializeField] private int gridHeight = 10;
@@ -10,6 +11,7 @@ public class PathingController : MonoBehaviour
     [SerializeField] private int areaSize = 10;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject baseObject;
+
     [SerializeField] private bool showFlowFieldDebugText = false;
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
@@ -19,20 +21,22 @@ public class PathingController : MonoBehaviour
 
     [HideInInspector] public FlowField flowField;
     [HideInInspector] public AStar AStar;
+    
 
-    private List<AStarCell> path;
+    private List<AStarCell> path; 
+    private HeatMapManager heatMapManager;
 
     #region Singleton
-    public static PathingController GetInstance()
+    public static PathingManager GetInstance()
     {
         if (instance == null)
         {
-            instance = FindObjectOfType<PathingController>();
+            instance = FindObjectOfType<PathingManager>();
         }
         return instance;
     }
 
-    private static PathingController instance;
+    private static PathingManager instance;
     #endregion
 
     private void Start()
@@ -43,13 +47,21 @@ public class PathingController : MonoBehaviour
                 mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
 
         flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
-        StartCoroutine(DelayedSetObstacleScores(flowField.GetGrid(), 0.1f));
-
         AStar = new AStar(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition);
-        StartCoroutine(DelayedSetUnWalkableCells(GlobalConstants.OBSTACLES_STRING, 0.1f));
 
         if (showFlowFieldDebugText) flowField.GetGrid().ShowDebugText();
         if (showAStarDebugText) AStar.GetGrid().ShowDebugText();
+
+        StartCoroutine(DelayedStart());
+    }
+
+    // Because for an unknown reason, the position of the colliders aren't yet set on the position of the gameObject immediatelly
+    IEnumerator DelayedStart()
+    {
+        yield return new WaitForEndOfFrame();
+
+        flowField.CalculateFlowField(flowField.GetGrid().GetCell(baseObject.transform.position));
+        AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
     }
 
     private void Update()
@@ -68,68 +80,34 @@ public class PathingController : MonoBehaviour
     {
         if (flowField != null)
         {
-            MyGrid<FlowFieldCell> grid = flowField.GetGrid();
-
             if (showFlowFieldGrid)
             {
-                grid.ShowGrid(Color.black);
+                flowField.GetGrid().ShowGrid(Color.black);
             }
             if (showFlowFieldArrows)
             {
-                for (int x = 0; x < grid.GetGridWidth(); x++)
-                {
-                    for (int y = 0; y < grid.GetGridHeight(); y++)
-                    {
-                        GridDirection gridDirection = grid.GetCell(x, y).bestDirection;
-
-                        if (gridDirection != GridDirection.None)
-                        {
-                            Utilities.DrawArrow(grid.GetCellCenterWorldPosition(x, y),
-                                new Vector3(gridDirection.vector2D.x, 0, gridDirection.vector2D.y), grid.GetCellSize() * 0.5f, Color.black);
-                        }
-                    }
-                }
+                flowField.DrawFlowFieldArrows();
             }
         }
 
         if (AStar != null)
         {
-            MyGrid<AStarCell> grid = AStar.GetGrid();
-
             if (showAStarGrid)
             {
-                grid.ShowGrid(Color.red);
+                AStar.GetGrid().ShowGrid(Color.red);
             }
             if (showStarArrows)
             {
-                if (path == null) return;
-
-                for (int i = 0; i < path.Count - 1; i++)
-                {
-                    Vector2 gridDirection = path[i + 1].GetGridPosition() - path[i].GetGridPosition();
-
-                    Utilities.DrawArrow(grid.GetCellCenterWorldPosition(path[i].GetGridPosition()),
-                        new Vector3(gridDirection.x, 0f, gridDirection.y), grid.GetCellSize() * 0.5f, Color.black);
-                }
+                AStar.DrawPathArrows(path);
             }
         }
 
     }
 
-    // Because for an unknown reason, the code doesn't work inside this Start().
-    IEnumerator DelayedSetObstacleScores(MyGrid<FlowFieldCell> grid, float delayedTime)
-    {
-        yield return new WaitForSeconds(delayedTime);
 
-        flowField.CalculateFlowField(flowField.GetGrid().GetCell(baseObject.transform.position));
-    }
 
-    IEnumerator DelayedSetUnWalkableCells(string maskString, float delayedTime)
-    {
-        yield return new WaitForSeconds(delayedTime);
 
-        AStar.SetUnWalkableCells(maskString);
-    }
+
 
 
 }

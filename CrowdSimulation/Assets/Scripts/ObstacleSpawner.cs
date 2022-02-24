@@ -38,7 +38,7 @@ public class ObstacleSpawner : MonoBehaviour
         obstacle.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
         obstacle.GetComponent<MeshRenderer>().materials[0].color = new Color(Random.Range(colorA.r, colorB.r), Random.Range(colorA.g, colorB.g),
             Random.Range(colorA.b, colorB.b));
-        obstacle.layer = 6;
+        obstacle.layer = LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING);
     }
 
     private Vector3 FindRandomPosition()

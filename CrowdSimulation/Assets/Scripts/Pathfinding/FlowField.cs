@@ -34,6 +34,23 @@ public class FlowField
 
     }
 
+    public void DrawFlowFieldArrows()
+    {
+        for (int x = 0; x < grid.GetGridWidth(); x++)
+        {
+            for (int y = 0; y < grid.GetGridHeight(); y++)
+            {
+                GridDirection gridDirection = grid.GetCell(x, y).bestDirection;
+
+                if (gridDirection != GridDirection.None)
+                {
+                    Utilities.DrawArrow(grid.GetCellCenterWorldPosition(x, y),
+                        new Vector3(gridDirection.vector2D.x, 0, gridDirection.vector2D.y), grid.GetCellSize() * 0.5f, Color.black);
+                }
+            }
+        }
+    }
+
     private void ResetCells()
     {
         for (int x = 0; x < grid.GetGridWidth(); x++)

@@ -228,7 +228,7 @@ GameObject:
   - component: {fileID: 514380638}
   - component: {fileID: 514380637}
   m_Layer: 0
-  m_Name: PathController
+  m_Name: PathManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -252,7 +252,7 @@ MonoBehaviour:
   areaSize: 10
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
-  showFlowFieldDebugText: 0
+  showFlowFieldDebugText: 1
   showFlowFieldGrid: 1
   showFlowFieldArrows: 0
   showAStarDebugText: 0
@@ -303,7 +303,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &523777125
 MonoBehaviour:
@@ -321,7 +321,7 @@ MonoBehaviour:
   gridHeight: 40
   cellSize: 5
   mapObject: {fileID: 589120681}
-  heatMap: {fileID: 700811326}
+  heatMapManager: {fileID: 0}
 --- !u!1 &589120681
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,11 +429,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 700811329}
+  - component: {fileID: 700811326}
   - component: {fileID: 700811328}
   - component: {fileID: 700811327}
-  - component: {fileID: 700811326}
   m_Layer: 0
-  m_Name: HeatMap
+  m_Name: HeatMapManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -451,6 +451,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 654d983f904fc114fb602016e7c8b074, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  showUnitHeatMap: 1
+  showObstacleMap: 1
 --- !u!23 &700811327
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -514,7 +516,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1059563914
 GameObject:
@@ -527,12 +529,12 @@ GameObject:
   - component: {fileID: 1059563916}
   - component: {fileID: 1059563915}
   m_Layer: 0
-  m_Name: UnitController
+  m_Name: UnitManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1059563915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -549,7 +551,7 @@ MonoBehaviour:
   totalUnitsSpawned: 1000
   numUnitsPerSpawn: 100
   unitMoveSpeed: 10
-  pathingController: {fileID: 514380637}
+  unitsInGame: []
 --- !u!4 &1059563916
 Transform:
   m_ObjectHideFlags: 0
@@ -563,7 +565,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1454467468
 GameObject:
@@ -809,55 +811,6 @@ MonoBehaviour:
   rotateLeftKey: 122
   useMouseRotation: 1
   mouseRotationKey: 324
---- !u!1 &1754963905
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1754963907}
-  - component: {fileID: 1754963906}
-  m_Layer: 0
-  m_Name: ObstacleDetector
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1754963906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1754963905}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efb8fbc3b13c43a44a70aa9ced135db9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridWidth: 40
-  gridHeight: 40
-  cellSize: 5
-  mapObject: {fileID: 589120681}
-  showDebug: 0
---- !u!4 &1754963907
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1754963905}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1847212265 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7678016144030529182, guid: 84ba49b4c99663546973cf7209857f9b, type: 3}

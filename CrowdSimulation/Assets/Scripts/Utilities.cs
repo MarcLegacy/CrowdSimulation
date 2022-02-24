@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -40,6 +41,26 @@ public static class Utilities
     public static Vector3 GetRandomPositionInBox(Vector3 positionA, Vector3 positionB)
     {
         return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
+    }
+
+    public static List<GameObject> FindGameObjects(string maskString)
+    {
+        return FindGameObjects(LayerMask.NameToLayer(maskString));
+    }
+    public static List<GameObject> FindGameObjects(int layer)
+    {
+        GameObject[] allGameObjects = Object.FindObjectsOfType<GameObject>();
+        List<GameObject> gameObjects = new List<GameObject>();
+
+        foreach (GameObject gameObject in allGameObjects)
+        {
+            if (gameObject.layer == layer)
+            {
+                gameObjects.Add(gameObject);
+            }
+        }
+
+        return gameObjects;
     }
 
     #region CodeMonkeyFunctions

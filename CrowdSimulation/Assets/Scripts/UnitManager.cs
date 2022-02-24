@@ -4,19 +4,33 @@ using System.Numerics;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
-public class UnitController : MonoBehaviour
+public class UnitManager : MonoBehaviour
 {
     public GameObject unitObject;
     public int totalUnitsSpawned = 1000;
     public int numUnitsPerSpawn = 100;
     public float unitMoveSpeed = 10f;
-    public PathingController pathingController;
+    public List<GameObject> unitsInGame;
 
-    private List<GameObject> unitsInGame;
+    private PathingManager pathingManager;
+
+    #region Singleton
+    public static UnitManager GetInstance()
+    {
+        if (instance == null)
+        {
+            instance = FindObjectOfType<UnitManager>();
+        }
+        return instance;
+    }
+
+    private static UnitManager instance;
+    #endregion
 
     private void Start()
     {
         unitsInGame = new List<GameObject>();
+        pathingManager = PathingManager.GetInstance();
 
         //SpawnUnits();
         InvokeRepeating("SpawnUnits", 1f, 1f);
@@ -24,12 +38,12 @@ public class UnitController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (pathingController.flowField == null) return;
+        if (pathingManager.flowField == null) return;
 
         foreach (GameObject unit in unitsInGame)
         {
             Rigidbody rigidBody = unit.GetComponent<Rigidbody>();
-            FlowFieldCell currentCell = pathingController.flowField.GetGrid().GetCell(unit.transform.position);
+            FlowFieldCell currentCell = pathingManager.flowField.GetGrid().GetCell(unit.transform.position);
 
             Vector3 moveDirection = currentCell != null
                 ? new Vector3(currentCell.bestDirection.vector2D.x, 0, currentCell.bestDirection.vector2D.y)
@@ -43,7 +57,7 @@ public class UnitController : MonoBehaviour
     {
         if (unitsInGame.Count + numUnitsPerSpawn > totalUnitsSpawned) return;
 
-        MyGrid<FlowFieldCell> grid = PathingController.GetInstance().flowField.GetGrid();
+        MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().flowField.GetGrid();
         int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
@@ -66,6 +80,7 @@ public class UnitController : MonoBehaviour
             unitsInGame.Add(unit);
             unit.transform.parent = transform;
             unit.transform.position = newPosition;
+            unit.layer = LayerMask.NameToLayer(GlobalConstants.UNITS_STRING);
         }
     }
 }
