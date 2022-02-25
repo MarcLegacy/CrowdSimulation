@@ -15,13 +15,10 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldDebugText = false;
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
-    [SerializeField] private bool showAStarDebugText = false;
-    [SerializeField] private bool showStarArrows = false;
-    [SerializeField] private bool showAStarGrid = false;
 
     [HideInInspector] public FlowField flowField;
-    [HideInInspector] public AStar AStar;
-    
+    [HideInInspector] public AreaGrid areaGrid;
+
 
     private List<AStarCell> path; 
     private HeatMapManager heatMapManager;
@@ -47,10 +44,9 @@ public class PathingManager : MonoBehaviour
                 mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
 
         flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
-        AStar = new AStar(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition);
+        areaGrid = new AreaGrid(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition, areaSize, cellSize);
 
         if (showFlowFieldDebugText) flowField.GetGrid().ShowDebugText();
-        if (showAStarDebugText) AStar.GetGrid().ShowDebugText();
 
         StartCoroutine(DelayedStart());
     }
@@ -61,7 +57,6 @@ public class PathingManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
 
         flowField.CalculateFlowField(flowField.GetGrid().GetCell(baseObject.transform.position));
-        AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
     }
 
     private void Update()
@@ -71,7 +66,6 @@ public class PathingManager : MonoBehaviour
             double startTimer = Time.realtimeSinceStartupAsDouble;
             //flowField.CalculateFlowField(flowField.GetGrid().GetCell(Utilities.GetMouseWorldPosition()));
 
-            path = AStar.FindPath(Vector3.zero, Utilities.GetMouseWorldPosition());
             Debug.Log("Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) + "s");
         }
     }
@@ -90,24 +84,20 @@ public class PathingManager : MonoBehaviour
             }
         }
 
-        if (AStar != null)
+        if (areaGrid != null)
         {
-            if (showAStarGrid)
+            MyGrid<AreaNode> grid = areaGrid.GetGrid();
+
+            for (int x = 0; x < grid.GetGridWidth(); x++)
             {
-                AStar.GetGrid().ShowGrid(Color.red);
+                for (int y = 0; y < grid.GetGridHeight(); y++)
+                {
+                    grid.GetCell(x, y).GetGrid().ShowGrid(Color.black);
+                }
             }
-            if (showStarArrows)
-            {
-                AStar.DrawPathArrows(path);
-            }
+
+            areaGrid.GetGrid().ShowGrid(Color.red);
         }
-
+        
     }
-
-
-
-
-
-
-
 }
