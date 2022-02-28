@@ -3,26 +3,50 @@ using UnityEngine;
 public class AStarCell
 {
     public bool isWalkable;
-    public readonly int x;
-    public readonly int y;
-    public int fCost;
-    public int gCost;
-    public int hCost;
+    private int fCost;
+    private int gCost;
+    private int hCost;
     public AStarCell cameFromCell;
 
     private MyGrid<AStarCell> grid;
 
+    public int X { get; }
+    public int Y { get; }
+    public int FCost
+    {
+        get => fCost;
+        set
+        {
+            fCost = value;
+            grid.TriggerCellChanged(X, Y);
+        }
+    }
+    public int GCost
+    {
+        get => gCost;
+        set
+        {
+            gCost = value;
+            grid.TriggerCellChanged(X, Y);
+        }
+    }
+    public int HCost
+    {
+        get => hCost;
+        set
+        {
+            hCost = value;
+            grid.TriggerCellChanged(X, Y);
+        }
+    }
+    public Vector2Int GridPosition => new Vector2Int(X, Y);
+
     public AStarCell(MyGrid<AStarCell> grid, int x, int y)
     {
         this.grid = grid;
-        this.x = x;
-        this.y = y;
+        X = x;
+        Y = y;
         isWalkable = true;
-    }
-
-    public Vector2Int GetGridPosition()
-    {
-        return new Vector2Int(x, y);
     }
 
     public override string ToString()
@@ -32,12 +56,12 @@ public class AStarCell
 
     public void CalculateFCost()
     {
-        fCost = gCost + hCost;
+        FCost = gCost + hCost;
     }
 
     public void ResetCell()
     {
-        gCost = int.MaxValue;
+        GCost = int.MaxValue;
         CalculateFCost();
         cameFromCell = null;
     }

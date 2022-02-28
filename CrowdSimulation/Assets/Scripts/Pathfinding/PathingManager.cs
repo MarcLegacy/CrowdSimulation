@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using System.Numerics;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 public class PathingManager : MonoBehaviour
 {
@@ -17,9 +18,10 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldArrows = false;
 
     [HideInInspector] public FlowField flowField;
-    [HideInInspector] public AreaGrid areaGrid;
+    [HideInInspector] public AreaMap areaMap;
+    [HideInInspector] public AStar aStar;
 
-
+    private Vector3 pathingTargetPosition;
     private List<AStarCell> path; 
     private HeatMapManager heatMapManager;
 
@@ -44,9 +46,12 @@ public class PathingManager : MonoBehaviour
                 mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
 
         flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
-        areaGrid = new AreaGrid(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition, areaSize, cellSize);
+        aStar = new AStar(gridWidth, gridHeight, cellSize, originPosition);
+        areaMap = new AreaMap(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition, areaSize, cellSize);
+        pathingTargetPosition = baseObject.transform.position;
 
-        if (showFlowFieldDebugText) flowField.GetGrid().ShowDebugText();
+
+        if (showFlowFieldDebugText) flowField.Grid.ShowDebugText();
 
         StartCoroutine(DelayedStart());
     }
@@ -56,7 +61,9 @@ public class PathingManager : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        flowField.CalculateFlowField(flowField.GetGrid().GetCell(baseObject.transform.position));
+        //flowField.CalculateFlowField(flowField.Grid.GetCell(pathingTargetPosition));
+        aStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
+        flowField.CalculateCostField(GlobalConstants.OBSTACLES_STRING);
     }
 
     private void Update()
@@ -68,6 +75,8 @@ public class PathingManager : MonoBehaviour
 
             Debug.Log("Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) + "s");
         }
+
+
     }
 
     private void OnDrawGizmos()
@@ -76,7 +85,7 @@ public class PathingManager : MonoBehaviour
         {
             if (showFlowFieldGrid)
             {
-                flowField.GetGrid().ShowGrid(Color.black);
+                flowField.Grid.ShowGrid(Color.black);
             }
             if (showFlowFieldArrows)
             {
@@ -84,20 +93,71 @@ public class PathingManager : MonoBehaviour
             }
         }
 
-        if (areaGrid != null)
+        if (areaMap != null)
         {
-            MyGrid<AreaNode> grid = areaGrid.GetGrid();
+            MyGrid<AreaNode> grid = areaMap.Grid;
 
-            for (int x = 0; x < grid.GetGridWidth(); x++)
+            for (int x = 0; x < grid.Width; x++)
             {
-                for (int y = 0; y < grid.GetGridHeight(); y++)
+                for (int y = 0; y < grid.Height; y++)
                 {
-                    grid.GetCell(x, y).GetGrid().ShowGrid(Color.black);
+                    grid.GetCell(x, y).AStarGrid.ShowGrid(Color.black);
+                    //Debug.Log(grid.GetCell(x, y).AStarGrid.GetCell(0, 0).GridPosition);
                 }
             }
 
-            areaGrid.GetGrid().ShowGrid(Color.red);
+            //aStar.Grid.ShowGrid(Color.black);
+            areaMap.Grid.ShowGrid(Color.red);
         }
-        
+
+        if (path != null)
+        {
+            //aStar.DrawPathArrows(path);
+        }
+    }
+
+    public void StartPathing(Vector3 startPosition, Vector3 targetPosition)
+    {
+        MyGrid<AreaNode> areaGrid = areaMap.Grid;
+        MyGrid<AStarCell> aStarGrid = aStar.Grid;
+        MyGrid<FlowFieldCell> flowFieldGrid = flowField.Grid;
+        List<AreaNode> areas = new List<AreaNode>();
+
+        Debug.Log("Pathing Started!");
+
+        path = aStar.FindPath(startPosition, targetPosition);
+
+        foreach (AStarCell aStarCell in path)
+        {
+            AreaNode areaNode = areaGrid.GetCell(aStarGrid.GetCellWorldPosition(aStarCell.GridPosition));
+
+            if (!areas.Contains(areaNode))
+            {
+                areas.Add(areaNode);
+            }
+        }
+
+        foreach (FlowFieldCell flowFieldCell in flowFieldGrid.GridArray)
+        {
+            if (flowFieldCell.Cost != byte.MaxValue)
+            {
+                flowFieldCell.Cost = 254;
+            }
+        }
+
+        foreach (AreaNode area in areas)
+        {
+            foreach (AStarCell aStarCell in area.AStarGrid.GridArray)
+            {
+                FlowFieldCell flowFieldCell = flowFieldGrid.GetCell(area.AStarGrid.GetCellWorldPosition(aStarCell.GridPosition));
+                if (flowFieldCell.Cost != byte.MaxValue)
+                {
+                    flowFieldCell.Cost = 1;
+                }
+            }
+        }
+
+        flowField.CalculateIntegrationField(flowFieldGrid.GetCell(targetPosition));
+        flowField.CalculateVectorField();
     }
 }

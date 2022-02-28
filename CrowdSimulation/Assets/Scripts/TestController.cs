@@ -28,10 +28,10 @@ public class TestController : MonoBehaviour
         //Vector2[] uv = new Vector2[4];
         //int[] triangles = new int[6];
 
-        //vertices[0] = grid.GetCellWorldPosition(0, 0);
-        //vertices[1] = grid.GetCellWorldPosition(0, 0) + new Vector3(0f, 0f, cellSize);
-        //vertices[2] = grid.GetCellWorldPosition(0, 0) + new Vector3(cellSize, 0f, cellSize);
-        //vertices[3] = grid.GetCellWorldPosition(0, 0) + new Vector3(cellSize, 0f, 0f);
+        //vertices[0] = Grid.GetCellWorldPosition(0, 0);
+        //vertices[1] = Grid.GetCellWorldPosition(0, 0) + new Vector3(0f, 0f, CellSize);
+        //vertices[2] = Grid.GetCellWorldPosition(0, 0) + new Vector3(CellSize, 0f, CellSize);
+        //vertices[3] = Grid.GetCellWorldPosition(0, 0) + new Vector3(CellSize, 0f, 0f);
 
         //triangles[0] = 0;
         //triangles[1] = 1;

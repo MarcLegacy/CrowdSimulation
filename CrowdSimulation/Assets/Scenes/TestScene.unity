@@ -252,9 +252,9 @@ MonoBehaviour:
   areaSize: 10
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
-  showFlowFieldDebugText: 1
+  showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
-  showFlowFieldArrows: 0
+  showFlowFieldArrows: 1
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -531,7 +531,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1059563915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -545,8 +545,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
-  totalUnitsSpawned: 1000
-  numUnitsPerSpawn: 100
+  baseObject: {fileID: 1847212265}
+  totalUnitsSpawned: 5
+  numUnitsPerSpawn: 1
   unitMoveSpeed: 10
   unitsInGame: []
 --- !u!4 &1059563916
@@ -557,7 +558,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1059563914}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.239337, y: 38.70135, z: -84.079865}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

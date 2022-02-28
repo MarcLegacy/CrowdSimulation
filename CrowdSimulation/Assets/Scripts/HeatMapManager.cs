@@ -18,10 +18,10 @@ public class HeatMapManager : MonoBehaviour
     [SerializeField] private bool showUnitHeatMap = false;
     [SerializeField] private bool showObstacleMap = false;
 
-    private bool updateMesh = false;
+    private bool updateMesh;
     private MyGrid<int> grid;
     private Mesh mesh;
-    private int maxUnitsOnCell = 0;
+    private int maxUnitsOnCell;
 
     #region Singleton
     public static HeatMapManager GetInstance()
@@ -44,9 +44,9 @@ public class HeatMapManager : MonoBehaviour
 
     private void Start()
     {
-        MyGrid<FlowFieldCell> flowFieldGrid = PathingManager.GetInstance().flowField.GetGrid();
-        grid = new MyGrid<int>(flowFieldGrid.GetGridWidth(), flowFieldGrid.GetGridHeight(), flowFieldGrid.GetCellSize(),
-            flowFieldGrid.GetGridOriginPosition());
+        MyGrid<FlowFieldCell> flowFieldGrid = PathingManager.GetInstance().flowField.Grid;
+        grid = new MyGrid<int>(flowFieldGrid.Width, flowFieldGrid.Height, flowFieldGrid.CellSize,
+            flowFieldGrid.OriginPosition);
 
         UpdateHeatMap();
         grid.OnCellValueChanged += GridOnCellValueValueChanged;
@@ -60,9 +60,9 @@ public class HeatMapManager : MonoBehaviour
 
         if (showObstacleMap)
         {
-            for (int x = 0; x < grid.GetGridWidth(); x++)
+            for (int x = 0; x < grid.Width; x++)
             {
-                for (int y = 0; y < grid.GetGridHeight(); y++)
+                for (int y = 0; y < grid.Height; y++)
                 {
                     grid.SetCell(x, y, -1);
                 }
@@ -138,19 +138,19 @@ public class HeatMapManager : MonoBehaviour
 
     private void UpdateHeatMap()
     {
-        Utilities.CreateEmptyMeshArrays(grid.GetGridWidth() * grid.GetGridHeight(), out Vector3[] vertices, out Vector2[] uv,
+        Utilities.CreateEmptyMeshArrays(grid.Width * grid.Height, out Vector3[] vertices, out Vector2[] uv,
             out int[] triangles);
 
-        for (int x = 0; x < grid.GetGridWidth(); x++)
+        for (int x = 0; x < grid.Width; x++)
         {
-            for (int y = 0; y < grid.GetGridHeight(); y++)
+            for (int y = 0; y < grid.Height; y++)
             {
                 int gridValue = grid.GetCell(x, y);
 
                 if (gridValue < 0 || gridValue > MAX_VALUE) continue;
 
-                int index = x * grid.GetGridHeight() + y;
-                Vector3 quadSize = new Vector3(1, 0, 1) * grid.GetCellSize();
+                int index = x * grid.Height + y;
+                Vector3 quadSize = new Vector3(1, 0, 1) * grid.CellSize;
                 float gridValueNormalized = (float) gridValue / MAX_VALUE;
                 Vector2 gridValueUV = new Vector2(gridValueNormalized, 0f);
 
@@ -166,7 +166,7 @@ public class HeatMapManager : MonoBehaviour
     private void ShowUnitHeatMap()
     {
         List<GameObject> units = UnitManager.GetInstance().unitsInGame;
-        int[,] gridArray = new int[grid.GetGridWidth(), grid.GetGridHeight()];
+        int[,] gridArray = new int[grid.Width, grid.Height];
 
         foreach (GameObject unit in units)
         {
@@ -178,9 +178,9 @@ public class HeatMapManager : MonoBehaviour
             }
         }
 
-        for (int x = 0; x < grid.GetGridWidth(); x++)
+        for (int x = 0; x < grid.Width; x++)
         {
-            for (int y = 0; y < grid.GetGridWidth(); y++)
+            for (int y = 0; y < grid.Width; y++)
             {
                 if (grid.GetCell(x, y) == 0) continue; // = obstacle
 

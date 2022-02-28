@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Xml.XPath;
-using UnityEditor.Build.Pipeline.Tasks;
 using UnityEngine;
 
 public class AStar
@@ -10,23 +7,19 @@ public class AStar
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 14;
 
-    private readonly MyGrid<AStarCell> grid;
     private List<AStarCell> openList;
     private List<AStarCell> closedList;
 
+    public MyGrid<AStarCell> Grid { get; }
+
     public AStar(int width, int height, float cellSize, Vector3 originPosition)
     {
-        grid = new MyGrid<AStarCell>(width, height, cellSize, originPosition, (g, x, y) => new AStarCell(g, x, y));
-    }
-
-    public MyGrid<AStarCell> GetGrid()
-    {
-        return grid;
+        Grid = new MyGrid<AStarCell>(width, height, cellSize, originPosition, (g, x, y) => new AStarCell(g, x, y));
     }
 
     public List<AStarCell> FindPath(Vector3 startWorldPosition, Vector3 endWorldPosition)
     {
-        return FindPath(grid.GetCellGridPosition(startWorldPosition), grid.GetCellGridPosition(endWorldPosition));
+        return FindPath(Grid.GetCellGridPosition(startWorldPosition), Grid.GetCellGridPosition(endWorldPosition));
     }
     public List<AStarCell> FindPath(Vector2Int startGridPosition, Vector2Int endGridPosition)
     {
@@ -34,16 +27,15 @@ public class AStar
     }
     public List<AStarCell> FindPath(int startX, int startY, int endX, int endY)
     {
-        AStarCell startCell = grid.GetCell(startX, startY);
-        AStarCell endCell = grid.GetCell(endX, endY);
+        AStarCell startCell = Grid.GetCell(startX, startY);
+        AStarCell endCell = Grid.GetCell(endX, endY);
         openList = new List<AStarCell> {startCell};
         closedList = new List<AStarCell>();
 
         ResetCells();
-        startCell.gCost = 0;
-        startCell.hCost = CalculateHCost(startCell, endCell);
+        startCell.GCost = 0;
+        startCell.HCost = CalculateHCost(startCell, endCell);
         startCell.CalculateFCost();
-        grid.TriggerCellChanged(startCell.x, startCell.y);
 
         while (openList.Count > 0)
         {
@@ -56,7 +48,7 @@ public class AStar
             openList.Remove(currentCell);
             closedList.Add(currentCell);
 
-            foreach (AStarCell neighborCell in grid.GetNeighborCells(currentCell.GetGridPosition(),
+            foreach (AStarCell neighborCell in Grid.GetNeighborCells(currentCell.GridPosition,
                 GridDirection.CardinalAndIntercardinalDirections))
             {
                 if (closedList.Contains(neighborCell)) continue;
@@ -66,19 +58,17 @@ public class AStar
                     continue;
                 }
 
-                int tentativeGCost = currentCell.gCost + CalculateHCost(currentCell, neighborCell);
-                if (tentativeGCost < neighborCell.gCost)
+                int tentativeGCost = currentCell.GCost + CalculateHCost(currentCell, neighborCell);
+                if (tentativeGCost < neighborCell.GCost)
                 {
                     neighborCell.cameFromCell = currentCell;
-                    neighborCell.gCost = tentativeGCost;
-                    neighborCell.hCost = CalculateHCost(neighborCell, endCell);
+                    neighborCell.GCost = tentativeGCost;
+                    neighborCell.HCost = CalculateHCost(neighborCell, endCell);
                     neighborCell.CalculateFCost();
 
                     if (!openList.Contains(neighborCell))
                     {
                         openList.Add(neighborCell);
-
-                        grid.TriggerCellChanged(neighborCell.x, neighborCell.y);
                     }
                 }
             }
@@ -98,16 +88,16 @@ public class AStar
 
         for (int i = 0; i < path.Count - 1; i++)
         {
-            Vector2 gridDirection = path[i + 1].GetGridPosition() - path[i].GetGridPosition();
+            Vector2 gridDirection = path[i + 1].GridPosition- path[i].GridPosition;
 
-            Utilities.DrawArrow(grid.GetCellCenterWorldPosition(path[i].GetGridPosition()),
-                new Vector3(gridDirection.x, 0f, gridDirection.y), grid.GetCellSize() * 0.5f, Color.black);
+            Utilities.DrawArrow(Grid.GetCellCenterWorldPosition(path[i].GridPosition),
+                new Vector3(gridDirection.x, 0f, gridDirection.y), Grid.CellSize * 0.5f, Color.black);
         }
     }
 
     public void SetUnWalkableCells(string maskString)
     {
-        foreach (AStarCell cell in grid.GetCellsWithObjects(maskString))
+        foreach (AStarCell cell in Grid.GetCellsWithObjects(maskString))
         {
             cell.isWalkable = false;
         }
@@ -115,21 +105,19 @@ public class AStar
 
     private void ResetCells()
     {
-        for (int x = 0; x < grid.GetGridWidth(); x++)
+        for (int x = 0; x < Grid.Width; x++)
         {
-            for (int y = 0; y < grid.GetGridHeight(); y++)
+            for (int y = 0; y < Grid.Height; y++)
             {
-                grid.GetCell(x, y).ResetCell();
-
-                grid.TriggerCellChanged(x, y);
+                Grid.GetCell(x, y).ResetCell();
             }
         }
     }
 
     private int CalculateHCost(AStarCell a, AStarCell b)
     {
-        int xDistance = Mathf.Abs(a.x - b.x);
-        int yDistance = Mathf.Abs(a.y - b.y);
+        int xDistance = Mathf.Abs(a.X - b.X);
+        int yDistance = Mathf.Abs(a.Y - b.Y);
         int remaining = Mathf.Abs(xDistance - yDistance);
 
         return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
@@ -140,7 +128,7 @@ public class AStar
         AStarCell lowestFCostNode = aStarCellList[0];
         for (int i = 1; i < aStarCellList.Count; i++)
         {
-            if (aStarCellList[i].fCost < lowestFCostNode.fCost)
+            if (aStarCellList[i].FCost < lowestFCostNode.FCost)
             {
                 lowestFCostNode = aStarCellList[i];
             }

@@ -6,10 +6,12 @@ using Vector3 = UnityEngine.Vector3;
 
 public class UnitManager : MonoBehaviour
 {
-    public GameObject unitObject;
-    public int totalUnitsSpawned = 1000;
-    public int numUnitsPerSpawn = 100;
-    public float unitMoveSpeed = 10f;
+    [SerializeField] private GameObject unitObject;
+    [SerializeField] private GameObject baseObject;
+    [SerializeField] private int totalUnitsSpawned = 1000;
+    [SerializeField] private int numUnitsPerSpawn = 100;
+    [SerializeField] private float unitMoveSpeed = 10f;
+
     public List<GameObject> unitsInGame;
 
     private PathingManager pathingManager;
@@ -42,14 +44,21 @@ public class UnitManager : MonoBehaviour
 
         foreach (GameObject unit in unitsInGame)
         {
-            Rigidbody rigidBody = unit.GetComponent<Rigidbody>();
-            FlowFieldCell currentCell = pathingManager.flowField.GetGrid().GetCell(unit.transform.position);
+            if (pathingManager.flowField.Grid.GetCell(unit.transform.position).bestDirection == GridDirection.None)
+            {
+                pathingManager.StartPathing(unit.transform.position, baseObject.transform.position);
+            }
+            else
+            {
+                Rigidbody rigidBody = unit.GetComponent<Rigidbody>();
+                FlowFieldCell currentCell = pathingManager.flowField.Grid.GetCell(unit.transform.position);
 
-            Vector3 moveDirection = currentCell != null
-                ? new Vector3(currentCell.bestDirection.vector2D.x, 0, currentCell.bestDirection.vector2D.y)
-                : Vector3.zero;
+                Vector3 moveDirection = currentCell != null
+                    ? new Vector3(currentCell.bestDirection.vector2D.x, 0, currentCell.bestDirection.vector2D.y)
+                    : Vector3.zero;
 
-            rigidBody.velocity = moveDirection * unitMoveSpeed;
+                rigidBody.velocity = moveDirection * unitMoveSpeed;
+            }
         }
     }
 
@@ -57,7 +66,7 @@ public class UnitManager : MonoBehaviour
     {
         if (unitsInGame.Count + numUnitsPerSpawn > totalUnitsSpawned) return;
 
-        MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().flowField.GetGrid();
+        MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().flowField.Grid;
         int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
@@ -67,12 +76,14 @@ public class UnitManager : MonoBehaviour
 
             do
             {
-                newPosition = Utilities.GetRandomPositionInBox(grid.GetCellCenterWorldPosition(0, grid.GetGridHeight() - 1),
-                    grid.GetCellCenterWorldPosition(grid.GetGridWidth() - 1, grid.GetGridHeight() - 1));
+                newPosition = Utilities.GetRandomPositionInBox(grid.GetCellCenterWorldPosition(0, grid.Height- 1),
+                    grid.GetCellCenterWorldPosition(grid.Width- 1, grid.Height- 1));
 
                 positioningTries++;
             } 
-            while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && Physics.OverlapSphere(newPosition, 0.25f, layerMask).Length > 0);
+            while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && pathingManager.flowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
+
+            //
 
             if (positioningTries >= GlobalConstants.MAX_POSITIONING_TRIES) continue;
 

@@ -1,34 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Collections;
 using UnityEngine;
 
 public class AreaNode
 {
-    private readonly MyGrid<AreaNode> grid;
-    private MyGrid<AStarCell> aStarGrid;
-    public readonly int x;
-    public readonly int y;
+    public int X { get; }
+    public int Y { get; }
+    public Vector2Int GridPosition => new Vector2Int(X, Y);
+    public MyGrid<AStarCell> AStarGrid { get; private set; }
 
-    public AreaNode(MyGrid<AreaNode> grid, int x, int y)
+    public AreaNode(int x, int y)
     {
-        this.grid = grid;
-        this.x = x;
-        this.y = y;
+        X = x;
+        Y = y;
     }
 
     public void SetGrid(int width, int height, float cellSize, Vector3 originPosition)
     {
-        aStarGrid = new MyGrid<AStarCell>(width, height, cellSize, originPosition);
-    }
-
-    public MyGrid<AStarCell> GetGrid()
-    {
-        return aStarGrid;
-    }
-
-    public Vector2Int GetGridPosition()
-    {
-        return new Vector2Int(x, y);
+        AStarGrid = new MyGrid<AStarCell>(width, height, cellSize, originPosition, (g, x, y) => new AStarCell(g, x, y));
     }
 }

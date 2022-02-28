@@ -1,4 +1,4 @@
-// Script made by following Code Monkey's tutorial for making a grid system
+// Script made by following Code Monkey's tutorial for making a Grid system
 
 using System;
 using System.Collections.Generic;
@@ -14,49 +14,59 @@ public class MyGrid<TGridObject>
         public int y;
     }
 
-    private readonly int width;
-    private readonly int height;
-    private readonly float cellSize;
-    private readonly Vector3 originPosition;
-    private readonly TGridObject[,] gridArray;
+    public int Width { get; }
+    public int Height { get; }
+    public float CellSize { get; }
+    public Vector3 OriginPosition { get; }
+    public TGridObject[,] GridArray { get; }
 
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
         Func<MyGrid<TGridObject>, int, int, TGridObject> createGridObject) : this(width, height, cellSize, originPosition)
     {
-        for (int x = 0; x < gridArray.GetLength(0); x++)
+        for (int x = 0; x < GridArray.GetLength(0); x++)
         {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
+            for (int y = 0; y < GridArray.GetLength(1); y++)
             {
-                gridArray[x, y] = createGridObject(this, x, y);
+                GridArray[x, y] = createGridObject(this, x, y);
             }
         }
     }
-
+    public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
+        Func<int, int, TGridObject> createGridObject) : this(width, height, cellSize, originPosition)
+    {
+        for (int x = 0; x < GridArray.GetLength(0); x++)
+        {
+            for (int y = 0; y < GridArray.GetLength(1); y++)
+            {
+                GridArray[x, y] = createGridObject(x, y);
+            }
+        }
+    }
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition)
     {
-        this.width = width;
-        this.height = height;
-        this.cellSize = cellSize;
-        this.originPosition = originPosition;
+        Width = width;
+        Height = height;
+        CellSize = cellSize;
+        OriginPosition = originPosition;
 
-        gridArray = new TGridObject[width, height];
+        GridArray = new TGridObject[width, height];
     }
 
     public void ShowDebugText()
     {
-        TextMesh[,] debugTextArray = new TextMesh[width, height];
+        TextMesh[,] debugTextArray = new TextMesh[Width, Height];
 
-        for (int x = 0; x < gridArray.GetLength(0); x++)
+        for (int x = 0; x < GridArray.GetLength(0); x++)
         {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
+            for (int y = 0; y < GridArray.GetLength(1); y++)
             {
-                debugTextArray[x, y] = Utilities.CreateWorldText(gridArray[x, y]?.ToString(), null, GetCellCenterWorldPosition(x, y), (int)cellSize * 2, Color.black, TextAnchor.MiddleCenter);
+                debugTextArray[x, y] = Utilities.CreateWorldText(GridArray[x, y]?.ToString(), null, GetCellCenterWorldPosition(x, y), (int)CellSize * 2, Color.black, TextAnchor.MiddleCenter);
             }
         }
 
         OnCellValueChanged += (sender, eventArgs) =>
         {
-            debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
+            debugTextArray[eventArgs.x, eventArgs.y].text = GridArray[eventArgs.x, eventArgs.y]?.ToString();
         };
     }
 
@@ -66,42 +76,17 @@ public class MyGrid<TGridObject>
 
         Gizmos.color = (Color) color;
         
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < Width; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < Height; y++)
             {
                 Gizmos.DrawLine(GetCellWorldPosition(x, y), GetCellWorldPosition(x, y + 1));
                 Gizmos.DrawLine(GetCellWorldPosition(x, y), GetCellWorldPosition(x + 1, y));
             }
         }
 
-        Gizmos.DrawLine(GetCellWorldPosition(0, height), GetCellWorldPosition(width, height));
-        Gizmos.DrawLine(GetCellWorldPosition(width, 0), GetCellWorldPosition(width, height));
-    }
-
-    public int GetGridWidth()
-    {
-        return width;
-    }
-
-    public int GetGridHeight()
-    {
-        return height;
-    }
-
-    public float GetCellSize()
-    {
-        return cellSize;
-    }
-
-    public Vector3 GetGridOriginPosition()
-    {
-        return originPosition;
-    }
-
-    public TGridObject[,] GetGridArray()
-    {
-        return gridArray;
+        Gizmos.DrawLine(GetCellWorldPosition(0, Height), GetCellWorldPosition(Width, Height));
+        Gizmos.DrawLine(GetCellWorldPosition(Width, 0), GetCellWorldPosition(Width, Height));
     }
 
     public Vector3 GetCellWorldPosition(Vector2Int gridPosition)
@@ -110,13 +95,13 @@ public class MyGrid<TGridObject>
     }
     public Vector3 GetCellWorldPosition(int x, int y)
     {
-        return new Vector3(x, 0, y) * cellSize + originPosition;
+        return new Vector3(x, 0, y) * CellSize + OriginPosition;
     }
 
     public Vector2Int GetCellGridPosition(Vector3 worldPosition)
     {
-        int x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
-        int y = Mathf.FloorToInt((worldPosition - originPosition).z / cellSize);
+        int x = Mathf.FloorToInt((worldPosition - OriginPosition).x / CellSize);
+        int y = Mathf.FloorToInt((worldPosition - OriginPosition).z / CellSize);
 
         return GetCellGridPosition(x, y);
     }
@@ -135,13 +120,13 @@ public class MyGrid<TGridObject>
     }
     public TGridObject GetCell(int x, int y)
     {
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        if (x >= 0 && x < Width && y >= 0 && y < Height)
         {
-            return gridArray[x, y];
+            return GridArray[x, y];
         }
 
         Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": Trying to get a value on (" + x + ", " + y +
-                         ") in a grid of size (" + gridArray.GetLength(0) + ", " + gridArray.GetLength(1) + ")");
+                         ") in a Grid of size (" + GridArray.GetLength(0) + ", " + GridArray.GetLength(1) + ")");
         return default;
     }
 
@@ -155,15 +140,15 @@ public class MyGrid<TGridObject>
     }
     public void SetCell(int x, int y, TGridObject value)
     {
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        if (x >= 0 && x < Width && y >= 0 && y < Height)
         {
-            gridArray[x, y] = value;
+            GridArray[x, y] = value;
             OnCellValueChanged?.Invoke(this, new OnCellValueChangedEventArgs {x = x, y = y});
         }
         else
         {
             Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": Trying to set a value on (" + x + ", " + y +
-                             ") in a grid of size (" + gridArray.GetLength(0) + ", " + gridArray.GetLength(1) + ")");
+                             ") in a Grid of size (" + GridArray.GetLength(0) + ", " + GridArray.GetLength(1) + ")");
         }
     }
 
@@ -182,7 +167,7 @@ public class MyGrid<TGridObject>
 
     public Vector3 GetCellCenter()
     {
-        return new Vector3(cellSize, 0, cellSize) * 0.5f;
+        return new Vector3(CellSize, 0, CellSize) * 0.5f;
     }
 
     public List<TGridObject> GetNeighborCells(Vector3 worldPosition, List<GridDirection> directions)
@@ -200,8 +185,8 @@ public class MyGrid<TGridObject>
         foreach (Vector2Int direction in directions)
         {
             Vector2Int neighborPosition = new Vector2Int(x, y) + direction;
-            if (neighborPosition.x >= 0 && neighborPosition.x < width && neighborPosition.y >= 0 &&
-                neighborPosition.y < height)
+            if (neighborPosition.x >= 0 && neighborPosition.x < Width && neighborPosition.y >= 0 &&
+                neighborPosition.y < Height)
             {
                 neighborCells.Add(GetCell(neighborPosition));
             }
@@ -227,13 +212,13 @@ public class MyGrid<TGridObject>
         List<Vector2Int> gridPositions = new List<Vector2Int>();
         int layerMask = LayerMask.GetMask(maskString);
 
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < Width; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < Height; y++)
             {
                 Vector3 cellPosition = GetCellCenterWorldPosition(x, y);
                 Collider[] obstacles =
-                    Physics.OverlapBox(cellPosition, Vector3.one * cellSize * 0.5f, Quaternion.identity, layerMask);
+                    Physics.OverlapBox(cellPosition, Vector3.one * CellSize * 0.5f, Quaternion.identity, layerMask);
 
                 if (obstacles.Length > 0)
                 {

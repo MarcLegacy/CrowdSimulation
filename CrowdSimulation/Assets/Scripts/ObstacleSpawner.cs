@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Reflection;
-using Unity.Entities;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
@@ -10,13 +5,13 @@ using Vector3 = UnityEngine.Vector3;
 
 public class ObstacleSpawner : MonoBehaviour
 {
-    public GameObject mapObject;
-    public GameObject baseObject;
-    public float avoidanceDistance = 10f;
-    public int obstacleAmount = 10;
-    public Vector2 obstacleScale = new Vector2(1f, 10f);
-    public Color colorA;
-    public Color colorB;
+    [SerializeField] private GameObject mapObject;
+    [SerializeField] private GameObject baseObject;
+    [SerializeField] private float avoidanceDistance = 10f;
+    [SerializeField] private int obstacleAmount = 10;
+    [SerializeField] private Vector2 obstacleScale = new Vector2(1f, 10f);
+    [SerializeField] private Color colorA;
+    [SerializeField] private Color colorB;
 
     private void Start()
     {

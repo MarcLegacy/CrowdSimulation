@@ -1,22 +1,16 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Unity.Collections;
-using UnityEditor.Build.Pipeline;
 using UnityEngine;
 
 public class FlowField
 {
-    private readonly MyGrid<FlowFieldCell> grid;
+    private const int MAX_INTEGRATION_COST = 200;
+
+    public MyGrid<FlowFieldCell> Grid { get; }
 
     public FlowField(int width, int height, float cellSize, Vector3 originPosition)
     {
-        grid = new MyGrid<FlowFieldCell>(width, height, cellSize, originPosition, (g, x, y) => new FlowFieldCell(g, x, y));
-    }
-
-    public MyGrid<FlowFieldCell> GetGrid()
-    {
-        return grid;
+        Grid = new MyGrid<FlowFieldCell>(width, height, cellSize, originPosition, (g, x, y) => new FlowFieldCell(g, x, y));
     }
 
     public void CalculateFlowField(FlowFieldCell destinationCell)
@@ -36,16 +30,16 @@ public class FlowField
 
     public void DrawFlowFieldArrows()
     {
-        for (int x = 0; x < grid.GetGridWidth(); x++)
+        for (int x = 0; x < Grid.Width; x++)
         {
-            for (int y = 0; y < grid.GetGridHeight(); y++)
+            for (int y = 0; y < Grid.Height; y++)
             {
-                GridDirection gridDirection = grid.GetCell(x, y).bestDirection;
+                GridDirection gridDirection = Grid.GetCell(x, y).bestDirection;
 
                 if (gridDirection != GridDirection.None)
                 {
-                    Utilities.DrawArrow(grid.GetCellCenterWorldPosition(x, y),
-                        new Vector3(gridDirection.vector2D.x, 0, gridDirection.vector2D.y), grid.GetCellSize() * 0.5f, Color.black);
+                    Utilities.DrawArrow(Grid.GetCellCenterWorldPosition(x, y),
+                        new Vector3(gridDirection.vector2D.x, 0, gridDirection.vector2D.y), Grid.CellSize * 0.5f, Color.black);
                 }
             }
         }
@@ -53,28 +47,27 @@ public class FlowField
 
     private void ResetCells()
     {
-        for (int x = 0; x < grid.GetGridWidth(); x++)
+        for (int x = 0; x < Grid.Width; x++)
         {
-            for (int y = 0; y < grid.GetGridHeight(); y++)
+            for (int y = 0; y < Grid.Height; y++)
             {
-                grid.GetCell(x, y).ResetCell();
+                Grid.GetCell(x, y).ResetCell();
             }
         }
     }
 
-    private void CalculateCostField(string maskString)
+    public void CalculateCostField(string maskString)
     {
-        foreach (FlowFieldCell cell in grid.GetCellsWithObjects(maskString))
+        foreach (FlowFieldCell cell in Grid.GetCellsWithObjects(maskString))
         {
-            cell.cost = byte.MaxValue;
-            grid.TriggerCellChanged(cell.x, cell.y);
+            cell.Cost = byte.MaxValue;
         }
     }
 
-    private void CalculateIntegrationField(FlowFieldCell destinationCell)
+    public void CalculateIntegrationField(FlowFieldCell destinationCell)
     {
-        destinationCell.cost = 0;
-        destinationCell.bestCost = 0;
+        destinationCell.Cost = 0;
+        destinationCell.BestCost = 0;
 
         Queue<FlowFieldCell> cellsToCheck = new Queue<FlowFieldCell>();
 
@@ -83,40 +76,38 @@ public class FlowField
         while (cellsToCheck.Count > 0)
         {
             FlowFieldCell currentCell = cellsToCheck.Dequeue();
-            List<FlowFieldCell> currentNeighborCells = grid.GetNeighborCells(currentCell.GetGridPosition(), GridDirection.CardinalDirections);
+            List<FlowFieldCell> currentNeighborCells = Grid.GetNeighborCells(currentCell.GridPosition, GridDirection.CardinalDirections);
 
             foreach (FlowFieldCell currentNeighborCell in currentNeighborCells)
             {
-                if (currentNeighborCell.cost == byte.MaxValue) continue;    // = obstacle
+                if (currentNeighborCell.Cost >= MAX_INTEGRATION_COST) continue;    // = everything that should be ignored
 
-                if (currentNeighborCell.cost + currentCell.bestCost < currentNeighborCell.bestCost)
+                if (currentNeighborCell.Cost + currentCell.BestCost < currentNeighborCell.BestCost)
                 {
-                    currentNeighborCell.bestCost = (ushort) (currentNeighborCell.cost + currentCell.bestCost);
+                    currentNeighborCell.BestCost = (ushort) (currentNeighborCell.Cost + currentCell.BestCost);
                     cellsToCheck.Enqueue(currentNeighborCell);
                 }
             }
-
-            grid.TriggerCellChanged(currentCell.x, currentCell.y);
         }
     }
 
-    private void CalculateVectorField()
+    public void CalculateVectorField()
     {
-        for (int x = 0; x < grid.GetGridWidth(); x++)
+        for (int x = 0; x < Grid.Width; x++)
         {
-            for (int y = 0; y < grid.GetGridHeight(); y++)
+            for (int y = 0; y < Grid.Height; y++)
             {
-                FlowFieldCell currentCell = grid.GetCell(x, y);
-                List<FlowFieldCell> currentNeighborCells = grid.GetNeighborCells(currentCell.GetGridPosition(), GridDirection.AllDirections);
-                int bestCost = currentCell.bestCost;
+                FlowFieldCell currentCell = Grid.GetCell(x, y);
+                List<FlowFieldCell> currentNeighborCells = Grid.GetNeighborCells(currentCell.GridPosition, GridDirection.AllDirections);
+                int bestCost = currentCell.BestCost;
 
                 foreach (FlowFieldCell currentNeighborCell in currentNeighborCells)
                 {
-                    if (currentNeighborCell.bestCost < bestCost)
+                    if (currentNeighborCell.BestCost < bestCost)
                     {
-                        bestCost = currentNeighborCell.bestCost;
+                        bestCost = currentNeighborCell.BestCost;
                         currentCell.bestDirection =
-                            GridDirection.GetDirection(currentNeighborCell.GetGridPosition() - currentCell.GetGridPosition());
+                            GridDirection.GetDirection(currentNeighborCell.GridPosition - currentCell.GridPosition);
                     }
                 }
             }
