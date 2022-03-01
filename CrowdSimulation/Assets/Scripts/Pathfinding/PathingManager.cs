@@ -21,9 +21,8 @@ public class PathingManager : MonoBehaviour
     [HideInInspector] public AreaMap areaMap;
     [HideInInspector] public AStar aStar;
 
-    private Vector3 pathingTargetPosition;
-    private List<AStarCell> path; 
-    private HeatMapManager heatMapManager;
+    private List<AStarCell> paths;
+    private List<Vector3> startingPositions;
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -48,8 +47,8 @@ public class PathingManager : MonoBehaviour
         flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
         aStar = new AStar(gridWidth, gridHeight, cellSize, originPosition);
         areaMap = new AreaMap(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition, areaSize, cellSize);
-        pathingTargetPosition = baseObject.transform.position;
-
+        startingPositions = new List<Vector3>();
+        paths = new List<AStarCell>();
 
         if (showFlowFieldDebugText) flowField.Grid.ShowDebugText();
 
@@ -75,8 +74,6 @@ public class PathingManager : MonoBehaviour
 
             Debug.Log("Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) + "s");
         }
-
-
     }
 
     private void OnDrawGizmos()
@@ -110,24 +107,40 @@ public class PathingManager : MonoBehaviour
             areaMap.Grid.ShowGrid(Color.red);
         }
 
-        if (path != null)
+        if (paths != null && !showFlowFieldArrows)
         {
-            //aStar.DrawPathArrows(path);
+            aStar.DrawPathArrows(paths);
         }
     }
 
     public void StartPathing(Vector3 startPosition, Vector3 targetPosition)
     {
+        StartPathing(startPosition, targetPosition, out bool _);
+    }
+
+    public void StartPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
+    {
         MyGrid<AreaNode> areaGrid = areaMap.Grid;
         MyGrid<AStarCell> aStarGrid = aStar.Grid;
         MyGrid<FlowFieldCell> flowFieldGrid = flowField.Grid;
         List<AreaNode> areas = new List<AreaNode>();
+        success = false;
 
         Debug.Log("Pathing Started!");
 
-        path = aStar.FindPath(startPosition, targetPosition);
+        aStar.ResetCells();
+        flowField.ResetCells();
+
+        List<AStarCell> path = aStar.FindPath(startPosition, targetPosition);
+
+        if (path == null) return;
 
         foreach (AStarCell aStarCell in path)
+        {
+            paths.Add(aStarCell);
+        }
+
+        foreach (AStarCell aStarCell in paths)
         {
             AreaNode areaNode = areaGrid.GetCell(aStarGrid.GetCellWorldPosition(aStarCell.GridPosition));
 
@@ -159,5 +172,6 @@ public class PathingManager : MonoBehaviour
 
         flowField.CalculateIntegrationField(flowFieldGrid.GetCell(targetPosition));
         flowField.CalculateVectorField();
+        success = true;
     }
 }

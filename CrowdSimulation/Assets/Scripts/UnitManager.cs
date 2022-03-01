@@ -14,6 +14,7 @@ public class UnitManager : MonoBehaviour
 
     public List<GameObject> unitsInGame;
 
+    private Vector3 targetPosition;
     private PathingManager pathingManager;
 
     #region Singleton
@@ -34,6 +35,8 @@ public class UnitManager : MonoBehaviour
         unitsInGame = new List<GameObject>();
         pathingManager = PathingManager.GetInstance();
 
+        targetPosition = baseObject.transform.position;
+
         //SpawnUnits();
         InvokeRepeating("SpawnUnits", 1f, 1f);
     }
@@ -42,16 +45,25 @@ public class UnitManager : MonoBehaviour
     {
         if (pathingManager.flowField == null) return;
 
+        MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.flowField.Grid;
+
         foreach (GameObject unit in unitsInGame)
         {
-            if (pathingManager.flowField.Grid.GetCell(unit.transform.position).bestDirection == GridDirection.None)
+            if (flowFieldGrid.GetCellGridPosition(unit.transform.position) ==
+                flowFieldGrid.GetCellGridPosition(targetPosition)) continue;
+
+            if (flowFieldGrid.GetCell(unit.transform.position).bestDirection == GridDirection.None)
             {
-                pathingManager.StartPathing(unit.transform.position, baseObject.transform.position);
+                pathingManager.StartPathing(unit.transform.position, targetPosition, out bool success);
+
+                if (success) continue;
+
+                unitsInGame.Remove(unit);
             }
             else
             {
                 Rigidbody rigidBody = unit.GetComponent<Rigidbody>();
-                FlowFieldCell currentCell = pathingManager.flowField.Grid.GetCell(unit.transform.position);
+                FlowFieldCell currentCell = flowFieldGrid.GetCell(unit.transform.position);
 
                 Vector3 moveDirection = currentCell != null
                     ? new Vector3(currentCell.bestDirection.vector2D.x, 0, currentCell.bestDirection.vector2D.y)

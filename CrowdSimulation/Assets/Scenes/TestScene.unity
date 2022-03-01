@@ -249,12 +249,12 @@ MonoBehaviour:
   gridWidth: 40
   gridHeight: 40
   cellSize: 5
-  areaSize: 10
+  areaSize: 5
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
   showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
-  showFlowFieldArrows: 1
+  showFlowFieldArrows: 0
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -546,8 +546,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
   baseObject: {fileID: 1847212265}
-  totalUnitsSpawned: 5
-  numUnitsPerSpawn: 1
+  totalUnitsSpawned: 100
+  numUnitsPerSpawn: 10
   unitMoveSpeed: 10
   unitsInGame: []
 --- !u!4 &1059563916

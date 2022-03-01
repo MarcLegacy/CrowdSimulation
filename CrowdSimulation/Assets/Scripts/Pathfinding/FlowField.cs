@@ -5,6 +5,7 @@ using UnityEngine;
 public class FlowField
 {
     private const int MAX_INTEGRATION_COST = 200;
+    private const int OBSTACLE_COST = byte.MaxValue;
 
     public MyGrid<FlowFieldCell> Grid { get; }
 
@@ -45,12 +46,14 @@ public class FlowField
         }
     }
 
-    private void ResetCells()
+    public void ResetCells(bool includeObstacles = false)
     {
         for (int x = 0; x < Grid.Width; x++)
         {
             for (int y = 0; y < Grid.Height; y++)
             {
+                if (!includeObstacles && Grid.GetCell(x, y).Cost == OBSTACLE_COST) continue;
+
                 Grid.GetCell(x, y).ResetCell();
             }
         }

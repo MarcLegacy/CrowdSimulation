@@ -49,7 +49,7 @@ public class AStar
             closedList.Add(currentCell);
 
             foreach (AStarCell neighborCell in Grid.GetNeighborCells(currentCell.GridPosition,
-                GridDirection.CardinalAndIntercardinalDirections))
+                GridDirection.CardinalDirections))
             {
                 if (closedList.Contains(neighborCell)) continue;
                 if (!neighborCell.isWalkable)
@@ -103,12 +103,14 @@ public class AStar
         }
     }
 
-    private void ResetCells()
+    public void ResetCells(bool includeObstacles = false)
     {
         for (int x = 0; x < Grid.Width; x++)
         {
             for (int y = 0; y < Grid.Height; y++)
             {
+                if (!includeObstacles && !Grid.GetCell(x, y).isWalkable) continue;
+
                 Grid.GetCell(x, y).ResetCell();
             }
         }
