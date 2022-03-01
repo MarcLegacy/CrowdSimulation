@@ -19,9 +19,9 @@ public class HeatMapManager : MonoBehaviour
     [SerializeField] private bool showObstacleMap = false;
 
     private bool updateMesh;
+    private int maxUnitsOnCell;
     private MyGrid<int> grid;
     private Mesh mesh;
-    private int maxUnitsOnCell;
 
     #region Singleton
     public static HeatMapManager GetInstance()
@@ -91,17 +91,6 @@ public class HeatMapManager : MonoBehaviour
             updateMesh = false;
             UpdateHeatMap();
         }
-    }
-
-    public MyGrid<int> GetGrid()
-    {
-        return grid;
-    }
-
-    public void SetGrid(MyGrid<int> grid)
-    {
-        this.grid = grid;
-
     }
 
     public int GetColorIndex(HeatMapColor color)

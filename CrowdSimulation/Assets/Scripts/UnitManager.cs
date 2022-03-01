@@ -41,18 +41,39 @@ public class UnitManager : MonoBehaviour
         InvokeRepeating("SpawnUnits", 1f, 1f);
     }
 
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 mouseWorldPosition = Utilities.GetMouseWorldPosition();
+
+            if (pathingManager.flowField.Grid.GetCell(mouseWorldPosition) != null)
+            {
+                targetPosition = Utilities.GetMouseWorldPosition();
+
+                pathingManager.SetTargetPosition();
+            }
+
+            //pathingManager.flowField.CalculateFlowField(pathingManager.flowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
+
+
+        }
+    }
+
     private void FixedUpdate()
     {
         if (pathingManager.flowField == null) return;
 
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.flowField.Grid;
 
-        foreach (GameObject unit in unitsInGame)
+        for (int i = unitsInGame.Count - 1; i >= 0; i--)
         {
+            GameObject unit = unitsInGame[i];
+
             if (flowFieldGrid.GetCellGridPosition(unit.transform.position) ==
                 flowFieldGrid.GetCellGridPosition(targetPosition)) continue;
 
-            if (flowFieldGrid.GetCell(unit.transform.position).bestDirection == GridDirection.None)
+            if (flowFieldGrid.GetCell(unit.transform.position)?.bestDirection == GridDirection.None)
             {
                 pathingManager.StartPathing(unit.transform.position, targetPosition, out bool success);
 
