@@ -19,11 +19,30 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
 
-    [HideInInspector] public FlowField flowField;
-    [HideInInspector] public AreaMap areaMap;
-    [HideInInspector] public AStar aStar;
+    private bool calculateFlowField;
+    private Vector3 targetPosition = Vector3.zero;
 
-    private List<AreaNode> checkedAreas;
+    [HideInInspector] public Vector3 TargetPosition
+    {
+        get => targetPosition;
+        set
+        {
+            FlowFieldCell cell = FlowField.Grid.GetCell(value);
+            if (cell == null || cell.Cost == GlobalConstants.OBSTACLE_COST)
+            {
+                Debug.LogWarning("No valid targetPosition");
+                return;
+            }
+
+            targetPosition = value;
+            FlowField.ResetCells();
+            CheckedAreas.Clear();
+        }
+    }
+    [HideInInspector] public FlowField FlowField { get; private set; }
+    [HideInInspector] public AreaMap AreaMap { get; private set; }
+    [HideInInspector] public AStar AStar { get; private set; }
+    [HideInInspector] public HashSet<AreaNode> CheckedAreas { get; private set; }
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -45,51 +64,87 @@ public class PathingManager : MonoBehaviour
                 mapObject.transform.position.y,
                 mapObject.transform.position.z - (mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER));
 
-        flowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
-        aStar = new AStar(gridWidth, gridHeight, cellSize, originPosition);
-        areaMap = new AreaMap(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition, areaSize, cellSize);
-        checkedAreas = new List<AreaNode>();
+        FlowField = new FlowField(gridWidth, gridHeight, cellSize, originPosition);
+        AStar = new AStar(gridWidth, gridHeight, cellSize, originPosition);
+        AreaMap = new AreaMap(gridWidth / areaSize, gridHeight / areaSize, cellSize * areaSize, originPosition, areaSize, cellSize);
+        CheckedAreas = new HashSet<AreaNode>();
+        TargetPosition = baseObject.transform.position;
 
-        if (showFlowFieldDebugText) flowField.Grid.ShowDebugText();
+        if (showFlowFieldDebugText) FlowField.Grid.ShowDebugText();
 
         StartCoroutine(DelayedStart());
     }
 
-    // Because for an unknown reason, the position of the colliders aren't yet set on the position of the gameObject immediatelly
+    // Because for an unknown reason, the position of the colliders aren't yet set on the position of the gameObject in the same frame.
     IEnumerator DelayedStart()
     {
         yield return new WaitForEndOfFrame();
 
-        //flowField.CalculateFlowField(flowField.Grid.GetCell(pathingTargetPosition));
-        aStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
-        flowField.CalculateCostField(GlobalConstants.OBSTACLES_STRING);
+        AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
+        FlowField.CalculateCostField(GlobalConstants.OBSTACLES_STRING);
+
+        FlowField.CalculateFlowField(FlowField.Grid.GetCell(baseObject.transform.position));
     }
 
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
+            //double startTimer = Time.realtimeSinceStartupAsDouble;
+            //FlowField.CalculateFlowField(FlowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
 
+
+            TargetPosition = Utilities.GetMouseWorldPosition();
+            //Debug.Log("FlowField Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) * 1000 + "ms");
+        }
+
+        if (calculateFlowField)
+        {
+            Debug.Log("Calculating FlowField");
+
+            double startTimer = Time.realtimeSinceStartupAsDouble;
+
+            calculateFlowField = false;
+
+            FlowField.ResetCells();
+
+            foreach (FlowFieldCell flowFieldCell in FlowField.Grid.GridArray)
+            {
+                if (CheckedAreas.Contains(AreaMap.Grid.GetCell(FlowField.Grid.GetCellWorldPosition(flowFieldCell.GridPosition))))
+                {
+                    flowFieldCell.Cost = 1;
+                }
+                else
+                {
+                    flowFieldCell.Cost = IGNORED_CELL;
+                }
+            }
+
+            FlowField.CalculateIntegrationField(FlowField.Grid.GetCell(targetPosition));
+            FlowField.CalculateVectorField();
+
+            Debug.Log("CheckedAreas.Count: " + CheckedAreas.Count);
+            Debug.Log("FlowField Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) * 1000 + "ms");
         }
     }
 
     private void OnDrawGizmos()
     {
-        if (flowField != null)
+        if (FlowField != null)
         {
             if (showFlowFieldGrid)
             {
-                flowField.Grid.ShowGrid(Color.black);
+                FlowField.Grid.ShowGrid(Color.black);
             }
             if (showFlowFieldArrows)
             {
-                flowField.DrawFlowFieldArrows();
+                FlowField.DrawFlowFieldArrows();
             }
         }
 
-        if (areaMap != null)
+        if (AreaMap != null)
         {
-            MyGrid<AreaNode> grid = areaMap.Grid;
+            MyGrid<AreaNode> grid = AreaMap.Grid;
 
             for (int x = 0; x < grid.Width; x++)
             {
@@ -100,13 +155,13 @@ public class PathingManager : MonoBehaviour
                 }
             }
 
-            //aStar.Grid.ShowGrid(Color.black);
-            areaMap.Grid.ShowGrid(Color.red);
+            //AStar.Grid.ShowGrid(Color.black);
+            AreaMap.Grid.ShowGrid(Color.red);
         }
 
         //if (paths != null && !showFlowFieldArrows)
         //{
-        //    aStar.DrawPathArrows(paths);
+        //    AStar.DrawPathArrows(paths);
         //}
     }
 
@@ -117,67 +172,29 @@ public class PathingManager : MonoBehaviour
 
     public void StartPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
     {
-        MyGrid<AreaNode> areaGrid = areaMap.Grid;
-        MyGrid<AStarCell> aStarGrid = aStar.Grid;
-        MyGrid<FlowFieldCell> flowFieldGrid = flowField.Grid;
-        //List<AreaNode> areas = new List<AreaNode>();
+        MyGrid<AreaNode> areaGrid = AreaMap.Grid;
+        MyGrid<AStarCell> aStarGrid = AStar.Grid;
         success = false;
 
         Debug.Log("Pathing Started!");
 
         double startTimer = Time.realtimeSinceStartupAsDouble;
 
-        aStar.ResetCells();
-        flowField.ResetCells();
-
-        List<AStarCell> path = aStar.FindPath(startPosition, targetPosition);
+        List<AStarCell> path = AStar.FindPath(startPosition, targetPosition);
 
         if (path == null) return;
-
-        //foreach (AStarCell aStarCell in path)
-        //{
-        //    paths.Add(aStarCell);
-        //}
 
         foreach (AStarCell aStarCell in path)
         {
             AreaNode areaNode = areaGrid.GetCell(aStarGrid.GetCellWorldPosition(aStarCell.GridPosition));
 
-            if (!checkedAreas.Contains(areaNode))
-            {
-                checkedAreas.Add(areaNode);
-            }
+            CheckedAreas.Add(areaNode);
         }
 
-        foreach (FlowFieldCell flowFieldCell in flowField.Grid.GridArray)
-        {
-            if (flowFieldCell.Cost != byte.MaxValue)
-            {
-                flowFieldCell.Cost = IGNORED_CELL;
-            }
-        }
+        this.targetPosition = targetPosition;
+        calculateFlowField = true;
 
-        foreach (AreaNode area in checkedAreas)
-        {
-            foreach (AStarCell aStarCell in area.AStarGrid.GridArray)
-            {
-                FlowFieldCell flowFieldCell = flowFieldGrid.GetCell(area.AStarGrid.GetCellWorldPosition(aStarCell.GridPosition));
-                if (flowFieldCell.Cost != byte.MaxValue)
-                {
-                    flowFieldCell.Cost = 1;
-                }
-            }
-        }
-
-        flowField.CalculateIntegrationField(flowFieldGrid.GetCell(targetPosition));
-        flowField.CalculateVectorField();
         success = true;
-        Debug.Log("Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) + "s");
-    }
-
-    public void SetTargetPosition()
-    { 
-        flowField.ResetCells();
-        checkedAreas.Clear();
+        Debug.Log("Pathing Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) * 1000 + "ms");
     }
 }

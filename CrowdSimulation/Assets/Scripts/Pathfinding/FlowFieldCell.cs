@@ -9,11 +9,14 @@ public class FlowFieldCell
     private ushort bestCost;
     private MyGrid<FlowFieldCell> grid;
 
+    // If the cost of the cell is set to an unwalkable cell, it cannot be changed
     public byte Cost
     {
         get => cost;
         set
         {
+            if (cost == GlobalConstants.OBSTACLE_COST || value == GlobalConstants.OBSTACLE_COST) return;
+
             cost = value;
             grid.TriggerCellChanged(X, Y);
         }
@@ -45,6 +48,13 @@ public class FlowFieldCell
         Cost = 1;
         BestCost = ushort.MaxValue;
         bestDirection = GridDirection.None;
+    }
+
+    public void SetUnwalkable(bool isUnwalkable = true)
+    {
+        cost = isUnwalkable ? GlobalConstants.OBSTACLE_COST : byte.MinValue;
+
+        grid.TriggerCellChanged(X, Y);
     }
 
     public override string ToString()

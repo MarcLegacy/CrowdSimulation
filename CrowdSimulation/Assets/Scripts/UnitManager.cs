@@ -14,7 +14,6 @@ public class UnitManager : MonoBehaviour
 
     public List<GameObject> unitsInGame;
 
-    private Vector3 targetPosition;
     private PathingManager pathingManager;
 
     #region Singleton
@@ -35,8 +34,6 @@ public class UnitManager : MonoBehaviour
         unitsInGame = new List<GameObject>();
         pathingManager = PathingManager.GetInstance();
 
-        targetPosition = baseObject.transform.position;
-
         //SpawnUnits();
         InvokeRepeating("SpawnUnits", 1f, 1f);
     }
@@ -45,37 +42,28 @@ public class UnitManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 mouseWorldPosition = Utilities.GetMouseWorldPosition();
-
-            if (pathingManager.flowField.Grid.GetCell(mouseWorldPosition) != null)
-            {
-                targetPosition = Utilities.GetMouseWorldPosition();
-
-                pathingManager.SetTargetPosition();
-            }
-
-            //pathingManager.flowField.CalculateFlowField(pathingManager.flowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
-
 
         }
     }
 
     private void FixedUpdate()
     {
-        if (pathingManager.flowField == null) return;
+        if (pathingManager.FlowField == null) return;
 
-        MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.flowField.Grid;
+        MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
 
         for (int i = unitsInGame.Count - 1; i >= 0; i--)
         {
             GameObject unit = unitsInGame[i];
 
             if (flowFieldGrid.GetCellGridPosition(unit.transform.position) ==
-                flowFieldGrid.GetCellGridPosition(targetPosition)) continue;
+                flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition)) continue;
 
             if (flowFieldGrid.GetCell(unit.transform.position)?.bestDirection == GridDirection.None)
             {
-                pathingManager.StartPathing(unit.transform.position, targetPosition, out bool success);
+                if (pathingManager.CheckedAreas.Contains(pathingManager.AreaMap.Grid.GetCell(unit.transform.position))) continue;
+
+                pathingManager.StartPathing(unit.transform.position, pathingManager.TargetPosition, out bool success);
 
                 if (success) continue;
 
@@ -99,7 +87,7 @@ public class UnitManager : MonoBehaviour
     {
         if (unitsInGame.Count + numUnitsPerSpawn > totalUnitsSpawned) return;
 
-        MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().flowField.Grid;
+        MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
         int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
@@ -114,7 +102,7 @@ public class UnitManager : MonoBehaviour
 
                 positioningTries++;
             } 
-            while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && pathingManager.flowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
+            while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && pathingManager.FlowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
 
             //
 

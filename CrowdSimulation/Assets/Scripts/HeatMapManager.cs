@@ -44,7 +44,7 @@ public class HeatMapManager : MonoBehaviour
 
     private void Start()
     {
-        MyGrid<FlowFieldCell> flowFieldGrid = PathingManager.GetInstance().flowField.Grid;
+        MyGrid<FlowFieldCell> flowFieldGrid = PathingManager.GetInstance().FlowField.Grid;
         grid = new MyGrid<int>(flowFieldGrid.Width, flowFieldGrid.Height, flowFieldGrid.CellSize,
             flowFieldGrid.OriginPosition);
 

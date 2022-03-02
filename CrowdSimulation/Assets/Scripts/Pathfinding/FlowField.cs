@@ -5,7 +5,6 @@ using UnityEngine;
 public class FlowField
 {
     private const int MAX_INTEGRATION_COST = 200;
-    private const int OBSTACLE_COST = byte.MaxValue;
 
     public MyGrid<FlowFieldCell> Grid { get; }
 
@@ -14,6 +13,18 @@ public class FlowField
         Grid = new MyGrid<FlowFieldCell>(width, height, cellSize, originPosition, (g, x, y) => new FlowFieldCell(g, x, y));
     }
 
+    public void CalculateFlowField(Vector3 worldPosition)
+    {
+        CalculateFlowField(Grid.GetCell(worldPosition));
+    }
+    public void CalculateFlowField(Vector2Int gridPosition)
+    {
+        CalculateFlowField(Grid.GetCell(gridPosition));
+    }
+    public void CalculateFlowField(int x, int y)
+    {
+        CalculateFlowField(Grid.GetCell(x, y));
+    }
     public void CalculateFlowField(FlowFieldCell destinationCell)
     {
         if (destinationCell == null)
@@ -23,10 +34,9 @@ public class FlowField
         }
 
         ResetCells();
-        CalculateCostField(GlobalConstants.OBSTACLES_STRING);
+        //CalculateCostField(GlobalConstants.OBSTACLES_STRING);
         CalculateIntegrationField(destinationCell);
         CalculateVectorField();
-
     }
 
     public void DrawFlowFieldArrows()
@@ -52,9 +62,14 @@ public class FlowField
         {
             for (int y = 0; y < Grid.Height; y++)
             {
-                if (!includeObstacles && Grid.GetCell(x, y).Cost == OBSTACLE_COST) continue;
+                FlowFieldCell cell = Grid.GetCell(x, y);
 
-                Grid.GetCell(x, y).ResetCell();
+                if (includeObstacles && cell.Cost == GlobalConstants.OBSTACLE_COST)
+                {
+                    cell.SetUnwalkable(false);
+                }
+
+                cell.ResetCell();
             }
         }
     }
@@ -63,7 +78,7 @@ public class FlowField
     {
         foreach (FlowFieldCell cell in Grid.GetCellsWithObjects(maskString))
         {
-            cell.Cost = byte.MaxValue;
+            cell.SetUnwalkable();
         }
     }
 
