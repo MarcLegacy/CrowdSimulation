@@ -3,18 +3,39 @@ using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
-public class ObstacleSpawner : MonoBehaviour
+public class ObstacleSpawnManager : MonoBehaviour
 {
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject baseObject;
     [SerializeField] private float avoidanceDistance = 10f;
     [SerializeField] private int obstacleAmount = 10;
     [SerializeField] private Vector2 obstacleScale = new Vector2(1f, 10f);
-    [SerializeField] private Color colorA;
-    [SerializeField] private Color colorB;
+    [SerializeField] private Color colorA = Color.clear;
+    [SerializeField] private Color colorB = Color.clear;
+    [SerializeField] private bool benchmark = false;
+
+    public bool Benchmark => benchmark;
+
+    #region Singleton
+    public static ObstacleSpawnManager GetInstance()
+    {
+        if (instance == null)
+        {
+            instance = FindObjectOfType<ObstacleSpawnManager>();
+        }
+        return instance;
+    }
+
+    private static ObstacleSpawnManager instance;
+    #endregion
 
     private void Start()
     {
+        if (benchmark)
+        {
+            Random.InitState(3);
+        }
+
         for (int i = 0; i < obstacleAmount; i++)
         {
             CreateObstacle();

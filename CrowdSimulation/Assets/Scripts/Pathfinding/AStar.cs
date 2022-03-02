@@ -29,6 +29,13 @@ public class AStar
     {
         AStarCell startCell = Grid.GetCell(startX, startY);
         AStarCell endCell = Grid.GetCell(endX, endY);
+
+        if (startCell == null || endCell == null)
+        {
+            Debug.LogWarning("No valid start or end position");
+            return null;
+        }
+
         openList = new List<AStarCell> {startCell};
         closedList = new List<AStarCell>();
 
@@ -123,6 +130,7 @@ public class AStar
         int remaining = Mathf.Abs(xDistance - yDistance);
 
         return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
+        //return xDistance + yDistance;
     }
 
     private AStarCell GetLowestFCostCell(List<AStarCell> aStarCellList)

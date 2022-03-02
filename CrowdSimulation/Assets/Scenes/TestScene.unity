@@ -255,6 +255,7 @@ MonoBehaviour:
   showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
   showFlowFieldArrows: 0
+  flowFieldWithAreas: 1
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -546,7 +547,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
   baseObject: {fileID: 1847212265}
-  totalUnitsSpawned: 1000
+  maxUnitsSpawned: 400
   numUnitsPerSpawn: 100
   unitMoveSpeed: 10
   unitsInGame: []
@@ -601,6 +602,7 @@ MonoBehaviour:
   obstacleScale: {x: 1, y: 10}
   colorA: {r: 0.38679248, g: 0.23692253, b: 0.13318796, a: 0}
   colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
+  benchmark: 1
 --- !u!4 &1454467470
 Transform:
   m_ObjectHideFlags: 0
@@ -632,7 +634,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1565266275
 MonoBehaviour:
   m_ObjectHideFlags: 0

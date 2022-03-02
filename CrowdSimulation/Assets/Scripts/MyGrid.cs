@@ -19,6 +19,8 @@ public class MyGrid<TGridObject>
     public float CellSize { get; }
     public Vector3 OriginPosition { get; }
     public TGridObject[,] GridArray { get; }
+    public Dictionary<Vector2Int, List<TGridObject>> CardinalNeighborList { get; }
+    public Dictionary<Vector2Int, List<TGridObject>> InterCardinalNeighborList { get; }
 
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
         Func<MyGrid<TGridObject>, int, int, TGridObject> createGridObject) : this(width, height, cellSize, originPosition)
@@ -30,6 +32,8 @@ public class MyGrid<TGridObject>
                 GridArray[x, y] = createGridObject(this, x, y);
             }
         }
+
+        CollectNeighborCells();
     }
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
         Func<int, int, TGridObject> createGridObject) : this(width, height, cellSize, originPosition)
@@ -41,6 +45,8 @@ public class MyGrid<TGridObject>
                 GridArray[x, y] = createGridObject(x, y);
             }
         }
+
+        CollectNeighborCells();
     }
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition)
     {
@@ -50,6 +56,9 @@ public class MyGrid<TGridObject>
         OriginPosition = originPosition;
 
         GridArray = new TGridObject[width, height];
+
+        CardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
+        InterCardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
     }
 
     public void ShowDebugText()
@@ -193,6 +202,13 @@ public class MyGrid<TGridObject>
         }
 
         return neighborCells;
+
+        //if (directions.Contains(GridDirection.NorthEast))
+        //{
+        //    return InterCardinalNeighborList[new Vector2Int(x, y)];
+        //}
+
+        //return CardinalNeighborList[new Vector2Int(x, y)];
     }
 
     public List<TGridObject> GetCellsWithObjects(string maskString)
@@ -233,5 +249,39 @@ public class MyGrid<TGridObject>
     public void TriggerCellChanged(int x, int y)
     {
         OnCellValueChanged?.Invoke(this, new OnCellValueChangedEventArgs { x = x, y = y });
+    }
+
+    private void CollectNeighborCells()
+    {
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                List<TGridObject> cardinalNeighborCells = new List<TGridObject>();
+                List<TGridObject> interCardinalNeighborCells = new List<TGridObject>();
+
+                foreach (GridDirection direction in GridDirection.CardinalDirections)
+                {
+                    Vector2Int neighborPosition = new Vector2Int(x, y) + direction;
+                    if (neighborPosition.x >= 0 && neighborPosition.x < Width && neighborPosition.y >= 0 &&
+                        neighborPosition.y < Height)
+                    {
+                        if (GridDirection.CardinalDirections.Contains(direction))
+                        {
+                            cardinalNeighborCells.Add(GetCell(neighborPosition));
+                        }
+                        else
+                        {
+                            interCardinalNeighborCells.Add(GetCell(neighborPosition));
+                        }
+
+                    }
+
+                }
+
+                CardinalNeighborList.Add(new Vector2Int(x, y), cardinalNeighborCells);
+                InterCardinalNeighborList.Add(new Vector2Int(x, y), interCardinalNeighborCells);
+            }
+        }
     }
 }

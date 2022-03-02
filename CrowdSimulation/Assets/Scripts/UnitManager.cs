@@ -8,13 +8,16 @@ public class UnitManager : MonoBehaviour
 {
     [SerializeField] private GameObject unitObject;
     [SerializeField] private GameObject baseObject;
-    [SerializeField] private int totalUnitsSpawned = 1000;
+    [SerializeField] private int maxUnitsSpawned = 1000;
     [SerializeField] private int numUnitsPerSpawn = 100;
     [SerializeField] private float unitMoveSpeed = 10f;
-
-    public List<GameObject> unitsInGame;
+    [SerializeField] [ReadOnly] private List<GameObject> unitsInGame;
 
     private PathingManager pathingManager;
+
+    public int NumUnitsPerSpawn => numUnitsPerSpawn;
+    public int MaxUnitsSpawned => maxUnitsSpawned;
+    public List<GameObject> UnitsInGame => unitsInGame;
 
     #region Singleton
     public static UnitManager GetInstance()
@@ -52,9 +55,9 @@ public class UnitManager : MonoBehaviour
 
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
 
-        for (int i = unitsInGame.Count - 1; i >= 0; i--)
+        for (int i = UnitsInGame.Count - 1; i >= 0; i--)
         {
-            GameObject unit = unitsInGame[i];
+            GameObject unit = UnitsInGame[i];
 
             if (flowFieldGrid.GetCellGridPosition(unit.transform.position) ==
                 flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition)) continue;
@@ -63,11 +66,11 @@ public class UnitManager : MonoBehaviour
             {
                 if (pathingManager.CheckedAreas.Contains(pathingManager.AreaMap.Grid.GetCell(unit.transform.position))) continue;
 
-                pathingManager.StartPathing(unit.transform.position, pathingManager.TargetPosition, out bool success);
+                pathingManager.StartAreaPathing(unit.transform.position, pathingManager.TargetPosition, out bool success);
 
                 if (success) continue;
 
-                unitsInGame.Remove(unit);
+                UnitsInGame.Remove(unit);
             }
             else
             {
@@ -85,7 +88,7 @@ public class UnitManager : MonoBehaviour
 
     private void SpawnUnits()
     {
-        if (unitsInGame.Count + numUnitsPerSpawn > totalUnitsSpawned) return;
+        if (UnitsInGame.Count + numUnitsPerSpawn > maxUnitsSpawned) return;
 
         MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
         int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
@@ -109,7 +112,7 @@ public class UnitManager : MonoBehaviour
             if (positioningTries >= GlobalConstants.MAX_POSITIONING_TRIES) continue;
 
             GameObject unit = Instantiate(unitObject);
-            unitsInGame.Add(unit);
+            UnitsInGame.Add(unit);
             unit.transform.parent = transform;
             unit.transform.position = newPosition;
             unit.layer = LayerMask.NameToLayer(GlobalConstants.UNITS_STRING);

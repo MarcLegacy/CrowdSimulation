@@ -154,7 +154,7 @@ public class HeatMapManager : MonoBehaviour
 
     private void ShowUnitHeatMap()
     {
-        List<GameObject> units = UnitManager.GetInstance().unitsInGame;
+        List<GameObject> units = UnitManager.GetInstance().UnitsInGame;
         int[,] gridArray = new int[grid.Width, grid.Height];
 
         foreach (GameObject unit in units)
