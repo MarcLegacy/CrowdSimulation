@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -19,7 +18,7 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldDebugText = false;
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
-    [SerializeField] private bool flowFieldWithAreas = true;
+    [SerializeField] private bool flowFieldWithAreaPathing = true;
 
     private bool calculateFlowField;
     private Vector3 targetPosition = Vector3.zero;
@@ -106,7 +105,7 @@ public class PathingManager : MonoBehaviour
         {
             //double startTimer = Time.realtimeSinceStartupAsDouble;
 
-            if (flowFieldWithAreas)
+            if (flowFieldWithAreaPathing)
             {
                 TargetPosition = Utilities.GetMouseWorldPosition();
             }
@@ -192,7 +191,6 @@ public class PathingManager : MonoBehaviour
         calculateFlowField = true;
 
         success = true;
-        //Debug.Log("Pathing Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) * 1000 + "ms");
         pathingTimes.Add(Time.realtimeSinceStartupAsDouble - startTimer);
     }
 
@@ -234,7 +232,7 @@ public class PathingManager : MonoBehaviour
     {
         if (!ObstacleSpawnManager.GetInstance().Benchmark) return;
 
-        if (flowFieldWithAreas)
+        if (flowFieldWithAreaPathing)
         {
             StartCoroutine(SetBenchmarkPositionsWithAreaPathingCoroutine());
         }

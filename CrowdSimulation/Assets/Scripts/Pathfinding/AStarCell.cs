@@ -3,6 +3,7 @@ using UnityEngine;
 public class AStarCell
 {
     public bool isWalkable;
+    public bool visited;
     private int fCost;
     private int gCost;
     private int hCost;
@@ -64,5 +65,6 @@ public class AStarCell
         GCost = int.MaxValue;
         CalculateFCost();
         cameFromCell = null;
+        visited = false;
     }
 }

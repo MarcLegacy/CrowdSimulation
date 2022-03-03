@@ -1,14 +1,17 @@
+// Script made by following Code Monkey's tutorial for making A* pathfinding
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
 public class AStar
 {
-    private const int MOVE_STRAIGHT_COST = 10;
-    private const int MOVE_DIAGONAL_COST = 14;
+    //private const int MOVE_STRAIGHT_COST = 10;
+    //private const int MOVE_DIAGONAL_COST = 14;
 
     private List<AStarCell> openList;
-    private List<AStarCell> closedList;
+    //private List<AStarCell> closedList;
 
     public MyGrid<AStarCell> Grid { get; }
 
@@ -37,7 +40,7 @@ public class AStar
         }
 
         openList = new List<AStarCell> {startCell};
-        closedList = new List<AStarCell>();
+        //closedList = new List<AStarCell>();
 
         ResetCells();
         startCell.GCost = 0;
@@ -53,15 +56,19 @@ public class AStar
             }
 
             openList.Remove(currentCell);
-            closedList.Add(currentCell);
+            //closedList.Add(currentCell);
+            currentCell.visited = true;
 
             foreach (AStarCell neighborCell in Grid.GetNeighborCells(currentCell.GridPosition,
                 GridDirection.CardinalDirections))
             {
-                if (closedList.Contains(neighborCell)) continue;
+                //if (closedList.Contains(neighborCell)) continue;
+                if (neighborCell.visited) continue;
+
                 if (!neighborCell.isWalkable)
                 {
-                    closedList.Add(neighborCell);
+                    //closedList.Add(neighborCell);
+                    neighborCell.visited = true;
                     continue;
                 }
 
@@ -76,6 +83,7 @@ public class AStar
                     if (!openList.Contains(neighborCell))
                     {
                         openList.Add(neighborCell);
+                        
                     }
                 }
             }
@@ -112,14 +120,11 @@ public class AStar
 
     public void ResetCells(bool includeObstacles = false)
     {
-        for (int x = 0; x < Grid.Width; x++)
+        foreach (AStarCell cell in Grid.GridArray)
         {
-            for (int y = 0; y < Grid.Height; y++)
-            {
-                if (!includeObstacles && !Grid.GetCell(x, y).isWalkable) continue;
+            if (!includeObstacles && !cell.isWalkable) continue;
 
-                Grid.GetCell(x, y).ResetCell();
-            }
+            cell.ResetCell();
         }
     }
 
@@ -155,6 +160,7 @@ public class AStar
     {
         List<AStarCell> path = new List<AStarCell> {endCell};
         AStarCell currentCell = endCell;
+
         while (currentCell.cameFromCell != null)
         {
             path.Add(currentCell.cameFromCell);

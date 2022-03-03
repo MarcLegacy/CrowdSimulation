@@ -252,10 +252,10 @@ MonoBehaviour:
   areaSize: 5
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
-  showFlowFieldDebugText: 1
+  showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
   showFlowFieldArrows: 1
-  flowFieldWithAreas: 0
+  flowFieldWithAreaPathing: 1
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0

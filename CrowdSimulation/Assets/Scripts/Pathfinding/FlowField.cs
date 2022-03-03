@@ -1,3 +1,4 @@
+// Script made by following Code Turbo Makes Games's tutorial for making a Flowfield.
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -34,7 +35,6 @@ public class FlowField
         }
 
         ResetCells();
-        //CalculateCostField(GlobalConstants.OBSTACLES_STRING);
         CalculateIntegrationField(destinationCell);
         CalculateVectorField();
     }
@@ -58,21 +58,17 @@ public class FlowField
 
     public void ResetCells(bool includeObstacles = false)
     {
-        for (int x = 0; x < Grid.Width; x++)
+        foreach (FlowFieldCell cell in Grid.GridArray)
         {
-            for (int y = 0; y < Grid.Height; y++)
+            if (includeObstacles && cell.Cost == GlobalConstants.OBSTACLE_COST)
             {
-                FlowFieldCell cell = Grid.GetCell(x, y);
-
-                if (includeObstacles && cell.Cost == GlobalConstants.OBSTACLE_COST)
-                {
-                    cell.SetUnwalkable(false);
-                }
-
-                cell.ResetCell();
+                cell.SetUnwalkable(false);
             }
+
+            cell.ResetCell();
         }
     }
+    
 
     public void CalculateCostField(string maskString)
     {
@@ -111,22 +107,18 @@ public class FlowField
 
     public void CalculateVectorField()
     {
-        for (int x = 0; x < Grid.Width; x++)
+        foreach (FlowFieldCell cell in Grid.GridArray)
         {
-            for (int y = 0; y < Grid.Height; y++)
-            {
-                FlowFieldCell currentCell = Grid.GetCell(x, y);
-                List<FlowFieldCell> currentNeighborCells = Grid.GetNeighborCells(currentCell.GridPosition, GridDirection.AllDirections);
-                int bestCost = currentCell.BestCost;
+            List<FlowFieldCell> currentNeighborCells = Grid.GetNeighborCells(cell.GridPosition, GridDirection.AllDirections);
+            int bestCost = cell.BestCost;
 
-                foreach (FlowFieldCell currentNeighborCell in currentNeighborCells)
+            foreach (FlowFieldCell currentNeighborCell in currentNeighborCells)
+            {
+                if (currentNeighborCell.BestCost < bestCost)
                 {
-                    if (currentNeighborCell.BestCost < bestCost)
-                    {
-                        bestCost = currentNeighborCell.BestCost;
-                        currentCell.bestDirection =
-                            GridDirection.GetDirection(currentNeighborCell.GridPosition - currentCell.GridPosition);
-                    }
+                    bestCost = currentNeighborCell.BestCost;
+                    cell.bestDirection =
+                        GridDirection.GetDirection(currentNeighborCell.GridPosition - cell.GridPosition);
                 }
             }
         }
