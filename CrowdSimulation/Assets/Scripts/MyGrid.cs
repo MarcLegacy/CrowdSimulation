@@ -20,7 +20,7 @@ public class MyGrid<TGridObject>
     public Vector3 OriginPosition { get; }
     public TGridObject[,] GridArray { get; }
     public Dictionary<Vector2Int, List<TGridObject>> CardinalNeighborList { get; }
-    public Dictionary<Vector2Int, List<TGridObject>> InterCardinalNeighborList { get; }
+    public Dictionary<Vector2Int, List<TGridObject>> CardinalAndInterCardinalNeighborList { get; }
 
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
         Func<MyGrid<TGridObject>, int, int, TGridObject> createGridObject) : this(width, height, cellSize, originPosition)
@@ -58,7 +58,7 @@ public class MyGrid<TGridObject>
         GridArray = new TGridObject[width, height];
 
         CardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
-        InterCardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
+        CardinalAndInterCardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
     }
 
     public void ShowDebugText()
@@ -69,7 +69,8 @@ public class MyGrid<TGridObject>
         {
             for (int y = 0; y < GridArray.GetLength(1); y++)
             {
-                debugTextArray[x, y] = Utilities.CreateWorldText(GridArray[x, y]?.ToString(), null, GetCellCenterWorldPosition(x, y), (int)CellSize * 2, Color.black, TextAnchor.MiddleCenter);
+                debugTextArray[x, y] = Utilities.CreateWorldText(GridArray[x, y]?.ToString(), PathingManager.GetInstance().transform,
+                    GetCellCenterWorldPosition(x, y), (int) CellSize * 2, Color.black, TextAnchor.MiddleCenter);
             }
         }
 
@@ -189,26 +190,28 @@ public class MyGrid<TGridObject>
     }
     public List<TGridObject> GetNeighborCells(int x, int y, List<GridDirection> directions)
     {
-        List<TGridObject> neighborCells = new List<TGridObject>();
+        // Old
+        //List<TGridObject> neighborCells = new List<TGridObject>();
 
-        foreach (Vector2Int direction in directions)
-        {
-            Vector2Int neighborPosition = new Vector2Int(x, y) + direction;
-            if (neighborPosition.x >= 0 && neighborPosition.x < Width && neighborPosition.y >= 0 &&
-                neighborPosition.y < Height)
-            {
-                neighborCells.Add(GetCell(neighborPosition));
-            }
-        }
-
-        return neighborCells;
-
-        //if (directions.Contains(GridDirection.NorthEast))
+        //foreach (Vector2Int direction in directions)
         //{
-        //    return InterCardinalNeighborList[new Vector2Int(x, y)];
+        //    Vector2Int neighborPosition = new Vector2Int(x, y) + direction;
+        //    if (neighborPosition.x >= 0 && neighborPosition.x < Width && neighborPosition.y >= 0 &&
+        //        neighborPosition.y < Height)
+        //    {
+        //        neighborCells.Add(GetCell(neighborPosition));
+        //    }
         //}
 
-        //return CardinalNeighborList[new Vector2Int(x, y)];
+        //return neighborCells;
+
+        // New
+        if (directions.Contains(GridDirection.NorthEast))
+        {
+            return CardinalAndInterCardinalNeighborList[new Vector2Int(x, y)];
+        }
+
+        return CardinalNeighborList[new Vector2Int(x, y)];
     }
 
     public List<TGridObject> GetCellsWithObjects(string maskString)
@@ -260,7 +263,7 @@ public class MyGrid<TGridObject>
                 List<TGridObject> cardinalNeighborCells = new List<TGridObject>();
                 List<TGridObject> interCardinalNeighborCells = new List<TGridObject>();
 
-                foreach (GridDirection direction in GridDirection.CardinalDirections)
+                foreach (GridDirection direction in GridDirection.CardinalAndIntercardinalDirections)
                 {
                     Vector2Int neighborPosition = new Vector2Int(x, y) + direction;
                     if (neighborPosition.x >= 0 && neighborPosition.x < Width && neighborPosition.y >= 0 &&
@@ -270,17 +273,15 @@ public class MyGrid<TGridObject>
                         {
                             cardinalNeighborCells.Add(GetCell(neighborPosition));
                         }
-                        else
-                        {
-                            interCardinalNeighborCells.Add(GetCell(neighborPosition));
-                        }
+
+                        interCardinalNeighborCells.Add(GetCell(neighborPosition));
 
                     }
 
                 }
 
                 CardinalNeighborList.Add(new Vector2Int(x, y), cardinalNeighborCells);
-                InterCardinalNeighborList.Add(new Vector2Int(x, y), interCardinalNeighborCells);
+                CardinalAndInterCardinalNeighborList.Add(new Vector2Int(x, y), interCardinalNeighborCells);
             }
         }
     }

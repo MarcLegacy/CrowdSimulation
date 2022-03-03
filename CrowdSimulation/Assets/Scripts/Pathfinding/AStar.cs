@@ -127,10 +127,14 @@ public class AStar
     {
         int xDistance = Mathf.Abs(a.X - b.X);
         int yDistance = Mathf.Abs(a.Y - b.Y);
-        int remaining = Mathf.Abs(xDistance - yDistance);
 
-        return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
-        //return xDistance + yDistance;
+        // New
+        return xDistance + yDistance;
+
+        // Old
+        //int remaining = Mathf.Abs(xDistance - yDistance);
+
+        //return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
     }
 
     private AStarCell GetLowestFCostCell(List<AStarCell> aStarCellList)

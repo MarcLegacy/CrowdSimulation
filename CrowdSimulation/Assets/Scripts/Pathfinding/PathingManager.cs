@@ -16,20 +16,19 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private int areaSize = 10;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject baseObject;
-
     [SerializeField] private bool showFlowFieldDebugText = false;
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
     [SerializeField] private bool flowFieldWithAreas = true;
 
     private bool calculateFlowField;
-    private bool spawningBenchmark;
     private Vector3 targetPosition = Vector3.zero;
+    private UnitManager unitManager;
     private List<List<AStarCell>> paths;
     private List<double> pathingTimes;
-    private UnitManager unitManager;
 
-    [HideInInspector] public Vector3 TargetPosition
+    public float CellSize => cellSize;
+    public Vector3 TargetPosition
     {
         get => targetPosition;
         set
@@ -48,10 +47,10 @@ public class PathingManager : MonoBehaviour
             pathingTimes.Clear();
         }
     }
-    [HideInInspector] public FlowField FlowField { get; private set; }
-    [HideInInspector] public AreaMap AreaMap { get; private set; }
-    [HideInInspector] public AStar AStar { get; private set; }
-    [HideInInspector] public HashSet<AreaNode> CheckedAreas { get; private set; }
+    public FlowField FlowField { get; private set; }
+    public AreaMap AreaMap { get; private set; }
+    public AStar AStar { get; private set; }
+    public HashSet<AreaNode> CheckedAreas { get; private set; }
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -85,6 +84,8 @@ public class PathingManager : MonoBehaviour
 
         if (showFlowFieldDebugText) FlowField.Grid.ShowDebugText();
 
+        unitManager.OnMaxUnitSpawned += OnMaxUnitsSpawned;
+
         StartCoroutine(DelayedStart());
     }
 
@@ -113,8 +114,8 @@ public class PathingManager : MonoBehaviour
             {
                 FlowField.CalculateFlowField(FlowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
             }
-            
-            //Debug.Log("FlowField Execution Time: " + (Time.realtimeSinceStartupAsDouble - startTimer) * 1000 + "ms");
+
+            //Debug.Log("FlowField Execution Time: " +  Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
         }
 
         if (calculateFlowField)
@@ -122,14 +123,6 @@ public class PathingManager : MonoBehaviour
             Debug.Log("Average pathing time: " +  Math.Round(pathingTimes.Average() * 100000f) * 0.01 + "ms");
 
            CalculateFlowFieldWithAreas();
-        }
-
-        if (ObstacleSpawnManager.GetInstance().Benchmark && !spawningBenchmark &&
-            unitManager.UnitsInGame.Count > unitManager.MaxUnitsSpawned - unitManager.NumUnitsPerSpawn)
-        {
-            spawningBenchmark = true;
-
-            StartCoroutine(SetBenchmarkPositions());
         }
     }
 
@@ -237,7 +230,21 @@ public class PathingManager : MonoBehaviour
         }
     }
 
-    IEnumerator SetBenchmarkPositions()
+    private void OnMaxUnitsSpawned(object sender, UnitManager.OnMaxUnitsSpawnedEventArgs eventArgs)
+    {
+        if (!ObstacleSpawnManager.GetInstance().Benchmark) return;
+
+        if (flowFieldWithAreas)
+        {
+            StartCoroutine(SetBenchmarkPositionsWithAreaPathingCoroutine());
+        }
+        else
+        {
+            StartCoroutine(SetBenchmarkPositionsNormalPathingCoroutine());
+        }
+    }
+
+    IEnumerator SetBenchmarkPositionsWithAreaPathingCoroutine()
     {
         MyGrid<FlowFieldCell> grid = FlowField.Grid;
 
@@ -256,5 +263,34 @@ public class PathingManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         TargetPosition = grid.GetCellCenterWorldPosition(0, grid.Height - 1);
+    }
+
+    IEnumerator SetBenchmarkPositionsNormalPathingCoroutine()
+    {
+        MyGrid<FlowFieldCell> grid = FlowField.Grid;
+
+        yield return new WaitForSeconds(1f);
+
+        double startTimer = Time.realtimeSinceStartupAsDouble;
+        FlowField.CalculateFlowField(FlowField.Grid.GetCell(0, 0));
+        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
+
+        yield return new WaitForSeconds(1f);
+
+        startTimer = Time.realtimeSinceStartupAsDouble;
+        FlowField.CalculateFlowField(FlowField.Grid.GetCell(grid.Width - 1, 0));
+        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
+
+        yield return new WaitForSeconds(1f);
+
+        startTimer = Time.realtimeSinceStartupAsDouble;
+        FlowField.CalculateFlowField(FlowField.Grid.GetCell(grid.Width - 1, grid.Height - 1));
+        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
+
+        yield return new WaitForSeconds(1f);
+
+        startTimer = Time.realtimeSinceStartupAsDouble;
+        FlowField.CalculateFlowField(FlowField.Grid.GetCell(0, grid.Height - 1));
+        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
     }
 }

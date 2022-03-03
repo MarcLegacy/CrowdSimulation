@@ -252,10 +252,10 @@ MonoBehaviour:
   areaSize: 5
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
-  showFlowFieldDebugText: 0
+  showFlowFieldDebugText: 1
   showFlowFieldGrid: 0
-  showFlowFieldArrows: 0
-  flowFieldWithAreas: 1
+  showFlowFieldArrows: 1
+  flowFieldWithAreas: 0
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -547,7 +547,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitObject: {fileID: 7368489903505187129, guid: 21731cdb05cd35c41ada69701b93ea36, type: 3}
   baseObject: {fileID: 1847212265}
-  maxUnitsSpawned: 400
+  maxUnitsSpawned: 1000
   numUnitsPerSpawn: 100
   unitMoveSpeed: 10
   unitsInGame: []
@@ -603,6 +603,7 @@ MonoBehaviour:
   colorA: {r: 0.38679248, g: 0.23692253, b: 0.13318796, a: 0}
   colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
   benchmark: 1
+  numOfTopCellsAvoided: 3
 --- !u!4 &1454467470
 Transform:
   m_ObjectHideFlags: 0

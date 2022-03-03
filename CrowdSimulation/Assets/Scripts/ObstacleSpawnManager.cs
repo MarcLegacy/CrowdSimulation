@@ -13,6 +13,7 @@ public class ObstacleSpawnManager : MonoBehaviour
     [SerializeField] private Color colorA = Color.clear;
     [SerializeField] private Color colorB = Color.clear;
     [SerializeField] private bool benchmark = false;
+    [SerializeField] private int numOfTopCellsAvoided = 3;
 
     public bool Benchmark => benchmark;
 
@@ -48,6 +49,7 @@ public class ObstacleSpawnManager : MonoBehaviour
         if (position == Vector3.zero) return;
 
         GameObject obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        obstacle.transform.SetParent(transform, false);
         obstacle.transform.position = position;
         obstacle.transform.localScale =
             new Vector3(Random.Range(obstacleScale.x, obstacleScale.y), 1f, Random.Range(obstacleScale.x, obstacleScale.y));
@@ -63,12 +65,15 @@ public class ObstacleSpawnManager : MonoBehaviour
             mapObject.transform.localScale.z * GlobalConstants.SCALE_TO_SIZE_MULTIPLIER);
         Vector3 position;
         int positioningTries = 0;
+        float cellSize = PathingManager.GetInstance().CellSize;
 
-        do 
+        do
         {
-            position =
-                new Vector3(Random.Range(mapObject.transform.position.x - mapGridSize.x, mapObject.transform.position.x + mapGridSize.x), 0,
-                    Random.Range(mapObject.transform.position.z - mapGridSize.y, mapObject.transform.position.z + mapGridSize.y));
+            position = new Vector3(
+                Random.Range(mapObject.transform.position.x - (mapGridSize.x - cellSize),
+                    mapObject.transform.position.x + (mapGridSize.x - cellSize)), 0,
+                Random.Range(mapObject.transform.position.z - (mapGridSize.y - cellSize),
+                    mapObject.transform.position.z + (mapGridSize.y - cellSize * numOfTopCellsAvoided)));
             positioningTries++;
         } 
         while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES &&

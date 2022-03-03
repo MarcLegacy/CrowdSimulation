@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
@@ -6,6 +7,9 @@ using Vector3 = UnityEngine.Vector3;
 
 public class UnitManager : MonoBehaviour
 {
+    public event EventHandler<OnMaxUnitsSpawnedEventArgs> OnMaxUnitSpawned;
+    public class OnMaxUnitsSpawnedEventArgs : EventArgs { }
+
     [SerializeField] private GameObject unitObject;
     [SerializeField] private GameObject baseObject;
     [SerializeField] private int maxUnitsSpawned = 1000;
@@ -37,8 +41,7 @@ public class UnitManager : MonoBehaviour
         unitsInGame = new List<GameObject>();
         pathingManager = PathingManager.GetInstance();
 
-        //SpawnUnits();
-        InvokeRepeating("SpawnUnits", 1f, 1f);
+        StartCoroutine(SpawnUnitCoroutine());
     }
 
     private void Update()
@@ -88,8 +91,6 @@ public class UnitManager : MonoBehaviour
 
     private void SpawnUnits()
     {
-        if (UnitsInGame.Count + numUnitsPerSpawn > maxUnitsSpawned) return;
-
         MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
         int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
@@ -117,5 +118,20 @@ public class UnitManager : MonoBehaviour
             unit.transform.position = newPosition;
             unit.layer = LayerMask.NameToLayer(GlobalConstants.UNITS_STRING);
         }
+    }
+
+    IEnumerator SpawnUnitCoroutine()
+    {
+        yield return new WaitForSeconds(1f);
+
+        SpawnUnits();
+
+        if (UnitsInGame.Count + numUnitsPerSpawn > maxUnitsSpawned)
+        {
+            OnMaxUnitSpawned?.Invoke(this, new OnMaxUnitsSpawnedEventArgs());
+            yield break;
+        }
+
+        StartCoroutine(SpawnUnitCoroutine());
     }
 }

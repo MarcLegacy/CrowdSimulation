@@ -17,7 +17,7 @@ public class VariableOrderConvention
     [SerializeField] public Image maskImage;
     [SerializeField] private MyClass _anotherComponent;
 
-    // Other varaibles
+    // Other variables
     public int primitiveVariables1;
     private string _primitiveVariable2;
 
