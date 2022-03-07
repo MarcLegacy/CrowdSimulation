@@ -4,10 +4,10 @@ public class AStarCell
 {
     public bool isWalkable;
     public bool visited;
+    public AStarCell cameFromCell;
     private int fCost;
     private int gCost;
     private int hCost;
-    public AStarCell cameFromCell;
 
     private MyGrid<AStarCell> grid;
 

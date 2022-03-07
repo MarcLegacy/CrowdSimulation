@@ -48,8 +48,17 @@ public class HeatMapManager : MonoBehaviour
         grid = new MyGrid<int>(flowFieldGrid.Width, flowFieldGrid.Height, flowFieldGrid.CellSize,
             flowFieldGrid.OriginPosition);
 
-        UpdateHeatMap();
         grid.OnCellValueChanged += GridOnCellValueValueChanged;
+
+        UpdateHeatMap();
+
+        for (int x = 0; x < grid.Width; x++)
+        {
+            for (int y = 0; y < grid.Height; y++)
+            {
+                grid.SetCell(x, y, -1);
+            }
+        }
 
         StartCoroutine(DelayedStart());
     }
@@ -60,14 +69,6 @@ public class HeatMapManager : MonoBehaviour
 
         if (showObstacleMap)
         {
-            for (int x = 0; x < grid.Width; x++)
-            {
-                for (int y = 0; y < grid.Height; y++)
-                {
-                    grid.SetCell(x, y, -1);
-                }
-            }
-
             List<Vector2Int> gridPositions = grid.GetGridPositionsWithObjects(GlobalConstants.OBSTACLES_STRING);
             foreach (Vector2Int gridPosition in gridPositions)
             {

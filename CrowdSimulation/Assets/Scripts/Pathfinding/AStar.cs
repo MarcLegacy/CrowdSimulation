@@ -15,6 +15,24 @@ public class AStar
 
     public MyGrid<AStarCell> Grid { get; }
 
+    public List<AStarCell> WalkableCells
+    {
+        get
+        {
+            List<AStarCell> walkableCells = new List<AStarCell>();
+
+            foreach (AStarCell cell in Grid.GridArray)
+            {
+                if (cell.isWalkable)
+                {
+                    walkableCells.Add(cell);
+                }
+            }
+
+            return walkableCells;
+        }
+    }
+
     public AStar(int width, int height, float cellSize, Vector3 originPosition)
     {
         Grid = new MyGrid<AStarCell>(width, height, cellSize, originPosition, (g, x, y) => new AStarCell(g, x, y));

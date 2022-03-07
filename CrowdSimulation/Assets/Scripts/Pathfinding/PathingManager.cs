@@ -27,6 +27,7 @@ public class PathingManager : MonoBehaviour
     private List<double> pathingTimes;
 
     public float CellSize => cellSize;
+    public int AreaSize => areaSize;
     public Vector3 TargetPosition
     {
         get => targetPosition;
