@@ -18,6 +18,7 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldDebugText = false;
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
+    [SerializeField] private bool showAreaGrid = false;
     [SerializeField] private bool flowFieldWithAreaPathing = true;
 
     private bool calculateFlowField;
@@ -142,19 +143,21 @@ public class PathingManager : MonoBehaviour
 
         if (AreaMap != null)
         {
-            MyGrid<AreaNode> grid = AreaMap.Grid;
-
-            for (int x = 0; x < grid.Width; x++)
+            if (showAreaGrid)
             {
-                for (int y = 0; y < grid.Height; y++)
+                MyGrid<AreaNode> grid = AreaMap.Grid;
+
+                for (int x = 0; x < grid.Width; x++)
                 {
-                    grid.GetCell(x, y).AStarGrid.ShowGrid(Color.black);
-                    //Debug.Log(grid.GetCell(x, y).AStarGrid.GetCell(0, 0).GridPosition);
+                    for (int y = 0; y < grid.Height; y++)
+                    {
+                        grid.GetCell(x, y).AStarGrid.ShowGrid(Color.black);
+                    }
                 }
+
+                AreaMap.Grid.ShowGrid(Color.red);
             }
 
-            //AStar.Grid.ShowGrid(Color.black);
-            AreaMap.Grid.ShowGrid(Color.red);
         }
 
         if (paths != null && !showFlowFieldArrows)

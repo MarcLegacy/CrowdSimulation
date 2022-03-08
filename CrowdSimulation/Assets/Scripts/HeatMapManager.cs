@@ -2,15 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum HeatMapColor
-{
-    None,
-    Black,
-    Red,
-    Yellow,
-    Green
-}
-
 public class HeatMapManager : MonoBehaviour
 {
     private const int MAX_VALUE = 100;

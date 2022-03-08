@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Portal
@@ -7,18 +8,27 @@ public class Portal
 
     public AreaNode AreaNodeA { get; }
     public AreaNode AreaNodeB { get; }
-    public AStarCell[] AreaACells { get; }
-    public AStarCell[] AreaBCells { get; }
+    public List<AStarCell> AreaACells { get; }
+    public List<AStarCell> AreaBCells { get; }
 
-    public Portal(AreaNode areaNodeA, AreaNode areaNodeB, AStarCell[] areaAcells, AStarCell[] areaBcells)
+    public Portal(AreaNode areaNodeA, AreaNode areaNodeB, AStarCell areaACell, AStarCell areaBCell)
     {
         AreaNodeA = areaNodeA;
         AreaNodeB = areaNodeB;
-        AreaACells = areaAcells;
-        AreaBCells = areaBcells;
+        AreaACells = new List<AStarCell>() {areaACell};
+        AreaBCells = new List<AStarCell>() {areaBCell};
+        entranceAreaA = areaACell;
+        entranceAreaB = areaBCell;
+    }
 
-        entranceAreaA = CalculateEntranceCell(areaAcells);
-        entranceAreaB = CalculateEntranceCell(areaBcells);
+    public Portal(AreaNode areaNodeA, AreaNode areaNodeB, List<AStarCell> areaACells, List<AStarCell> areaBCells)
+    {
+        AreaNodeA = areaNodeA;
+        AreaNodeB = areaNodeB;
+        AreaACells = areaACells;
+        AreaBCells = areaBCells;
+        entranceAreaA = CalculateEntranceCell(areaACells);
+        entranceAreaB = CalculateEntranceCell(areaBCells);
     }
 
     public AStarCell GetEntranceCell(AreaNode areaNode)
@@ -37,7 +47,7 @@ public class Portal
         return null;
     }
 
-    private AStarCell CalculateEntranceCell(AStarCell[] cells)
+    private AStarCell CalculateEntranceCell(List<AStarCell> cells)
     {
         Vector2Int totalGridPos = new Vector2Int();
         AStarCell closestCell = null;
@@ -48,7 +58,7 @@ public class Portal
             totalGridPos += cell.GridPosition;
         }
 
-        Vector2 averagePos = totalGridPos / cells.Length;
+        Vector2 averagePos = totalGridPos / cells.Count;
 
         foreach (AStarCell cell in cells)
         {

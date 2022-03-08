@@ -77,8 +77,7 @@ public class AStar
             //closedList.Add(currentCell);
             currentCell.visited = true;
 
-            foreach (AStarCell neighborCell in Grid.GetNeighborCells(currentCell.GridPosition,
-                GridDirection.CardinalDirections))
+            foreach (AStarCell neighborCell in Grid.GetNeighborCells(currentCell.GridPosition, GridDirection.CardinalDirections))
             {
                 //if (closedList.Contains(neighborCell)) continue;
                 if (neighborCell.visited) continue;

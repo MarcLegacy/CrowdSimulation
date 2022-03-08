@@ -109,7 +109,7 @@ public class FlowField
     {
         foreach (FlowFieldCell cell in Grid.GridArray)
         {
-            List<FlowFieldCell> currentNeighborCells = Grid.GetNeighborCells(cell.GridPosition, GridDirection.AllDirections);
+            List<FlowFieldCell> currentNeighborCells = Grid.GetNeighborCells(cell.GridPosition, GridDirection.CardinalAndIntercardinalDirections);
             int bestCost = cell.BestCost;
 
             foreach (FlowFieldCell currentNeighborCell in currentNeighborCells)

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class MyGrid<TGridObject>
@@ -14,13 +15,14 @@ public class MyGrid<TGridObject>
         public int y;
     }
 
+    private Dictionary<Vector2Int, List<TGridObject>> cardinalNeighborList;
+    private Dictionary<Vector2Int, List<TGridObject>> cardinalAndInterCardinalNeighborList;
+
     public int Width { get; }
     public int Height { get; }
     public float CellSize { get; }
     public Vector3 OriginPosition { get; }
     public TGridObject[,] GridArray { get; }
-    public Dictionary<Vector2Int, List<TGridObject>> CardinalNeighborList { get; }
-    public Dictionary<Vector2Int, List<TGridObject>> CardinalAndInterCardinalNeighborList { get; }
 
     public MyGrid(int width, int height, float cellSize, Vector3 originPosition,
         Func<MyGrid<TGridObject>, int, int, TGridObject> createGridObject) : this(width, height, cellSize, originPosition)
@@ -57,8 +59,8 @@ public class MyGrid<TGridObject>
 
         GridArray = new TGridObject[width, height];
 
-        CardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
-        CardinalAndInterCardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
+        cardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
+        cardinalAndInterCardinalNeighborList = new Dictionary<Vector2Int, List<TGridObject>>();
     }
 
     public void ShowDebugText()
@@ -190,28 +192,12 @@ public class MyGrid<TGridObject>
     }
     public List<TGridObject> GetNeighborCells(int x, int y, List<GridDirection> directions)
     {
-        // Old
-        //List<TGridObject> neighborCells = new List<TGridObject>();
-
-        //foreach (Vector2Int direction in directions)
-        //{
-        //    Vector2Int neighborPosition = new Vector2Int(x, y) + direction;
-        //    if (neighborPosition.x >= 0 && neighborPosition.x < Width && neighborPosition.y >= 0 &&
-        //        neighborPosition.y < Height)
-        //    {
-        //        neighborCells.Add(GetCell(neighborPosition));
-        //    }
-        //}
-
-        //return neighborCells;
-
-        // New
         if (directions.Contains(GridDirection.NorthEast))
         {
-            return CardinalAndInterCardinalNeighborList[new Vector2Int(x, y)];
+            return cardinalAndInterCardinalNeighborList[new Vector2Int(x, y)];
         }
 
-        return CardinalNeighborList[new Vector2Int(x, y)];
+        return cardinalNeighborList[new Vector2Int(x, y)];
     }
 
     public List<TGridObject> GetCellsWithObjects(string maskString)
@@ -280,8 +266,8 @@ public class MyGrid<TGridObject>
 
                 }
 
-                CardinalNeighborList.Add(new Vector2Int(x, y), cardinalNeighborCells);
-                CardinalAndInterCardinalNeighborList.Add(new Vector2Int(x, y), interCardinalNeighborCells);
+                cardinalNeighborList.Add(new Vector2Int(x, y), cardinalNeighborCells);
+                cardinalAndInterCardinalNeighborList.Add(new Vector2Int(x, y), interCardinalNeighborCells);
             }
         }
     }

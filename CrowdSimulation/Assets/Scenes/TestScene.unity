@@ -254,7 +254,8 @@ MonoBehaviour:
   baseObject: {fileID: 1847212265}
   showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
-  showFlowFieldArrows: 1
+  showFlowFieldArrows: 0
+  showAreaGrid: 0
   flowFieldWithAreaPathing: 1
 --- !u!4 &514380638
 Transform:
@@ -584,7 +585,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1059563914}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ea47c009fe06b04daf266e5526b0541, type: 3}
   m_Name: 
