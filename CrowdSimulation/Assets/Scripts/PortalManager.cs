@@ -60,109 +60,96 @@ public class PortalManager : MonoBehaviour
             }
         }
 
-        MakePortals();
+        CreatePortals();
     }
 
-    private void MakePortals()
+    public void DrawPortal(Portal portal)
+    {
+        Vector3 posA = (portal.GetCellCenterWorldPosition(portal.AreaACells[0]) +
+                        portal.GetCellCenterWorldPosition(portal.AreaBCells[0])) * 0.5f;
+        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[^1]) +
+                        portal.GetCellCenterWorldPosition(portal.AreaBCells[^1])) * 0.5f;
+
+        Debug.DrawLine(posA, portal.GetEntranceCellAreaACenterWorldPosition(), Color.red, 100f);
+        Debug.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB, Color.red, 100f);
+        Debug.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition(), Color.red, 100f);
+        Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, Color.red, 100f);
+    }
+
+    private void CreatePortals()
     {
         MyGrid<AreaNode> areaGrid = PathingManager.GetInstance().AreaMap.Grid;
-        MyGrid<FlowFieldCell> flowFieldGrid = PathingManager.GetInstance().FlowField.Grid;
-
 
         foreach (AreaNode area in areaGrid.GridArray)
         {
             foreach (AreaNode neighborArea in areaGrid.GetNeighborCells(area.GridPosition, GridDirection.CardinalDirections))
             {
-                foreach (AStarCell cellA in area.GetBorderCells(Directions.North))
-                {
-                    foreach (AStarCell cellB in area.GetBorderCells(Directions.South))
-                    {
-                        List<Portal> singlePortals = new List<Portal>();
-                        FlowFieldCell flowFieldCellA = flowFieldGrid.GetCell(area.AStarGrid.GetCellWorldPosition(cellA.GridPosition));
-                        FlowFieldCell flowFieldCellB = flowFieldGrid.GetCell(neighborArea.AStarGrid.GetCellWorldPosition(cellB.GridPosition));
-                        Vector3 cellAWorldPos = flowFieldGrid.GetCellWorldPosition(flowFieldCellA.GridPosition);
-                        Vector3 cellBWorldPos = flowFieldGrid.GetCellWorldPosition(flowFieldCellB.GridPosition);
-
-                        if (flowFieldGrid.GetNeighborCells(cellAWorldPos, GridDirection.CardinalDirections).Contains(flowFieldCellB))
-                        {
-                            if (flowFieldCellA.Cost != GlobalConstants.OBSTACLE_COST && flowFieldCellB.Cost != GlobalConstants.OBSTACLE_COST)
-                            {
-                                //Debug.DrawLine(flowFieldGrid.GetCellCenterWorldPosition(flowFieldCellA.GridPosition), flowFieldGrid.GetCellCenterWorldPosition(flowFieldCellB.GridPosition), Color.red, 100f);
-                                Portal newPortal = new Portal(area, neighborArea, cellA, cellB);
-                                singlePortals.Add(newPortal);
-                                DrawPortal(newPortal);
-
-                                //bool contains = false;
-
-                                //foreach (Portal singlePortal in singlePortals)
-                                //{
-                                //    if (flowFieldGrid.GetNeighborCells(singlePortal.AreaACells[0].GridPosition, GridDirection.CardinalDirections).Contains(flowFieldCellA))
-                                //    {
-                                //        contains = true;
-                                //    }
-                                //}
-
-                                //if (!contains)
-                                //{
-                                //    List<AStarCell> areaACells = new List<AStarCell>();
-                                //    List<AStarCell> areaBCells = new List<AStarCell>();
-                                //    foreach (Portal singlePortal in singlePortals)
-                                //    {
-                                //        areaACells.Add(singlePortal.AreaACells[0]);
-                                //        areaBCells.Add(singlePortal.AreaBCells[0]);
-                                //    }
-
-                                //    Portal portal = new Portal(area, neighborArea, areaACells, areaBCells);
-                                //    portals.Add(portal);
-                                //    singlePortals.Clear();
-                                //    DrawPortal(portal);
-                                //}
-                            }
-                        }
-
-
-                    }
-                }
-
-                foreach (AStarCell cellA in area.GetBorderCells(Directions.East))
-                {
-                    foreach (AStarCell cellB in area.GetBorderCells(Directions.West))
-                    {
-                        List<Portal> singlePortals = new List<Portal>();
-                        FlowFieldCell flowFieldCellA = flowFieldGrid.GetCell(area.AStarGrid.GetCellWorldPosition(cellA.GridPosition));
-                        FlowFieldCell flowFieldCellB = flowFieldGrid.GetCell(neighborArea.AStarGrid.GetCellWorldPosition(cellB.GridPosition));
-                        Vector3 cellAWorldPos = flowFieldGrid.GetCellWorldPosition(flowFieldCellA.GridPosition);
-                        Vector3 cellBWorldPos = flowFieldGrid.GetCellWorldPosition(flowFieldCellB.GridPosition);
-
-                        if (flowFieldGrid.GetNeighborCells(cellAWorldPos, GridDirection.CardinalDirections).Contains(flowFieldCellB))
-                        {
-                            if (flowFieldCellA.Cost != GlobalConstants.OBSTACLE_COST && flowFieldCellB.Cost != GlobalConstants.OBSTACLE_COST)
-                            {
-                                //Debug.DrawLine(flowFieldGrid.GetCellCenterWorldPosition(flowFieldCellA.GridPosition), flowFieldGrid.GetCellCenterWorldPosition(flowFieldCellB.GridPosition), Color.red, 100f);
-                                Portal portal = new Portal(area, neighborArea, cellA, cellB);
-                                singlePortals.Add(portal);
-                                DrawPortal(portal);
-                            }
-                        }
-                    }
-                }
+                CreateAndCombinePortals(area, neighborArea, Directions.North, Directions.South);
+                CreateAndCombinePortals(area, neighborArea, Directions.East, Directions.West);
             }
+        }
+
+        foreach (Portal portal in portals)
+        {
+            DrawPortal(portal);
         }
     }
 
-    public void DrawPortal(Portal portal)
+    private void CreateAndCombinePortals(AreaNode areaA, AreaNode areaB, Directions areaADirection, Directions areaBDirection)
     {
-        Vector3 entranceCenter = (portal.AreaNodeA.AStarGrid.GetCellCenterWorldPosition(portal.GetEntranceCell(portal.AreaNodeA).GridPosition) +
-                                  portal.AreaNodeB.AStarGrid.GetCellCenterWorldPosition(portal.GetEntranceCell(portal.AreaNodeB).GridPosition)) /
-                                 2; 
+        MyGrid<FlowFieldCell> flowFieldGrid = PathingManager.GetInstance().FlowField.Grid;
 
-        foreach (AStarCell areaACell in portal.AreaACells)
+        List<Portal> singlePortals = new List<Portal>();
+
+        foreach (AStarCell cellA in areaA.GetBorderCells(areaADirection))
         {
-            Debug.DrawLine(portal.AreaNodeA.AStarGrid.GetCellCenterWorldPosition(areaACell.GridPosition), entranceCenter, Color.red, 100f);
+            foreach (AStarCell cellB in areaA.GetBorderCells(areaBDirection))
+            {
+                Vector3 cellAWorldPos = areaA.AStarGrid.GetCellWorldPosition(cellA.GridPosition);
+                FlowFieldCell flowFieldCellA = flowFieldGrid.GetCell(cellAWorldPos);
+                FlowFieldCell flowFieldCellB = flowFieldGrid.GetCell(areaB.AStarGrid.GetCellWorldPosition(cellB.GridPosition));
+
+                if (!flowFieldGrid.GetNeighborCells(cellAWorldPos, GridDirection.CardinalDirections).Contains(flowFieldCellB)) continue;
+
+                if (flowFieldCellA.Cost == GlobalConstants.OBSTACLE_COST || flowFieldCellB.Cost == GlobalConstants.OBSTACLE_COST) continue;
+
+                bool contains = false;
+
+                foreach (Portal singlePortal in singlePortals)
+                {
+                    if (areaA.AStarGrid.GetNeighborCells(cellA.GridPosition, GridDirection.CardinalDirections).Contains(singlePortal.EntranceCellAreaA))
+                    {
+                        contains = true;
+                    }
+                }
+
+                if (!contains && singlePortals.Count > 0)
+                {
+                    portals.Add(CombinePortals(singlePortals));
+                    singlePortals.Clear();
+                }
+
+                Portal newPortal = new Portal(areaA, areaB, cellA, cellB);
+                singlePortals.Add(newPortal);
+            }
         }
-        foreach (AStarCell areaBCell in portal.AreaBCells)
+
+        if (singlePortals.Count > 0)
         {
-            Debug.DrawLine(portal.AreaNodeB.AStarGrid.GetCellCenterWorldPosition(areaBCell.GridPosition), entranceCenter, Color.red, 100f);
+            portals.Add(CombinePortals(singlePortals));
         }
+    }
+
+    private Portal CombinePortals(List<Portal> singlePortals)
+    {
+        List<AStarCell> areaACells = new List<AStarCell>();
+        List<AStarCell> areaBCells = new List<AStarCell>();
+        foreach (Portal singlePortal in singlePortals)
+        {
+            areaACells.Add(singlePortal.EntranceCellAreaA);
+            areaBCells.Add(singlePortal.EntranceCellAreaB);
+        }
+
+        return new Portal(singlePortals[0].AreaA, singlePortals[0].AreaB, areaACells, areaBCells);
     }
 }
