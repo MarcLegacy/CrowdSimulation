@@ -255,7 +255,7 @@ MonoBehaviour:
   showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
   showFlowFieldArrows: 0
-  showAreaGrid: 0
+  showAreaGrid: 1
   flowFieldWithAreaPathing: 1
 --- !u!4 &514380638
 Transform:

@@ -9,24 +9,25 @@ public class AreaNode
     public int X { get; }
     public int Y { get; }
     public Vector2Int GridPosition => new Vector2Int(X, Y);
-    public MyGrid<AStarCell> AStarGrid { get; private set; }
+    public AStar AStar { get; private set; }
 
 
     public AreaNode(int x, int y)
     {
         X = x;
         Y = y;
+
+        borderCells = new List<AStarCell>();
     }
 
     public void SetGrid(int width, int height, float cellSize, Vector3 originPosition)
     {
-        AStarGrid = new MyGrid<AStarCell>(width, height, cellSize, originPosition, (g, x, y) => new AStarCell(g, x, y));
+        AStar = new AStar(width, height, cellSize, originPosition);
+        MyGrid<AStarCell> aStarGrid = AStar.Grid;
 
-        borderCells = new List<AStarCell>();
-
-        foreach (AStarCell cell in AStarGrid.GridArray)
+        foreach (AStarCell cell in aStarGrid.GridArray)
         {
-            if (cell.X == 0 || cell.X == AStarGrid.Width - 1 || cell.Y == 0 || cell.Y == AStarGrid.Height - 1)
+            if (cell.X == 0 || cell.X == aStarGrid.Width - 1 || cell.Y == 0 || cell.Y == aStarGrid.Height - 1)
             {
                 borderCells.Add(cell);
             }
@@ -35,13 +36,14 @@ public class AreaNode
 
     public List<AStarCell> GetBorderCells(Directions direction)
     {
+        MyGrid<AStarCell> aStarGrid = AStar.Grid;
         List<AStarCell> sideBorderCells = new List<AStarCell>();
         switch (direction)
         {
             case Directions.North:
                 foreach (AStarCell borderCell in borderCells)
                 {
-                    if (borderCell.Y == AStarGrid.Height - 1)
+                    if (borderCell.Y == aStarGrid.Height - 1)
                     {
                         sideBorderCells.Add(borderCell);
                     }
@@ -51,7 +53,7 @@ public class AreaNode
             case Directions.East:
                 foreach (AStarCell borderCell in borderCells)
                 {
-                    if (borderCell.X == AStarGrid.Width - 1)
+                    if (borderCell.X == aStarGrid.Width - 1)
                     {
                         sideBorderCells.Add(borderCell);
                     }
@@ -81,7 +83,7 @@ public class AreaNode
             case Directions.NorthEast:
                 foreach (AStarCell borderCell in borderCells)
                 {
-                    if (borderCell.Y == AStarGrid.Height - 1 || borderCell.X == AStarGrid.Width - 1)
+                    if (borderCell.Y == aStarGrid.Height - 1 || borderCell.X == aStarGrid.Width - 1)
                     {
                         sideBorderCells.Add(borderCell);
                     }
@@ -91,7 +93,7 @@ public class AreaNode
             case Directions.SouthEast:
                 foreach (AStarCell borderCell in borderCells)
                 {
-                    if (borderCell.Y == 0 || borderCell.X == AStarGrid.Width - 1)
+                    if (borderCell.Y == 0 || borderCell.X == aStarGrid.Width - 1)
                     {
                         sideBorderCells.Add(borderCell);
                     }
@@ -111,7 +113,7 @@ public class AreaNode
             case Directions.NorthWest:
                 foreach (AStarCell borderCell in borderCells)
                 {
-                    if (borderCell.Y == AStarGrid.Height - 1 || borderCell.X == 0)
+                    if (borderCell.Y == aStarGrid.Height - 1 || borderCell.X == 0)
                     {
                         sideBorderCells.Add(borderCell);
                     }

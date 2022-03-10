@@ -151,7 +151,7 @@ public class PathingManager : MonoBehaviour
                 //{
                 //    for (int y = 0; y < grid.Height; y++)
                 //    {
-                //        grid.GetCell(x, y).AStarGrid.ShowGrid(Color.black);
+                //        grid.GetCell(x, y).AStar.ShowGrid(Color.black);
                 //    }
                 //}
 

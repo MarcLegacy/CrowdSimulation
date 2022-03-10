@@ -9,7 +9,7 @@ public class PortalManager : MonoBehaviour
 {
     private List<AStarCell> possiblePortalCells;
     private List<Portal> portals;
-    private Dictionary<Portal, Dictionary<Portal, int>> neighborList;
+    private Dictionary<Portal, Dictionary<Portal, List<AStarCell>>> neighborList;
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -29,7 +29,7 @@ public class PortalManager : MonoBehaviour
     {
         possiblePortalCells = new List<AStarCell>();
         portals = new List<Portal>();
-        neighborList = new Dictionary<Portal, Dictionary<Portal, int>>();
+        neighborList = new Dictionary<Portal, Dictionary<Portal, List<AStarCell>>>();
 
         StartCoroutine(DelayedStart());
     }
@@ -47,14 +47,16 @@ public class PortalManager : MonoBehaviour
 
         CollectNeigbors();
 
-        foreach (KeyValuePair<Portal, Dictionary<Portal, int>> currentPortal in neighborList)
+        foreach (KeyValuePair<Portal, Dictionary<Portal, List<AStarCell>>> currentPortal in neighborList)
         {
             Vector3 positionA = currentPortal.Key.GetEntranceCellCenterWorldPosition();
-            foreach (KeyValuePair<Portal, int> neighbor in currentPortal.Value)
+            foreach (KeyValuePair<Portal, List<AStarCell>> neighbor in currentPortal.Value)
             {
                 Vector3 positionB = neighbor.Key.GetEntranceCellCenterWorldPosition();
 
                 Debug.DrawLine(positionA, positionB, Color.blue, 100f);
+
+                //neighbor.Key.A
             }
         }
     }
@@ -102,9 +104,9 @@ public class PortalManager : MonoBehaviour
         {
             foreach (AStarCell cellB in areaA.GetBorderCells(areaBDirection))
             {
-                Vector3 cellAWorldPos = areaA.AStarGrid.GetCellWorldPosition(cellA.GridPosition);
+                Vector3 cellAWorldPos = areaA.AStar.Grid.GetCellWorldPosition(cellA.GridPosition);
                 FlowFieldCell flowFieldCellA = flowFieldGrid.GetCell(cellAWorldPos);
-                FlowFieldCell flowFieldCellB = flowFieldGrid.GetCell(areaB.AStarGrid.GetCellWorldPosition(cellB.GridPosition));
+                FlowFieldCell flowFieldCellB = flowFieldGrid.GetCell(areaB.AStar.Grid.GetCellWorldPosition(cellB.GridPosition));
 
                 if (!flowFieldGrid.GetNeighborCells(cellAWorldPos, GridDirection.CardinalDirections).Contains(flowFieldCellB)) continue;
 
@@ -114,7 +116,7 @@ public class PortalManager : MonoBehaviour
 
                 foreach (Portal singlePortal in singlePortals)
                 {
-                    if (areaA.AStarGrid.GetNeighborCells(cellA.GridPosition, GridDirection.CardinalDirections).Contains(singlePortal.EntranceCellAreaA))
+                    if (areaA.AStar.Grid.GetNeighborCells(cellA.GridPosition, GridDirection.CardinalDirections).Contains(singlePortal.EntranceCellAreaA))
                     {
                         contains = true;
                     }
@@ -170,27 +172,40 @@ public class PortalManager : MonoBehaviour
     {
         foreach (Portal currentPortal in portals)
         {
-            Dictionary<Portal, int> newNeighborList = new Dictionary<Portal, int>();
             foreach (Portal possibleNeighborPortal in portals)
             {
                 if (currentPortal == possibleNeighborPortal) continue;
 
+                List<AStarCell> pathA = new List<AStarCell>();
+                List<AStarCell> pathB = new List<AStarCell>();
+
                 if (possibleNeighborPortal.ContainsArea(currentPortal.AreaA))
                 {
-                    newNeighborList.Add(possibleNeighborPortal, 0);
-
-                    //currentPortal.AreaA.AStarGrid.p
+                    pathA = currentPortal.AreaA.AStar.FindPath(currentPortal.GetEntranceCellAreaAWorldPosition(),
+                        possibleNeighborPortal.GetEntranceCellWorldPosition(currentPortal.AreaA));
                 }
 
                 if (possibleNeighborPortal.ContainsArea(currentPortal.AreaB))
                 {
-                    newNeighborList.Add(possibleNeighborPortal, 0);
+                    pathB = currentPortal.AreaB.AStar.FindPath(currentPortal.GetEntranceCellAreaBWorldPosition(),
+                        possibleNeighborPortal.GetEntranceCellWorldPosition(currentPortal.AreaB));
+                }
 
-                    //currentPortal.
+                if (pathA.Count == 0 && pathB.Count == 0) continue;
+
+                if (neighborList.TryGetValue(currentPortal, out Dictionary<Portal, List<AStarCell>> newNeighborList))
+                {
+                    newNeighborList.Add(possibleNeighborPortal, pathA.Count < pathB.Count ? pathA : pathB);
+                }
+                else
+                {
+                    newNeighborList = new Dictionary<Portal, List<AStarCell>>
+                    {
+                        {possibleNeighborPortal, pathA.Count < pathB.Count ? pathA : pathB}
+                    };
+                    neighborList.Add(currentPortal, newNeighborList);
                 }
             }
-
-            neighborList.Add(currentPortal, newNeighborList);
         }
     }
 }

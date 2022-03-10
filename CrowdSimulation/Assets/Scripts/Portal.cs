@@ -131,10 +131,10 @@ public class Portal
 
         if (areaNode == null)
         {
-            return GetAreaNode(cell)?.AStarGrid.GetCellWorldPosition(cell.GridPosition) ?? Vector3.zero;
+            return GetAreaNode(cell)?.AStar.Grid.GetCellWorldPosition(cell.GridPosition) ?? Vector3.zero;
         }
 
-        return areaNode.AStarGrid.GetCellWorldPosition(cell.GridPosition);
+        return areaNode.AStar.Grid.GetCellWorldPosition(cell.GridPosition);
     }
 
     /// <summary> Operation is cheaper when the areaNode is given, but less prone to fail. </summary>
@@ -148,10 +148,10 @@ public class Portal
 
         if (areaNode == null)
         {
-            return GetAreaNode(cell)?.AStarGrid.GetCellCenterWorldPosition(cell.GridPosition) ?? Vector3.zero;
+            return GetAreaNode(cell)?.AStar.Grid.GetCellCenterWorldPosition(cell.GridPosition) ?? Vector3.zero;
         }
 
-        return areaNode.AStarGrid.GetCellCenterWorldPosition(cell.GridPosition);
+        return areaNode.AStar.Grid.GetCellCenterWorldPosition(cell.GridPosition);
     }
 
     public Vector3 GetEntranceCellWorldPosition(AreaNode areaNode)
@@ -163,15 +163,15 @@ public class Portal
         }
 
         AStarCell cell = GetEntranceCell(areaNode);
-        return cell != null ? areaNode.AStarGrid.GetCellWorldPosition(cell.GridPosition) : Vector3.zero;
+        return cell != null ? areaNode.AStar.Grid.GetCellWorldPosition(cell.GridPosition) : Vector3.zero;
     }
     public Vector3 GetEntranceCellAreaAWorldPosition()
     {
-        return AreaA.AStarGrid.GetCellWorldPosition(EntranceCellAreaA.GridPosition);
+        return AreaA.AStar.Grid.GetCellWorldPosition(EntranceCellAreaA.GridPosition);
     }
     public Vector3 GetEntranceCellAreaBWorldPosition()
     {
-        return AreaB.AStarGrid.GetCellWorldPosition(EntranceCellAreaB.GridPosition);
+        return AreaB.AStar.Grid.GetCellWorldPosition(EntranceCellAreaB.GridPosition);
     }
 
     public Vector3 GetEntranceCellCenterWorldPosition(AreaNode areaNode)
@@ -183,7 +183,7 @@ public class Portal
         }
 
         AStarCell cell = GetEntranceCell(areaNode);
-        return cell != null ? areaNode.AStarGrid.GetCellCenterWorldPosition(cell.GridPosition) : Vector3.zero;
+        return cell != null ? areaNode.AStar.Grid.GetCellCenterWorldPosition(cell.GridPosition) : Vector3.zero;
     }
     /// <summary> Gives the average between both entrance centers. </summary>
     public Vector3 GetEntranceCellCenterWorldPosition()
@@ -192,11 +192,11 @@ public class Portal
     }
     public Vector3 GetEntranceCellAreaACenterWorldPosition()
     {
-        return AreaA.AStarGrid.GetCellCenterWorldPosition(EntranceCellAreaA.GridPosition);
+        return AreaA.AStar.Grid.GetCellCenterWorldPosition(EntranceCellAreaA.GridPosition);
     }
     public Vector3 GetEntranceCellAreaBCenterWorldPosition()
     {
-        return AreaB.AStarGrid.GetCellCenterWorldPosition(EntranceCellAreaB.GridPosition);
+        return AreaB.AStar.Grid.GetCellCenterWorldPosition(EntranceCellAreaB.GridPosition);
     }
 
     public bool ContainsArea(Portal otherPortal)
