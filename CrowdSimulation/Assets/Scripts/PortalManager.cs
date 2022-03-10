@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using Unity.VisualScripting;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -8,6 +9,7 @@ public class PortalManager : MonoBehaviour
 {
     private List<AStarCell> possiblePortalCells;
     private List<Portal> portals;
+    private Dictionary<Portal, Dictionary<Portal, int>> neighborList;
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -27,6 +29,7 @@ public class PortalManager : MonoBehaviour
     {
         possiblePortalCells = new List<AStarCell>();
         portals = new List<Portal>();
+        neighborList = new Dictionary<Portal, Dictionary<Portal, int>>();
 
         StartCoroutine(DelayedStart());
     }
@@ -35,32 +38,31 @@ public class PortalManager : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        SetupPossiblePortalCells();
+        CreatePortals();
+
+        //foreach (Portal portal in portals)
+        //{
+        //    DrawPortal(portal);
+        //}
+
+        CollectNeigbors();
+
+        foreach (KeyValuePair<Portal, Dictionary<Portal, int>> currentPortal in neighborList)
+        {
+            Vector3 positionA = currentPortal.Key.GetEntranceCellCenterWorldPosition();
+            foreach (KeyValuePair<Portal, int> neighbor in currentPortal.Value)
+            {
+                Vector3 positionB = neighbor.Key.GetEntranceCellCenterWorldPosition();
+
+                Debug.DrawLine(positionA, positionB, Color.blue, 100f);
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
         
-    }
-
-    private void SetupPossiblePortalCells()
-    {
-        foreach (AStarCell cell in PathingManager.GetInstance().AStar.Grid.GridArray)
-        {
-            if ((cell.X % PathingManager.GetInstance().CellSize == 0) ||
-                (cell.X != PathingManager.GetInstance().AStar.Grid.Width && (cell.X + 1) % PathingManager.GetInstance().AreaSize == 0) ||
-                (cell.Y % PathingManager.GetInstance().CellSize == 0) || (cell.Y != PathingManager.GetInstance().AStar.Grid.Height &&
-                                                                          (cell.Y + 1) % PathingManager.GetInstance().AreaSize == 0))
-            {
-                if (!possiblePortalCells.Contains(cell))
-                {
-                    possiblePortalCells.Add(cell);
-                }
-            }
-        }
-
-        CreatePortals();
     }
 
     public void DrawPortal(Portal portal)
@@ -87,11 +89,6 @@ public class PortalManager : MonoBehaviour
                 CreateAndCombinePortals(area, neighborArea, Directions.North, Directions.South);
                 CreateAndCombinePortals(area, neighborArea, Directions.East, Directions.West);
             }
-        }
-
-        foreach (Portal portal in portals)
-        {
-            DrawPortal(portal);
         }
     }
 
@@ -151,5 +148,49 @@ public class PortalManager : MonoBehaviour
         }
 
         return new Portal(singlePortals[0].AreaA, singlePortals[0].AreaB, areaACells, areaBCells);
+    }
+
+    private void CheckUniquePortals()
+    {
+        foreach (Portal portalA in portals)
+        {
+            foreach (Portal portalB in portals)
+            {
+                if (portalA == portalB) continue;
+
+                if (portalA.AreaA == portalB.AreaA && portalA.AreaB == portalB.AreaB && portalA.EntranceCellAreaA == portalB.EntranceCellAreaA && portalA.EntranceCellAreaB == portalB.EntranceCellAreaB)
+                {
+                    Debug.Log("Oui!");
+                }
+            }
+        }
+    }
+
+    private void CollectNeigbors()
+    {
+        foreach (Portal currentPortal in portals)
+        {
+            Dictionary<Portal, int> newNeighborList = new Dictionary<Portal, int>();
+            foreach (Portal possibleNeighborPortal in portals)
+            {
+                if (currentPortal == possibleNeighborPortal) continue;
+
+                if (possibleNeighborPortal.ContainsArea(currentPortal.AreaA))
+                {
+                    newNeighborList.Add(possibleNeighborPortal, 0);
+
+                    //currentPortal.AreaA.AStarGrid.p
+                }
+
+                if (possibleNeighborPortal.ContainsArea(currentPortal.AreaB))
+                {
+                    newNeighborList.Add(possibleNeighborPortal, 0);
+
+                    //currentPortal.
+                }
+            }
+
+            neighborList.Add(currentPortal, newNeighborList);
+        }
     }
 }

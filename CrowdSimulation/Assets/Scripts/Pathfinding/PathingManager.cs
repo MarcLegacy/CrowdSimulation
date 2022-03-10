@@ -147,15 +147,15 @@ public class PathingManager : MonoBehaviour
             {
                 MyGrid<AreaNode> grid = AreaMap.Grid;
 
-                for (int x = 0; x < grid.Width; x++)
-                {
-                    for (int y = 0; y < grid.Height; y++)
-                    {
-                        grid.GetCell(x, y).AStarGrid.ShowGrid(Color.black);
-                    }
-                }
+                //for (int x = 0; x < grid.Width; x++)
+                //{
+                //    for (int y = 0; y < grid.Height; y++)
+                //    {
+                //        grid.GetCell(x, y).AStarGrid.ShowGrid(Color.black);
+                //    }
+                //}
 
-                AreaMap.Grid.ShowGrid(Color.red);
+                grid.ShowGrid(Color.red);
             }
 
         }

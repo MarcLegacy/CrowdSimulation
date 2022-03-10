@@ -185,6 +185,11 @@ public class Portal
         AStarCell cell = GetEntranceCell(areaNode);
         return cell != null ? areaNode.AStarGrid.GetCellCenterWorldPosition(cell.GridPosition) : Vector3.zero;
     }
+    /// <summary> Gives the average between both entrance centers. </summary>
+    public Vector3 GetEntranceCellCenterWorldPosition()
+    {
+        return (GetEntranceCellAreaACenterWorldPosition() + GetEntranceCellAreaBCenterWorldPosition()) * 0.5f;
+    }
     public Vector3 GetEntranceCellAreaACenterWorldPosition()
     {
         return AreaA.AStarGrid.GetCellCenterWorldPosition(EntranceCellAreaA.GridPosition);
@@ -192,6 +197,60 @@ public class Portal
     public Vector3 GetEntranceCellAreaBCenterWorldPosition()
     {
         return AreaB.AStarGrid.GetCellCenterWorldPosition(EntranceCellAreaB.GridPosition);
+    }
+
+    public bool ContainsArea(Portal otherPortal)
+    {
+        return ContainsArea(otherPortal.AreaA) || ContainsArea(otherPortal.AreaB);
+    }
+    public bool ContainsArea(List<AreaNode> areaNodes)
+    {
+        foreach (AreaNode areaNode in areaNodes)
+        {
+            return ContainsArea(areaNode);
+        }
+
+        return false;
+    }
+    public bool ContainsArea(AreaNode[] areaNodes)
+    {
+        foreach (AreaNode areaNode in areaNodes)
+        {
+            return ContainsArea(areaNode);
+        }
+
+        return false;
+    }
+    public bool ContainsArea(AreaNode areaNode)
+    {
+        return areaNode == AreaA || areaNode == AreaB;
+    }
+
+    public bool ContainsCell(Portal otherPortal)
+    {
+        return ContainsCell(otherPortal.AreaACells) || ContainsCell(otherPortal.AreaBCells);
+    }
+    public bool ContainsCell(List<AStarCell> cells)
+    {
+        foreach (AStarCell cell in cells)
+        {
+            return ContainsCell(cell);
+        }
+
+        return false;
+    }
+    public bool ContainsCell(AStarCell[] cells)
+    {
+        foreach (AStarCell cell in cells)
+        {
+            return ContainsCell(cell);
+        }
+
+        return false;
+    }
+    public bool ContainsCell(AStarCell cell)
+    {
+        return AreaACells.Contains(cell) || AreaBCells.Contains(cell);
     }
 
     private AStarCell CalculateEntranceCell(List<AStarCell> cells)
