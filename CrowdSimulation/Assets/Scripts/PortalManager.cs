@@ -1,15 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
-using Unity.VisualScripting;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
 public class PortalManager : MonoBehaviour
 {
-    private List<AStarCell> possiblePortalCells;
     private List<Portal> portals;
-    private Dictionary<Portal, Dictionary<Portal, List<AStarCell>>> neighborList;
+    private Dictionary<Portal, Dictionary<Portal, List<Vector3>>> neighborList;
+    private List<PortalNode> portalNodes;
+    private List<PortalNode> openList;
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -27,9 +26,9 @@ public class PortalManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        possiblePortalCells = new List<AStarCell>();
         portals = new List<Portal>();
-        neighborList = new Dictionary<Portal, Dictionary<Portal, List<AStarCell>>>();
+        neighborList = new Dictionary<Portal, Dictionary<Portal, List<Vector3>>>();
+        portalNodes = new List<PortalNode>();
 
         StartCoroutine(DelayedStart());
     }
@@ -47,18 +46,24 @@ public class PortalManager : MonoBehaviour
 
         CollectNeigbors();
 
-        foreach (KeyValuePair<Portal, Dictionary<Portal, List<AStarCell>>> currentPortal in neighborList)
+        foreach (KeyValuePair<Portal, Dictionary<Portal, List<Vector3>>> currentPortal in neighborList)
         {
+            PortalNode portalNode = new PortalNode(currentPortal.Key);
+
+            portalNodes.Add(portalNode);
+
             Vector3 positionA = currentPortal.Key.GetEntranceCellCenterWorldPosition();
-            foreach (KeyValuePair<Portal, List<AStarCell>> neighbor in currentPortal.Value)
+            foreach (KeyValuePair<Portal, List<Vector3>> neighbor in currentPortal.Value)
             {
                 Vector3 positionB = neighbor.Key.GetEntranceCellCenterWorldPosition();
 
                 Debug.DrawLine(positionA, positionB, Color.blue, 100f);
 
-                //neighbor.Key.A
+                //Utilities.DrawDebugPathLines(neighbor.Value);
             }
         }
+
+
     }
 
     // Update is called once per frame
@@ -78,6 +83,44 @@ public class PortalManager : MonoBehaviour
         Debug.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB, Color.red, 100f);
         Debug.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition(), Color.red, 100f);
         Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, Color.red, 100f);
+    }
+
+    public List<PortalNode> FindPathNodes(Vector3 startWorldPosition, Vector3 targetWorldPosition)
+    {
+        AreaNode startArea = PathingManager.GetInstance().AreaMap.Grid.GetCell(startWorldPosition);
+        AreaNode endArea = PathingManager.GetInstance().AreaMap.Grid.GetCell(targetWorldPosition);
+
+        if (startArea == null)
+        {
+            Debug.LogWarning("No valid " + nameof(startWorldPosition));
+            return null;
+        }
+
+        if (endArea == null)
+        {
+            Debug.LogWarning("No valid " + nameof(endArea));
+            return null;
+        }
+
+        foreach (PortalNode portalNode in portalNodes)
+        {
+            portalNode.ResetNode();
+
+            if (portalNode.Portal.ContainsArea(startArea))
+            {
+                List<Vector3> path = startArea.AStar.FindPath(startWorldPosition, portalNode.Portal.GetEntranceCellWorldPosition(startArea));
+
+                if (path == null || path.Count == 0) continue;
+
+                portalNode.hCost = CalculateHCost(portalNode.Portal.GetEntranceCellWorldPosition(startArea), targetWorldPosition);
+                portalNode.CalculateFCost();
+
+
+                openList.Add(portalNode);
+            }
+        }
+
+        return null;
     }
 
     private void CreatePortals()
@@ -176,8 +219,9 @@ public class PortalManager : MonoBehaviour
             {
                 if (currentPortal == possibleNeighborPortal) continue;
 
-                List<AStarCell> pathA = new List<AStarCell>();
-                List<AStarCell> pathB = new List<AStarCell>();
+                List<Vector3> pathA = new List<Vector3>();
+                List<Vector3> pathB = new List<Vector3>();
+                List<Vector3> shortestPath = new List<Vector3>();
 
                 if (possibleNeighborPortal.ContainsArea(currentPortal.AreaA))
                 {
@@ -191,21 +235,41 @@ public class PortalManager : MonoBehaviour
                         possibleNeighborPortal.GetEntranceCellWorldPosition(currentPortal.AreaB));
                 }
 
-                if (pathA.Count == 0 && pathB.Count == 0) continue;
-
-                if (neighborList.TryGetValue(currentPortal, out Dictionary<Portal, List<AStarCell>> newNeighborList))
+                if (pathA != null && pathA.Count != 0 && (pathB == null || pathB.Count == 0))
                 {
-                    newNeighborList.Add(possibleNeighborPortal, pathA.Count < pathB.Count ? pathA : pathB);
+                    shortestPath = pathA;
+                }
+
+                if (pathB != null && pathB.Count != 0 && (pathA == null || pathA.Count == 0))
+                {
+                    shortestPath = pathB;
+                }
+
+                if (shortestPath.Count == 0)
+                {
+                    shortestPath = pathB != null && pathA != null && pathA.Count < pathB.Count ? pathA : pathB;
+                }
+
+                if (shortestPath == null || shortestPath.Count == 0) continue;
+
+                if (neighborList.TryGetValue(currentPortal, out Dictionary<Portal, List<Vector3>> newNeighborList))
+                {
+                    newNeighborList.Add(possibleNeighborPortal, shortestPath);
                 }
                 else
                 {
-                    newNeighborList = new Dictionary<Portal, List<AStarCell>>
+                    newNeighborList = new Dictionary<Portal, List<Vector3>>
                     {
-                        {possibleNeighborPortal, pathA.Count < pathB.Count ? pathA : pathB}
+                        {possibleNeighborPortal, shortestPath}
                     };
                     neighborList.Add(currentPortal, newNeighborList);
                 }
             }
         }
+    }
+
+    private int CalculateHCost(Vector3 posA, Vector3 posB)
+    {
+        return (int) (Mathf.Abs(posA.x - posB.x) + Mathf.Abs(posA.z - posB.z));
     }
 }

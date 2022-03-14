@@ -38,22 +38,40 @@ public class AStar
         Grid = new MyGrid<AStarCell>(width, height, cellSize, originPosition, (g, x, y) => new AStarCell(g, x, y));
     }
 
-    public List<AStarCell> FindPath(Vector3 startWorldPosition, Vector3 endWorldPosition)
+    public List<Vector3> FindPath(Vector3 startWorldPosition, Vector3 endWorldPosition)
     {
-        return FindPath(Grid.GetCellGridPosition(startWorldPosition), Grid.GetCellGridPosition(endWorldPosition));
+        return TransformPathNodesToWorldPositions(FindPathNodes(startWorldPosition, endWorldPosition));
     }
-    public List<AStarCell> FindPath(Vector2Int startGridPosition, Vector2Int endGridPosition)
+    public List<Vector3> FindPath(Vector2Int startGridPosition, Vector2Int endGridPosition)
     {
-        return FindPath(startGridPosition.x, startGridPosition.y, endGridPosition.x, endGridPosition.y);
+        return TransformPathNodesToWorldPositions(FindPathNodes(startGridPosition, endGridPosition));
     }
-    public List<AStarCell> FindPath(int startX, int startY, int endX, int endY)
+    public List<Vector3> FindPath(int startX, int startY, int endX, int endY)
+    {
+        return TransformPathNodesToWorldPositions(FindPathNodes(startX, startY, endX, endY));
+    }
+    public List<AStarCell> FindPathNodes(Vector3 startWorldPosition, Vector3 endWorldPosition)
+    {
+        return FindPathNodes(Grid.GetCellGridPosition(startWorldPosition), Grid.GetCellGridPosition(endWorldPosition));
+    }
+    public List<AStarCell> FindPathNodes(Vector2Int startGridPosition, Vector2Int endGridPosition)
+    {
+        return FindPathNodes(startGridPosition.x, startGridPosition.y, endGridPosition.x, endGridPosition.y);
+    }
+    public List<AStarCell> FindPathNodes(int startX, int startY, int endX, int endY)
     {
         AStarCell startCell = Grid.GetCell(startX, startY);
         AStarCell endCell = Grid.GetCell(endX, endY);
 
-        if (startCell == null || endCell == null)
+        if (startCell == null)
         {
-            Debug.LogWarning("No valid start or end position");
+            Debug.LogWarning("No valid start position");
+            return null;
+        }
+
+        if (endCell == null)
+        {
+            Debug.LogWarning("No valid end position");
             return null;
         }
 
@@ -100,13 +118,11 @@ public class AStar
                     if (!openList.Contains(neighborCell))
                     {
                         openList.Add(neighborCell);
-                        
                     }
                 }
             }
         }
 
-        Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": " + "No path found!");
         return null;
     }
 
@@ -122,7 +138,7 @@ public class AStar
         {
             Vector2 gridDirection = path[i + 1].GridPosition- path[i].GridPosition;
 
-            Utilities.DrawArrow(Grid.GetCellCenterWorldPosition(path[i].GridPosition),
+            Utilities.DrawGizmosArrow(Grid.GetCellCenterWorldPosition(path[i].GridPosition),
                 new Vector3(gridDirection.x, 0f, gridDirection.y), Grid.CellSize * 0.5f, Color.black);
         }
     }
@@ -143,6 +159,21 @@ public class AStar
 
             cell.ResetCell();
         }
+    }
+
+    /// <summary> Returns the cell center world positions </summary>
+    public List<Vector3> TransformPathNodesToWorldPositions(List<AStarCell> pathNodes)
+    {
+        if (pathNodes == null || pathNodes.Count == 0) return null;
+
+        List<Vector3> worldPositions = new List<Vector3>(pathNodes.Count);
+
+        foreach (AStarCell cell in pathNodes)
+        {
+            worldPositions.Add(Grid.GetCellCenterWorldPosition(cell.GridPosition));
+        }
+
+        return worldPositions;
     }
 
     private int CalculateHCost(AStarCell a, AStarCell b)

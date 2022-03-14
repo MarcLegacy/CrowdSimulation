@@ -11,7 +11,7 @@ public class PathingManager : MonoBehaviour
 
     [SerializeField] private int gridWidth = 10;
     [SerializeField] private int gridHeight = 10;
-    [SerializeField] private float cellSize = 10f;
+    [SerializeField] private float cellSize = 10;
     [SerializeField] private int areaSize = 10;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject baseObject;
@@ -97,6 +97,10 @@ public class PathingManager : MonoBehaviour
 
         AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
         FlowField.CalculateCostField(GlobalConstants.OBSTACLES_STRING);
+        foreach (AreaNode area in AreaMap.Grid.GridArray)
+        {
+            area.AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
+        }
 
         FlowField.CalculateFlowField(FlowField.Grid.GetCell(baseObject.transform.position));
     }
@@ -178,7 +182,7 @@ public class PathingManager : MonoBehaviour
 
         double startTimer = Time.realtimeSinceStartupAsDouble;
 
-        List<AStarCell> path = AStar.FindPath(startPosition, targetPosition);
+        List<AStarCell> path = AStar.FindPathNodes(startPosition, targetPosition);
 
         if (path == null) return;
 
@@ -196,6 +200,14 @@ public class PathingManager : MonoBehaviour
 
         success = true;
         pathingTimes.Add(Time.realtimeSinceStartupAsDouble - startTimer);
+    }
+
+    public void StartAreaPortalPathing(Vector3 startPosition, Vector3 endPosition, out bool success)
+    {
+        success = false;
+
+
+
     }
 
     private void CalculateFlowFieldWithAreas()

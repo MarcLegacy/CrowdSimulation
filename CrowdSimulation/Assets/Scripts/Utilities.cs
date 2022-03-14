@@ -13,7 +13,7 @@ public static class Utilities
         return Physics.Raycast(ray, out RaycastHit raycastHit) ? raycastHit.point : Vector3.zero;
     }
 
-    public static void DrawArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null)
+    public static void DrawGizmosArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null)
     {
         if (direction == Vector3.zero)
         {
@@ -61,6 +61,25 @@ public static class Utilities
         }
 
         return gameObjects;
+    }
+
+    public static void DrawDebugPathLines(List<Vector3> worldLocations, Color? color = null, float duration = 100f)
+    {
+        if (worldLocations == null || worldLocations.Count == 0)
+        {
+            Debug.LogWarning(nameof(worldLocations) + " is invalid!");
+            return;
+        }
+
+        if (color == null)
+        {
+            color = Color.black;
+        }
+
+        for (int i = 0; i < worldLocations.Count - 1; i++)
+        {
+            Debug.DrawLine(worldLocations[i], worldLocations[i + 1], (Color)color, duration);
+        }
     }
 
     #region CodeMonkeyFunctions

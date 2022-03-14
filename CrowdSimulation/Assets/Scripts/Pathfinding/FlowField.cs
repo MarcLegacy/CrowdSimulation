@@ -49,7 +49,7 @@ public class FlowField
 
                 if (gridDirection != GridDirection.None)
                 {
-                    Utilities.DrawArrow(Grid.GetCellCenterWorldPosition(x, y),
+                    Utilities.DrawGizmosArrow(Grid.GetCellCenterWorldPosition(x, y),
                         new Vector3(gridDirection.vector2D.x, 0, gridDirection.vector2D.y), Grid.CellSize * 0.5f, Color.black);
                 }
             }

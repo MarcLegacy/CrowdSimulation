@@ -101,6 +101,44 @@ public class MyGrid<TGridObject>
         Gizmos.DrawLine(GetCellWorldPosition(Width, 0), GetCellWorldPosition(Width, Height));
     }
 
+    public List<Vector3> GetCellWorldPositions()
+    {
+        List<Vector3> worldPositions = new List<Vector3>();
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                worldPositions.Add(GetCellWorldPosition(x, y));
+            }
+        }
+        return worldPositions;
+    }
+    public List<Vector3> GetCellCenterWorldPositions()
+    {
+        List<Vector3> worldPositions = new List<Vector3>();
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                worldPositions.Add(GetCellCenterWorldPosition(x, y));
+            }
+        }
+        return worldPositions;
+    }
+    public List<Vector2Int> GetCellGridPositions()
+    {
+        List<Vector2Int> gridPositions = new List<Vector2Int>();
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                gridPositions.Add(GetCellGridPosition(x, y));
+            }
+        }
+        return gridPositions;
+    }
+
     public Vector3 GetCellWorldPosition(Vector2Int gridPosition)
     {
         return GetCellWorldPosition(gridPosition.x, gridPosition.y);
