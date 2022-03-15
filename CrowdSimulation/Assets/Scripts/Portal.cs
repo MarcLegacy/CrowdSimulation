@@ -185,11 +185,12 @@ public class Portal
         AStarCell cell = GetEntranceCell(areaNode);
         return cell != null ? areaNode.AStar.Grid.GetCellCenterWorldPosition(cell.GridPosition) : Vector3.zero;
     }
-    /// <summary> Gives the average between both entrance centers. </summary>
-    public Vector3 GetEntranceCellCenterWorldPosition()
+
+    public Vector3 GetPortalWorldPosition()
     {
         return (GetEntranceCellAreaACenterWorldPosition() + GetEntranceCellAreaBCenterWorldPosition()) * 0.5f;
     }
+
     public Vector3 GetEntranceCellAreaACenterWorldPosition()
     {
         return AreaA.AStar.Grid.GetCellCenterWorldPosition(EntranceCellAreaA.GridPosition);

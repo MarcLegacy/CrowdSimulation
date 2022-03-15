@@ -24,6 +24,7 @@ public class PathingManager : MonoBehaviour
     private bool calculateFlowField;
     private Vector3 targetPosition = Vector3.zero;
     private UnitManager unitManager;
+    private PortalManager portalManager;
     private List<List<AStarCell>> paths;
     private List<double> pathingTimes;
 
@@ -80,6 +81,7 @@ public class PathingManager : MonoBehaviour
         paths = new List<List<AStarCell>>();
         pathingTimes = new List<double>();
         unitManager = UnitManager.GetInstance();
+        portalManager = PortalManager.GetInstance();
 
         TargetPosition = baseObject.transform.position;
 
@@ -125,7 +127,7 @@ public class PathingManager : MonoBehaviour
 
         if (calculateFlowField)
         {
-            Debug.Log("Average pathing time: " +  Math.Round(pathingTimes.Average() * 100000f) * 0.01 + "ms");
+            Debug.Log("Average pathing time: " +  Math.Round(pathingTimes.Sum() * 100000f) * 0.01 + "ms");
 
            CalculateFlowFieldWithAreas();
         }
@@ -202,12 +204,33 @@ public class PathingManager : MonoBehaviour
         pathingTimes.Add(Time.realtimeSinceStartupAsDouble - startTimer);
     }
 
-    public void StartAreaPortalPathing(Vector3 startPosition, Vector3 endPosition, out bool success)
+    public void StartAreaPortalPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
     {
         success = false;
 
+        MyGrid<AreaNode> areaGrid = AreaMap.Grid;
+        MyGrid<AStarCell> aStarGrid = AStar.Grid;
+        success = false;
 
+        double startTimer = Time.realtimeSinceStartupAsDouble;
 
+        List<PortalNode> path = portalManager.FindPathNodes(startPosition, targetPosition);
+
+        if (path == null) return;
+
+        //paths.Add(path);
+
+        foreach (PortalNode portalNode in path)
+        {
+            CheckedAreas.Add(portalNode.Portal.AreaA);
+            CheckedAreas.Add(portalNode.Portal.AreaB);
+        }
+
+        this.targetPosition = targetPosition;
+        calculateFlowField = true;
+
+        success = true;
+        pathingTimes.Add(Time.realtimeSinceStartupAsDouble - startTimer);
     }
 
     private void CalculateFlowFieldWithAreas()

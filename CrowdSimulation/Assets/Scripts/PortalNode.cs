@@ -6,7 +6,7 @@ public class PortalNode
 {
     public Portal Portal { get; }
     public bool visited;
-    public Portal cameFromNode;
+    public PortalNode cameFromNode;
     public int fCost;
     public int gCost;
     public int hCost;
