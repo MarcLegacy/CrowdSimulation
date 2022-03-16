@@ -69,7 +69,7 @@ public class UnitManager : MonoBehaviour
             {
                 if (pathingManager.CheckedAreas.Contains(pathingManager.AreaMap.Grid.GetCell(unit.transform.position))) continue;
 
-                pathingManager.StartAreaPortalPathing(unit.transform.position, pathingManager.TargetPosition, out bool success);
+                pathingManager.StartPathing(unit.transform.position, pathingManager.TargetPosition, out bool success);
 
                 if (success) continue;
 

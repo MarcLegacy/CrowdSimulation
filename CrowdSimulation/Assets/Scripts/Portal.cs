@@ -12,6 +12,7 @@ public class Portal
     public AreaNode AreaB { get; }
     public List<AStarCell> AreaACells { get; }
     public List<AStarCell> AreaBCells { get; }
+    public Vector3 WorldPosition => (GetEntranceCellAreaACenterWorldPosition() + GetEntranceCellAreaBCenterWorldPosition()) * 0.5f;
 
     public Portal(AreaNode areaA, AreaNode areaB, AStarCell cellAreaACell, AStarCell cellAreaBCell)
     {
@@ -184,11 +185,6 @@ public class Portal
 
         AStarCell cell = GetEntranceCell(areaNode);
         return cell != null ? areaNode.AStar.Grid.GetCellCenterWorldPosition(cell.GridPosition) : Vector3.zero;
-    }
-
-    public Vector3 GetPortalWorldPosition()
-    {
-        return (GetEntranceCellAreaACenterWorldPosition() + GetEntranceCellAreaBCenterWorldPosition()) * 0.5f;
     }
 
     public Vector3 GetEntranceCellAreaACenterWorldPosition()

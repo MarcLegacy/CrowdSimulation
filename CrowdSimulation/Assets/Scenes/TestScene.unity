@@ -254,9 +254,10 @@ MonoBehaviour:
   baseObject: {fileID: 1847212265}
   showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
-  showFlowFieldArrows: 1
+  showFlowFieldArrows: 0
   showAreaGrid: 0
-  flowFieldWithAreaPathing: 1
+  showAStarArrows: 0
+  pathingMethod: 1
 --- !u!4 &514380638
 Transform:
   m_ObjectHideFlags: 0
@@ -448,6 +449,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df7ec802199c5a646ab61f6379ba5d9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  showPortals: 0
+  showPortalConnections: 0
+  showPortalPaths: 0
 --- !u!4 &691998582
 Transform:
   m_ObjectHideFlags: 0
@@ -647,7 +651,7 @@ MonoBehaviour:
   obstacleScale: {x: 1, y: 10}
   colorA: {r: 0.38679248, g: 0.23692253, b: 0.13318796, a: 0}
   colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
-  benchmark: 1
+  benchmark: 0
   numOfTopCellsAvoided: 3
 --- !u!4 &1454467470
 Transform:

@@ -39,7 +39,7 @@ public class FlowField
         CalculateVectorField();
     }
 
-    public void DrawFlowFieldArrows()
+    public void DrawGizmosFlowFieldArrows()
     {
         for (int x = 0; x < Grid.Width; x++)
         {

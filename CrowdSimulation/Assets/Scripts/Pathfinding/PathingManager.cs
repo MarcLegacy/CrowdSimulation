@@ -5,6 +5,13 @@ using System.Linq;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
+enum PathingMethod
+{
+    FlowFieldOnly,
+    AreaPathing,
+    PortalPathing
+}
+
 public class PathingManager : MonoBehaviour
 {
     private const byte IGNORED_CELL = 254;
@@ -19,7 +26,8 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldGrid = false;
     [SerializeField] private bool showFlowFieldArrows = false;
     [SerializeField] private bool showAreaGrid = false;
-    [SerializeField] private bool flowFieldWithAreaPathing = true;
+    [SerializeField] private bool showAStarArrows = false;
+    [SerializeField] private PathingMethod pathingMethod = PathingMethod.FlowFieldOnly;
 
     private bool calculateFlowField;
     private Vector3 targetPosition = Vector3.zero;
@@ -27,6 +35,9 @@ public class PathingManager : MonoBehaviour
     private PortalManager portalManager;
     private List<List<AStarCell>> paths;
     private List<double> pathingTimes;
+    private List<PortalNode> portalPathNodes;
+    private List<Vector3> calculatedPortalLocations;
+    private List<Vector3> calculatedPathNodeLocations;
 
     public float CellSize => cellSize;
     public int AreaSize => areaSize;
@@ -111,25 +122,36 @@ public class PathingManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            //double startTimer = Time.realtimeSinceStartupAsDouble;
-
-            if (flowFieldWithAreaPathing)
+            if (pathingMethod == PathingMethod.FlowFieldOnly)
             {
-                TargetPosition = Utilities.GetMouseWorldPosition();
+                double startTimer = Time.realtimeSinceStartupAsDouble;
+                FlowField.CalculateFlowField(FlowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
+                Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
             }
             else
             {
-                FlowField.CalculateFlowField(FlowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
+                TargetPosition = Utilities.GetMouseWorldPosition();
             }
-
-            //Debug.Log("FlowField Execution Time: " +  Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
         }
 
         if (calculateFlowField)
         {
-            Debug.Log("Average pathing time: " +  Math.Round(pathingTimes.Sum() * 100000f) * 0.01 + "ms");
+            if (pathingMethod == PathingMethod.PortalPathing)
+            {
+                calculatedPortalLocations = new List<Vector3>();
+                foreach (PortalNode portalNode in portalPathNodes)
+                {
+                    calculatedPortalLocations.Add(portalNode.Portal.WorldPosition);
 
-           CalculateFlowFieldWithAreas();
+                    //foreach
+                }
+            }
+
+            Debug.Log("Sum pathing time: " +  Math.Round(pathingTimes.Sum() * 100000f) * 0.01 + "ms");
+
+            double startTimer = Time.realtimeSinceStartupAsDouble;
+            CalculateFlowFieldWithAreas();
+            Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
         }
     }
 
@@ -143,40 +165,36 @@ public class PathingManager : MonoBehaviour
             }
             if (showFlowFieldArrows)
             {
-                FlowField.DrawFlowFieldArrows();
+                FlowField.DrawGizmosFlowFieldArrows();
             }
         }
 
-        if (AreaMap != null)
+        if (AreaMap != null && showAreaGrid)
         {
-            if (showAreaGrid)
-            {
-                MyGrid<AreaNode> grid = AreaMap.Grid;
-
-                //for (int x = 0; x < grid.Width; x++)
-                //{
-                //    for (int y = 0; y < grid.Height; y++)
-                //    {
-                //        grid.GetCell(x, y).AStar.ShowGrid(Color.black);
-                //    }
-                //}
-
-                grid.ShowGrid(Color.red);
-            }
-
+            AreaMap.Grid.ShowGrid(Color.red);
         }
 
-        if (paths != null && !showFlowFieldArrows)
+        if (paths != null && showAStarArrows)
         {
             ShowAStarPaths();
         }
     }
 
-    public void StartAreaPathing(Vector3 startPosition, Vector3 targetPosition)
+    public void StartPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
     {
-        StartAreaPathing(startPosition, targetPosition, out bool _);
+        success = false;
+
+        if (pathingMethod == PathingMethod.AreaPathing)
+        {
+            StartAreaPathing(startPosition, targetPosition, out success);
+        }
+        else
+        {
+            StartAreaPortalPathing(startPosition, targetPosition, out success);
+        }
     }
-    public void StartAreaPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
+
+    private void StartAreaPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
     {
         MyGrid<AreaNode> areaGrid = AreaMap.Grid;
         MyGrid<AStarCell> aStarGrid = AStar.Grid;
@@ -204,23 +222,17 @@ public class PathingManager : MonoBehaviour
         pathingTimes.Add(Time.realtimeSinceStartupAsDouble - startTimer);
     }
 
-    public void StartAreaPortalPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
+    private void StartAreaPortalPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
     {
-        success = false;
-
-        MyGrid<AreaNode> areaGrid = AreaMap.Grid;
-        MyGrid<AStarCell> aStarGrid = AStar.Grid;
         success = false;
 
         double startTimer = Time.realtimeSinceStartupAsDouble;
 
-        List<PortalNode> path = portalManager.FindPathNodes(startPosition, targetPosition);
+        portalPathNodes = portalManager.FindPathNodes(startPosition, targetPosition);
 
-        if (path == null) return;
+        if (portalPathNodes == null) return;
 
-        //paths.Add(path);
-
-        foreach (PortalNode portalNode in path)
+        foreach (PortalNode portalNode in portalPathNodes)
         {
             CheckedAreas.Add(portalNode.Portal.AreaA);
             CheckedAreas.Add(portalNode.Portal.AreaB);
@@ -235,8 +247,6 @@ public class PathingManager : MonoBehaviour
 
     private void CalculateFlowFieldWithAreas()
     {
-        double startTimer = Time.realtimeSinceStartupAsDouble;
-
         calculateFlowField = false;
 
         FlowField.ResetCells();
@@ -255,8 +265,6 @@ public class PathingManager : MonoBehaviour
 
         FlowField.CalculateIntegrationField(FlowField.Grid.GetCell(targetPosition));
         FlowField.CalculateVectorField();
-
-        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
     }
 
     private void ShowAStarPaths()
@@ -271,13 +279,13 @@ public class PathingManager : MonoBehaviour
     {
         if (!ObstacleSpawnManager.GetInstance().Benchmark) return;
 
-        if (flowFieldWithAreaPathing)
+        if (pathingMethod == PathingMethod.FlowFieldOnly)
         {
-            StartCoroutine(SetBenchmarkPositionsWithAreaPathingCoroutine());
+            StartCoroutine(SetBenchmarkPositionsNormalPathingCoroutine());
         }
         else
         {
-            StartCoroutine(SetBenchmarkPositionsNormalPathingCoroutine());
+            StartCoroutine(SetBenchmarkPositionsWithAreaPathingCoroutine());
         }
     }
 

@@ -12,6 +12,34 @@ public static class Utilities
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         return Physics.Raycast(ray, out RaycastHit raycastHit) ? raycastHit.point : Vector3.zero;
     }
+    
+    public static List<GameObject> FindGameObjects(int layer)
+    {
+        GameObject[] allGameObjects = Object.FindObjectsOfType<GameObject>();
+        List<GameObject> gameObjects = new List<GameObject>();
+
+        foreach (GameObject gameObject in allGameObjects)
+        {
+            if (gameObject.layer == layer)
+            {
+                gameObjects.Add(gameObject);
+            }
+        }
+
+        return gameObjects;
+    }
+    public static List<GameObject> FindGameObjects(string maskString)
+    {
+        return FindGameObjects(LayerMask.NameToLayer(maskString));
+    }
+
+    public static Vector3 GetRandomPositionInBox(Vector3 positionA, Vector3 positionB)
+    {
+        return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
+    }
+
+    #region Draw Functions
+    #region Draw Giszmos Functions
 
     public static void DrawGizmosArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null)
     {
@@ -29,7 +57,7 @@ public static class Utilities
 
         if (color == null) color = Color.white;
 
-        Gizmos.color = (Color) color;
+        Gizmos.color = (Color)color;
         Gizmos.DrawLine(startPosition, endPosition);
 
         Vector3 right = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
@@ -38,29 +66,63 @@ public static class Utilities
         Gizmos.DrawLine(endPosition, endPosition + (left * arrowHeadLength));
     }
 
-    public static Vector3 GetRandomPositionInBox(Vector3 positionA, Vector3 positionB)
+    public static void DrawGizmosPathLines(List<Vector3> worldLocations, Color? color = null)
     {
-        return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
-    }
-
-    public static List<GameObject> FindGameObjects(string maskString)
-    {
-        return FindGameObjects(LayerMask.NameToLayer(maskString));
-    }
-    public static List<GameObject> FindGameObjects(int layer)
-    {
-        GameObject[] allGameObjects = Object.FindObjectsOfType<GameObject>();
-        List<GameObject> gameObjects = new List<GameObject>();
-
-        foreach (GameObject gameObject in allGameObjects)
+        if (worldLocations == null || worldLocations.Count == 0)
         {
-            if (gameObject.layer == layer)
-            {
-                gameObjects.Add(gameObject);
-            }
+            Debug.LogWarning(nameof(worldLocations) + " is invalid!");
+            return;
         }
 
-        return gameObjects;
+        if (color == null) color = Color.black;
+
+        Gizmos.color = (Color) color;
+
+        for (int i = 0; i < worldLocations.Count - 1; i++)
+        {
+            Gizmos.DrawLine(worldLocations[i], worldLocations[i + 1]);
+        }
+    }
+
+    public static void DrawGizmosPortal(Portal portal, Color? color = null)
+    {
+        if (color == null) color = Color.black;
+
+        Gizmos.color = (Color) color;
+
+        Vector3 posA = (portal.GetCellCenterWorldPosition(portal.AreaACells[0]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[0])) * 0.5f;
+        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[^1]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[^1])) * 0.5f;
+
+        Gizmos.DrawLine(posA, portal.GetEntranceCellAreaACenterWorldPosition());
+        Gizmos.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB);
+        Gizmos.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition());
+        Gizmos.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA);
+    }
+    #endregion
+    #region Draw Debug Functions
+
+    public static void DrawDebugArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null, float duration = 100f)
+    {
+        if (direction == Vector3.zero)
+        {
+            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": direction == Vector3.zero");
+            return;
+        }
+
+        float arrowHeadLength = 0.5f * size;
+        float arrowHeadAngle = 20.0f;
+        Vector3 startPosition = new Vector3(position.x - direction.x * size * 0.5f, position.y - direction.y * size * 0.5f,
+            position.z - direction.z * size * 0.5f);
+        Vector3 endPosition = startPosition + (direction * size);
+
+        if (color == null) color = Color.white;
+
+        Debug.DrawLine(startPosition, endPosition, (Color) color, duration);
+
+        Vector3 right = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * new Vector3(0, 0, 1);
+        Vector3 left = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * new Vector3(0, 0, 1);
+        Debug.DrawLine(endPosition, endPosition + (right * arrowHeadLength), (Color) color, duration);
+        Debug.DrawLine(endPosition, endPosition + (left * arrowHeadLength), (Color) color, duration);
     }
 
     public static void DrawDebugPathLines(List<Vector3> worldLocations, Color? color = null, float duration = 100f)
@@ -71,16 +133,28 @@ public static class Utilities
             return;
         }
 
-        if (color == null)
-        {
-            color = Color.black;
-        }
-
+        if (color == null) color = Color.black;
+        
         for (int i = 0; i < worldLocations.Count - 1; i++)
         {
             Debug.DrawLine(worldLocations[i], worldLocations[i + 1], (Color)color, duration);
         }
     }
+
+    public static void DrawDebugPortal(Portal portal, Color? color = null, float duration = 100f)
+    {
+        if (color == null) color = Color.black;
+
+        Vector3 posA = (portal.GetCellCenterWorldPosition(portal.AreaACells[0]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[0])) * 0.5f;
+        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[^1]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[^1])) * 0.5f;
+
+        Debug.DrawLine(posA, portal.GetEntranceCellAreaACenterWorldPosition(), (Color) color, duration);
+        Debug.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB, (Color) color, duration);
+        Debug.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition(), (Color) color, duration);
+        Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, (Color) color, duration);
+    }  
+    #endregion
+    #endregion
 
     #region CodeMonkeyFunctions
     private static Quaternion[] cachedQuaternionEulerArr;

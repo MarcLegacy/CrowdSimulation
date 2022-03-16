@@ -6,6 +6,10 @@ using Vector3 = UnityEngine.Vector3;
 
 public class PortalManager : MonoBehaviour
 {
+    [SerializeField] private bool showPortals = false;
+    [SerializeField] private bool showPortalConnections = false;
+    [SerializeField] private bool showPortalPaths = false;
+
     private List<PortalNode> portalNodes;
     private Dictionary<PortalNode, Dictionary<PortalNode, List<Vector3>>> neighborList;
     private List<PortalNode> openList;
@@ -38,66 +42,47 @@ public class PortalManager : MonoBehaviour
 
         CreatePortals();
 
-        //foreach (PortalNode portalNode in portalNodes)
-        //{
-        //    DrawPortal(portalNode.Portal);
-        //}
-
         CollectNeigbors();
-
-        foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> currentPortal in neighborList)
-        {
-            Vector3 positionA = currentPortal.Key.Portal.GetPortalWorldPosition();
-            foreach (KeyValuePair<PortalNode, List<Vector3>> neighbor in currentPortal.Value)
-            {
-                Vector3 positionB = neighbor.Key.Portal.GetPortalWorldPosition();
-
-                //Debug.DrawLine(positionA, positionB, Color.blue, 100f);
-
-                //Utilities.DrawDebugPathLines(neighbor.Value);
-            }
-        }
-
-
     }
 
     // Update is called once per frame
     private void Update()
     {
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    double startTimer = Time.realtimeSinceStartupAsDouble;
 
-        //    Vector3 startPosition = new Vector3(0, 0f, 0f);
-        //    Vector3 endPosition = Utilities.GetMouseWorldPosition();
-
-        //    List<Vector3> path = new List<Vector3> { startPosition };
-
-        //    foreach (PortalNode portalNode in FindPathNodes(startPosition, endPosition))
-        //    {
-        //        path.Add(portalNode.Portal.GetPortalWorldPosition());
-        //        //Debug.DrawRay(portalNode.Portal.GetPortalWorldPosition(), Vector3.up, Color.red, 100f);
-        //    }
-
-        //    path.Add(endPosition);
-
-        //    Utilities.DrawDebugPathLines(path, Color.blue);
-
-        //    //Utilities.DrawDebugPathLines(PathingManager.GetInstance().AStar.FindPath(startPosition, endPosition), Color.red);
-
-        //    Debug.Log("Pathing time: " + (Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01) + "ms");
-        //}
     }
 
-    public void DrawPortal(Portal portal)
+    private void OnDrawGizmos()
     {
-        Vector3 posA = (portal.GetCellCenterWorldPosition(portal.AreaACells[0]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[0])) * 0.5f;
-        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[^1]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[^1])) * 0.5f;
+        if (portalNodes != null && showPortals)
+        {
+            foreach (PortalNode portalNode in portalNodes)
+            {
+                Utilities.DrawGizmosPortal(portalNode.Portal, Color.red);
+            }
+        }
 
-        Debug.DrawLine(posA, portal.GetEntranceCellAreaACenterWorldPosition(), Color.red, 100f);
-        Debug.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB, Color.red, 100f);
-        Debug.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition(), Color.red, 100f);
-        Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, Color.red, 100f);
+        if (neighborList != null && (showPortalConnections || showPortalPaths))
+        {
+            foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> currentPortal in neighborList)
+            {
+                Vector3 positionA = currentPortal.Key.Portal.WorldPosition;
+                foreach (KeyValuePair<PortalNode, List<Vector3>> neighbor in currentPortal.Value)
+                {
+                    Vector3 positionB = neighbor.Key.Portal.WorldPosition;
+
+                    if (showPortalConnections)
+                    {
+                        Gizmos.color = Color.blue;
+                        Gizmos.DrawLine(positionA, positionB);
+                    }
+
+                    if (showPortalPaths)
+                    {
+                        Utilities.DrawGizmosPathLines(neighbor.Value, Color.black);
+                    }
+                }
+            }
+        }
     }
 
     public List<PortalNode> FindPathNodes(Vector3 startWorldPosition, Vector3 targetWorldPosition)
@@ -132,7 +117,7 @@ public class PortalManager : MonoBehaviour
                 if (path == null || path.Count == 0) continue;
 
                 currentPortalNode.gCost = path.Count;
-                currentPortalNode.hCost = CalculateHCost(currentPortalNode.Portal.GetPortalWorldPosition(), targetWorldPosition);
+                currentPortalNode.hCost = CalculateHCost(currentPortalNode.Portal.WorldPosition, targetWorldPosition);
                 currentPortalNode.CalculateFCost();
 
                 openList.Add(currentPortalNode);
@@ -174,7 +159,7 @@ public class PortalManager : MonoBehaviour
                 {
                     currentNeighborNode.cameFromNode = currentNode;
                     currentNeighborNode.gCost = tentativeGCost;
-                    currentNeighborNode.hCost = CalculateHCost(currentNeighborNode.Portal.GetPortalWorldPosition(), targetWorldPosition);
+                    currentNeighborNode.hCost = CalculateHCost(currentNeighborNode.Portal.WorldPosition, targetWorldPosition);
                     currentNeighborNode.CalculateFCost();
 
                     if (!openList.Contains(currentNeighborNode))
@@ -183,7 +168,7 @@ public class PortalManager : MonoBehaviour
 
                         //Utilities.CreateWorldText(
                         //    currentNeighborNode.gCost + "\n" + currentNeighborNode.hCost + "\n" + currentNeighborNode.fCost, null,
-                        //    currentNeighborNode.Portal.GetPortalWorldPosition(), 20, Color.black);
+                        //    currentNeighborNode.Portal.GetWorldPosition(), 20, Color.black);
                     }
                 }
             }
