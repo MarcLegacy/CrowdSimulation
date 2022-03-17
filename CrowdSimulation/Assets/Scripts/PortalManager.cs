@@ -11,7 +11,7 @@ public class PortalManager : MonoBehaviour
     [SerializeField] private bool showPortalPaths = false;
 
     private List<PortalNode> portalNodes;
-    private Dictionary<PortalNode, Dictionary<PortalNode, List<Vector3>>> neighborList;
+    public Dictionary<PortalNode, Dictionary<PortalNode, List<Vector3>>> NeighborList { get; private set; }
     private List<PortalNode> openList;
 
     #region Singleton
@@ -31,7 +31,7 @@ public class PortalManager : MonoBehaviour
     void Start()
     {
         portalNodes = new List<PortalNode>();
-        neighborList = new Dictionary<PortalNode, Dictionary<PortalNode, List<Vector3>>>();
+        NeighborList = new Dictionary<PortalNode, Dictionary<PortalNode, List<Vector3>>>();
 
         StartCoroutine(DelayedStart());
     }
@@ -61,9 +61,9 @@ public class PortalManager : MonoBehaviour
             }
         }
 
-        if (neighborList != null && (showPortalConnections || showPortalPaths))
+        if (NeighborList != null && (showPortalConnections || showPortalPaths))
         {
-            foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> currentPortal in neighborList)
+            foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> currentPortal in NeighborList)
             {
                 Vector3 positionA = currentPortal.Key.Portal.WorldPosition;
                 foreach (KeyValuePair<PortalNode, List<Vector3>> neighbor in currentPortal.Value)
@@ -105,7 +105,7 @@ public class PortalManager : MonoBehaviour
 
         openList = new List<PortalNode>();
 
-        foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> portalNode in neighborList)
+        foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> portalNode in NeighborList)
         {
             PortalNode currentPortalNode = portalNode.Key;
             currentPortalNode.ResetNode();
@@ -143,14 +143,13 @@ public class PortalManager : MonoBehaviour
             }
 
             openList.Remove(currentNode);
-            //closedList.Add(currentCell);
+
             currentNode.visited = true;
 
-            foreach (KeyValuePair<PortalNode, List<Vector3>> neighborNode in neighborList[currentNode])
+            foreach (KeyValuePair<PortalNode, List<Vector3>> neighborNode in NeighborList[currentNode])
             {
                 PortalNode currentNeighborNode = neighborNode.Key;
 
-                //if (closedList.Contains(neighborCell)) continue;
                 if (currentNeighborNode.visited) continue;
 
                 int tentativeGCost = currentNode.gCost + neighborNode.Value.Count;
@@ -274,7 +273,7 @@ public class PortalManager : MonoBehaviour
         foreach (PortalNode currentPortalNode in portalNodes)
         {
             Dictionary<PortalNode, List<Vector3>> newList = new Dictionary<PortalNode, List<Vector3>>();
-            neighborList.Add(currentPortalNode, newList);
+            NeighborList.Add(currentPortalNode, newList);
 
             foreach (PortalNode possibleNeighborPortalNode in portalNodes)
             {
@@ -316,7 +315,7 @@ public class PortalManager : MonoBehaviour
 
                 if (shortestPath == null || shortestPath.Count == 0) continue;
 
-                if (neighborList.TryGetValue(currentPortalNode, out Dictionary<PortalNode, List<Vector3>> newNeighborList))
+                if (NeighborList.TryGetValue(currentPortalNode, out Dictionary<PortalNode, List<Vector3>> newNeighborList))
                 {
                     newNeighborList.Add(possibleNeighborPortalNode, shortestPath);
                 }

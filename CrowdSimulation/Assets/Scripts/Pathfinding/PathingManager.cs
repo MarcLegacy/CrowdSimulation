@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
-enum PathingMethod
+public enum PathingMethod
 {
     FlowFieldOnly,
     AreaPathing,
@@ -27,6 +27,8 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showFlowFieldArrows = false;
     [SerializeField] private bool showAreaGrid = false;
     [SerializeField] private bool showAStarArrows = false;
+    [SerializeField] private bool showCalculatedPortalLocations = false;
+    [SerializeField] private bool showCalculatedPathParths = false;
     [SerializeField] private PathingMethod pathingMethod = PathingMethod.FlowFieldOnly;
 
     private bool calculateFlowField;
@@ -36,8 +38,8 @@ public class PathingManager : MonoBehaviour
     private List<List<AStarCell>> paths;
     private List<double> pathingTimes;
     private List<PortalNode> portalPathNodes;
-    private List<Vector3> calculatedPortalLocations;
-    private List<Vector3> calculatedPathNodeLocations;
+    private List<List<Vector3>> calculatedPortalLocations;
+    private List<List<Vector3>> calculatedPortalPaths;
 
     public float CellSize => cellSize;
     public int AreaSize => areaSize;
@@ -58,12 +60,15 @@ public class PathingManager : MonoBehaviour
             CheckedAreas.Clear();
             paths.Clear();
             pathingTimes.Clear();
+            calculatedPortalLocations.Clear();
+            calculatedPortalPaths.Clear();
         }
     }
     public FlowField FlowField { get; private set; }
     public AreaMap AreaMap { get; private set; }
     public AStar AStar { get; private set; }
     public HashSet<AreaNode> CheckedAreas { get; private set; }
+    public PathingMethod PathingMethod => pathingMethod;
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -93,12 +98,12 @@ public class PathingManager : MonoBehaviour
         pathingTimes = new List<double>();
         unitManager = UnitManager.GetInstance();
         portalManager = PortalManager.GetInstance();
+        calculatedPortalLocations = new List<List<Vector3>>();
+        calculatedPortalPaths = new List<List<Vector3>>();
 
         TargetPosition = baseObject.transform.position;
 
         if (showFlowFieldDebugText) FlowField.Grid.ShowDebugText();
-
-        unitManager.OnMaxUnitSpawned += OnMaxUnitsSpawned;
 
         StartCoroutine(DelayedStart());
     }
@@ -126,7 +131,8 @@ public class PathingManager : MonoBehaviour
             {
                 double startTimer = Time.realtimeSinceStartupAsDouble;
                 FlowField.CalculateFlowField(FlowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
-                Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
+                double timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
+                BenchmarkManager.GetInstance().flowFieldExecutionTimes.Add(timeDifference);
             }
             else
             {
@@ -136,22 +142,12 @@ public class PathingManager : MonoBehaviour
 
         if (calculateFlowField)
         {
-            if (pathingMethod == PathingMethod.PortalPathing)
-            {
-                calculatedPortalLocations = new List<Vector3>();
-                foreach (PortalNode portalNode in portalPathNodes)
-                {
-                    calculatedPortalLocations.Add(portalNode.Portal.WorldPosition);
-
-                    //foreach
-                }
-            }
-
-            Debug.Log("Sum pathing time: " +  Math.Round(pathingTimes.Sum() * 100000f) * 0.01 + "ms");
+            BenchmarkManager.GetInstance().pathingExecutionTimes.Add(Math.Round(pathingTimes.Sum() * 100000f) * 0.01);
 
             double startTimer = Time.realtimeSinceStartupAsDouble;
             CalculateFlowFieldWithAreas();
-            Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
+            double timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
+            BenchmarkManager.GetInstance().flowFieldExecutionTimes.Add(timeDifference);
         }
     }
 
@@ -177,6 +173,22 @@ public class PathingManager : MonoBehaviour
         if (paths != null && showAStarArrows)
         {
             ShowAStarPaths();
+        }
+
+        if (calculatedPortalLocations != null && showCalculatedPortalLocations)
+        {
+            foreach (List<Vector3> calculatedPortalLocation in calculatedPortalLocations)
+            {
+                Utilities.DrawGizmosPathLines(calculatedPortalLocation);
+            }
+        }
+
+        if (calculatedPortalPaths != null && showCalculatedPathParths)
+        {
+            foreach (List<Vector3> calculatedPortalPath in calculatedPortalPaths)
+            {
+                Utilities.DrawGizmosPathLines(calculatedPortalPath);
+            }
         }
     }
 
@@ -232,17 +244,34 @@ public class PathingManager : MonoBehaviour
 
         if (portalPathNodes == null) return;
 
+        List<Vector3> portalLocations = new List<Vector3>{startPosition};
+
+
         foreach (PortalNode portalNode in portalPathNodes)
         {
             CheckedAreas.Add(portalNode.Portal.AreaA);
             CheckedAreas.Add(portalNode.Portal.AreaB);
+
+            portalLocations.Add(portalNode.Portal.WorldPosition);
         }
+
+        portalLocations.Add(targetPosition);
+
+        calculatedPortalLocations.Add(portalLocations);
 
         this.targetPosition = targetPosition;
         calculateFlowField = true;
 
         success = true;
         pathingTimes.Add(Time.realtimeSinceStartupAsDouble - startTimer);
+
+        List<Vector3> path = new List<Vector3> { targetPosition };
+        foreach (Vector3 pathLocation in GetPortalPaths(portalPathNodes))
+        {
+            path.Add(pathLocation);
+        }
+        path.Add(startPosition);
+        calculatedPortalPaths.Add(path);
     }
 
     private void CalculateFlowFieldWithAreas()
@@ -275,67 +304,27 @@ public class PathingManager : MonoBehaviour
         }
     }
 
-    private void OnMaxUnitsSpawned(object sender, UnitManager.OnMaxUnitsSpawnedEventArgs eventArgs)
-    {
-        if (!ObstacleSpawnManager.GetInstance().Benchmark) return;
 
-        if (pathingMethod == PathingMethod.FlowFieldOnly)
+
+    private List<Vector3> GetPortalPaths(List<PortalNode> portalNodes)
+    {
+        List<Vector3> path = new List<Vector3>();
+
+        for (int i = portalNodes.Count - 1; i >= 0; i--)
         {
-            StartCoroutine(SetBenchmarkPositionsNormalPathingCoroutine());
+            var neighborNodes = portalManager.NeighborList[portalNodes[i]];
+
+            if (i > 0)
+            {
+                foreach (var pathLocation in neighborNodes[portalNodes[i - 1]])
+                {
+                    path.Add(pathLocation);
+                }
+            }
         }
-        else
-        {
-            StartCoroutine(SetBenchmarkPositionsWithAreaPathingCoroutine());
-        }
+
+        return path;
     }
 
-    IEnumerator SetBenchmarkPositionsWithAreaPathingCoroutine()
-    {
-        MyGrid<FlowFieldCell> grid = FlowField.Grid;
 
-        yield return new WaitForSeconds(1f);
-
-        TargetPosition = grid.GetCellCenterWorldPosition(0, 0);
-
-        yield return new WaitForSeconds(1f);
-
-        TargetPosition = grid.GetCellCenterWorldPosition(grid.Width - 1, 0);
-
-        yield return new WaitForSeconds(1f);
-
-        TargetPosition = grid.GetCellCenterWorldPosition(grid.Width - 1, grid.Height - 1);
-
-        yield return new WaitForSeconds(1f);
-
-        TargetPosition = grid.GetCellCenterWorldPosition(0, grid.Height - 1);
-    }
-
-    IEnumerator SetBenchmarkPositionsNormalPathingCoroutine()
-    {
-        MyGrid<FlowFieldCell> grid = FlowField.Grid;
-
-        yield return new WaitForSeconds(1f);
-
-        double startTimer = Time.realtimeSinceStartupAsDouble;
-        FlowField.CalculateFlowField(FlowField.Grid.GetCell(0, 0));
-        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
-
-        yield return new WaitForSeconds(1f);
-
-        startTimer = Time.realtimeSinceStartupAsDouble;
-        FlowField.CalculateFlowField(FlowField.Grid.GetCell(grid.Width - 1, 0));
-        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
-
-        yield return new WaitForSeconds(1f);
-
-        startTimer = Time.realtimeSinceStartupAsDouble;
-        FlowField.CalculateFlowField(FlowField.Grid.GetCell(grid.Width - 1, grid.Height - 1));
-        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
-
-        yield return new WaitForSeconds(1f);
-
-        startTimer = Time.realtimeSinceStartupAsDouble;
-        FlowField.CalculateFlowField(FlowField.Grid.GetCell(0, grid.Height - 1));
-        Debug.Log("FlowField Execution Time: " + Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01 + "ms");
-    }
 }

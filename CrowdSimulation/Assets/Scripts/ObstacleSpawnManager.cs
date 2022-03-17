@@ -12,10 +12,7 @@ public class ObstacleSpawnManager : MonoBehaviour
     [SerializeField] private Vector2 obstacleScale = new Vector2(1f, 10f);
     [SerializeField] private Color colorA = Color.clear;
     [SerializeField] private Color colorB = Color.clear;
-    [SerializeField] private bool benchmark = false;
     [SerializeField] private int numOfTopCellsAvoided = 3;
-
-    public bool Benchmark => benchmark;
 
     #region Singleton
     public static ObstacleSpawnManager GetInstance()
@@ -32,11 +29,6 @@ public class ObstacleSpawnManager : MonoBehaviour
 
     private void Start()
     {
-        if (benchmark)
-        {
-            Random.InitState(3);
-        }
-
         for (int i = 0; i < obstacleAmount; i++)
         {
             CreateObstacle();
