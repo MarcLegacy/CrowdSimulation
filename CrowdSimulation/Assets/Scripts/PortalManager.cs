@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 
 public class PortalManager : MonoBehaviour
@@ -32,6 +35,7 @@ public class PortalManager : MonoBehaviour
     {
         portalNodes = new List<PortalNode>();
         NeighborList = new Dictionary<PortalNode, Dictionary<PortalNode, List<Vector3>>>();
+        openList = new List<PortalNode>();
 
         StartCoroutine(DelayedStart());
     }
@@ -103,7 +107,7 @@ public class PortalManager : MonoBehaviour
             return null;
         }
 
-        openList = new List<PortalNode>();
+        openList.Clear();
 
         foreach (KeyValuePair<PortalNode, Dictionary<PortalNode, List<Vector3>>> portalNode in NeighborList)
         {
@@ -139,7 +143,9 @@ public class PortalManager : MonoBehaviour
 
             if (endNodes.Contains(currentNode))
             {
+
                 return CalculatePath(currentNode);
+
             }
 
             openList.Remove(currentNode);

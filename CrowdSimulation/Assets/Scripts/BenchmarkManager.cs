@@ -38,7 +38,7 @@ public class BenchmarkManager : MonoBehaviour
         flowFieldExecutionTimes = new List<double>();
         pathingExecutionTimes = new List<double>();
 
-        Random.InitState(3);
+        //Random.InitState(3);
 
         unitManager.OnMaxUnitSpawned += OnMaxUnitsSpawned;
     }
@@ -68,18 +68,24 @@ public class BenchmarkManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+        PortalManager.GetInstance().FindPathNodes(Vector3.zero, Vector3.zero);  // This makes sure that this one will take the heavy reload instead of the actual test.
+
+        GC.Collect();
         pathingManager.TargetPosition = grid.GetCellCenterWorldPosition(0, 0);
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         pathingManager.TargetPosition = grid.GetCellCenterWorldPosition(grid.Width - 1, 0);
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         pathingManager.TargetPosition = grid.GetCellCenterWorldPosition(grid.Width - 1, grid.Height - 1);
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         pathingManager.TargetPosition = grid.GetCellCenterWorldPosition(0, grid.Height - 1);
 
         if (totalBenchmarkRuns < maxBenchmarkRuns)
@@ -104,6 +110,7 @@ public class BenchmarkManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         startTimer = Time.realtimeSinceStartupAsDouble;
         flowField.CalculateFlowField(flowFieldGrid.GetCell(0, 0));
         timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
@@ -111,6 +118,7 @@ public class BenchmarkManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         startTimer = Time.realtimeSinceStartupAsDouble;
         flowField.CalculateFlowField(flowFieldGrid.GetCell(flowFieldGrid.Width - 1, 0));
         timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
@@ -118,6 +126,7 @@ public class BenchmarkManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         startTimer = Time.realtimeSinceStartupAsDouble;
         flowField.CalculateFlowField(flowFieldGrid.GetCell(flowFieldGrid.Width - 1, flowFieldGrid.Height - 1));
         timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
@@ -125,6 +134,7 @@ public class BenchmarkManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+        GC.Collect();
         startTimer = Time.realtimeSinceStartupAsDouble;
         flowField.CalculateFlowField(flowFieldGrid.GetCell(0, flowFieldGrid.Height - 1));
         timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;

@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 
 public enum PathingMethod
@@ -196,13 +198,18 @@ public class PathingManager : MonoBehaviour
     {
         success = false;
 
-        if (pathingMethod == PathingMethod.AreaPathing)
+        switch (pathingMethod)
         {
-            StartAreaPathing(startPosition, targetPosition, out success);
-        }
-        else
-        {
-            StartAreaPortalPathing(startPosition, targetPosition, out success);
+            case PathingMethod.AreaPathing:
+                StartAreaPathing(startPosition, targetPosition, out success);
+                break;
+            case PathingMethod.PortalPathing:
+                StartAreaPortalPathing(startPosition, targetPosition, out success);
+                break;
+            case PathingMethod.FlowFieldOnly:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -239,13 +246,11 @@ public class PathingManager : MonoBehaviour
         success = false;
 
         double startTimer = Time.realtimeSinceStartupAsDouble;
-
         portalPathNodes = portalManager.FindPathNodes(startPosition, targetPosition);
 
         if (portalPathNodes == null) return;
 
         List<Vector3> portalLocations = new List<Vector3>{startPosition};
-
 
         foreach (PortalNode portalNode in portalPathNodes)
         {

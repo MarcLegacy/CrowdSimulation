@@ -12,7 +12,7 @@ public class ObstacleSpawnManager : MonoBehaviour
     [SerializeField] private Vector2 obstacleScale = new Vector2(1f, 10f);
     [SerializeField] private Color colorA = Color.clear;
     [SerializeField] private Color colorB = Color.clear;
-    [SerializeField] private int numOfTopCellsAvoided = 3;
+    [SerializeField] private int numOfBorderCellsAvoided = 3;
 
     #region Singleton
     public static ObstacleSpawnManager GetInstance()
@@ -62,10 +62,10 @@ public class ObstacleSpawnManager : MonoBehaviour
         do
         {
             position = new Vector3(
-                Random.Range(mapObject.transform.position.x - (mapGridSize.x - cellSize),
-                    mapObject.transform.position.x + (mapGridSize.x - cellSize)), 0,
-                Random.Range(mapObject.transform.position.z - (mapGridSize.y - cellSize),
-                    mapObject.transform.position.z + (mapGridSize.y - cellSize * numOfTopCellsAvoided)));
+                Random.Range(mapObject.transform.position.x - (mapGridSize.x - cellSize * numOfBorderCellsAvoided),
+                    mapObject.transform.position.x + (mapGridSize.x - cellSize * numOfBorderCellsAvoided)), 0,
+                Random.Range(mapObject.transform.position.z - (mapGridSize.y - cellSize * numOfBorderCellsAvoided),
+                    mapObject.transform.position.z + (mapGridSize.y - cellSize * numOfBorderCellsAvoided)));
             positioningTries++;
         } 
         while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES &&

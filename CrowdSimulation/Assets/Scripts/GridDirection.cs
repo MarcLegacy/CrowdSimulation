@@ -30,7 +30,14 @@ public class GridDirection
 
     public static GridDirection GetDirection(Vector2Int vector2D)
     {
-        return CardinalAndIntercardinalDirections.DefaultIfEmpty(None).FirstOrDefault(direction => direction == vector2D);
+        //return CardinalAndIntercardinalDirections.DefaultIfEmpty(None).FirstOrDefault(direction => direction == vector2D);
+        // Looping through seems to be a lot more efficient.
+        foreach (GridDirection gridDirection in CardinalAndIntercardinalDirections)
+        {
+            if (gridDirection.vector2D == vector2D) return gridDirection;
+        }
+
+        return None;
     }
 
     public static readonly List<GridDirection> CardinalDirections = new List<GridDirection>

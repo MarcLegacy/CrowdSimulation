@@ -249,7 +249,7 @@ MonoBehaviour:
   gridWidth: 40
   gridHeight: 40
   cellSize: 5
-  areaSize: 4
+  areaSize: 5
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
   showFlowFieldDebugText: 0
@@ -649,11 +649,11 @@ MonoBehaviour:
   mapObject: {fileID: 589120681}
   baseObject: {fileID: 1847212265}
   avoidanceDistance: 30
-  obstacleAmount: 100
+  obstacleAmount: 80
   obstacleScale: {x: 1, y: 10}
   colorA: {r: 0.38679248, g: 0.23692253, b: 0.13318796, a: 0}
   colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
-  numOfTopCellsAvoided: 3
+  numOfBorderCellsAvoided: 3
 --- !u!4 &1454467470
 Transform:
   m_ObjectHideFlags: 0
