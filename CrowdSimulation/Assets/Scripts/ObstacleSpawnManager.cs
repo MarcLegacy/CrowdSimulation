@@ -62,15 +62,14 @@ public class ObstacleSpawnManager : MonoBehaviour
         do
         {
             position = new Vector3(
-                Random.Range(mapObject.transform.position.x - (mapGridSize.x - cellSize * numOfBorderCellsAvoided),
-                    mapObject.transform.position.x + (mapGridSize.x - cellSize * numOfBorderCellsAvoided)), 0,
-                Random.Range(mapObject.transform.position.z - (mapGridSize.y - cellSize * numOfBorderCellsAvoided),
+                Random.Range(mapObject.transform.position.x - (mapGridSize.x - cellSize),
+                    mapObject.transform.position.x + (mapGridSize.x - cellSize)), 0,
+                Random.Range(mapObject.transform.position.z - (mapGridSize.y - cellSize),
                     mapObject.transform.position.z + (mapGridSize.y - cellSize * numOfBorderCellsAvoided)));
             positioningTries++;
         } 
-        while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES &&
-                 Vector3.Distance(baseObject.transform.position, position) < avoidanceDistance);
-
+        while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && Vector3.Distance(baseObject.transform.position, position) < avoidanceDistance); 
+        
         return positioningTries <= GlobalConstants.MAX_POSITIONING_TRIES ? position : Vector3.zero;
     }
 }

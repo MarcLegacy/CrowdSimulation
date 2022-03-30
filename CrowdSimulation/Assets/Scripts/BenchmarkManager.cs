@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 public class BenchmarkManager : MonoBehaviour
@@ -104,41 +107,40 @@ public class BenchmarkManager : MonoBehaviour
     {
         FlowField flowField = pathingManager.FlowField;
         MyGrid<FlowFieldCell> flowFieldGrid = flowField.Grid;
-        double startTimer;
-        double timeDifference;
+        Stopwatch stopwatch = new Stopwatch();
         totalBenchmarkRuns++;
 
         yield return new WaitForSeconds(1f);
 
         GC.Collect();
-        startTimer = Time.realtimeSinceStartupAsDouble;
+        stopwatch.Start();
         flowField.CalculateFlowField(flowFieldGrid.GetCell(0, 0));
-        timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
-        flowFieldExecutionTimes.Add(timeDifference);
+        stopwatch.Stop();
+        flowFieldExecutionTimes.Add(Math.Round(stopwatch.Elapsed.TotalMilliseconds, 2));
 
         yield return new WaitForSeconds(1f);
 
         GC.Collect();
-        startTimer = Time.realtimeSinceStartupAsDouble;
+        stopwatch.Restart();
         flowField.CalculateFlowField(flowFieldGrid.GetCell(flowFieldGrid.Width - 1, 0));
-        timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
-        flowFieldExecutionTimes.Add(timeDifference);
+        stopwatch.Stop();
+        flowFieldExecutionTimes.Add(Math.Round(stopwatch.Elapsed.TotalMilliseconds, 2));
 
         yield return new WaitForSeconds(1f);
 
         GC.Collect();
-        startTimer = Time.realtimeSinceStartupAsDouble;
+        stopwatch.Restart();
         flowField.CalculateFlowField(flowFieldGrid.GetCell(flowFieldGrid.Width - 1, flowFieldGrid.Height - 1));
-        timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
-        flowFieldExecutionTimes.Add(timeDifference);
+        stopwatch.Stop();
+        flowFieldExecutionTimes.Add(Math.Round(stopwatch.Elapsed.TotalMilliseconds, 2));
 
         yield return new WaitForSeconds(1f);
 
         GC.Collect();
-        startTimer = Time.realtimeSinceStartupAsDouble;
+        stopwatch.Restart();
         flowField.CalculateFlowField(flowFieldGrid.GetCell(0, flowFieldGrid.Height - 1));
-        timeDifference = Math.Round((Time.realtimeSinceStartupAsDouble - startTimer) * 100000f) * 0.01;
-        flowFieldExecutionTimes.Add(timeDifference);
+        stopwatch.Stop();
+        flowFieldExecutionTimes.Add(Math.Round(stopwatch.Elapsed.TotalMilliseconds, 2));
 
         if (totalBenchmarkRuns < maxBenchmarkRuns)
         {

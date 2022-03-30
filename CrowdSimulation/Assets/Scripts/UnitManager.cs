@@ -74,6 +74,11 @@ public class UnitManager : MonoBehaviour
                 if (success) continue;
 
                 UnitsInGame.Remove(unit);
+
+                if (UnitsInGame.Count == 0)
+                {
+                    Debug.LogError("No paths found!");
+                }
             }
             else
             {

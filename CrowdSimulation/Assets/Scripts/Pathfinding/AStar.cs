@@ -7,11 +7,7 @@ using UnityEngine;
 
 public class AStar
 {
-    //private const int MOVE_STRAIGHT_COST = 10;
-    //private const int MOVE_DIAGONAL_COST = 14;
-
     private List<AStarCell> openList;
-    //private List<AStarCell> closedList;
 
     public MyGrid<AStarCell> Grid { get; }
 
@@ -76,7 +72,6 @@ public class AStar
         }
 
         openList = new List<AStarCell> {startCell};
-        //closedList = new List<AStarCell>();
 
         ResetCells();
         startCell.GCost = 0;
@@ -92,17 +87,14 @@ public class AStar
             }
 
             openList.Remove(currentCell);
-            //closedList.Add(currentCell);
             currentCell.visited = true;
 
             foreach (AStarCell neighborCell in Grid.GetNeighborCells(currentCell.GridPosition, GridDirection.CardinalDirections))
             {
-                //if (closedList.Contains(neighborCell)) continue;
                 if (neighborCell.visited) continue;
 
                 if (!neighborCell.isWalkable)
                 {
-                    //closedList.Add(neighborCell);
                     neighborCell.visited = true;
                     continue;
                 }
@@ -181,13 +173,7 @@ public class AStar
         int xDistance = Mathf.Abs(a.X - b.X);
         int yDistance = Mathf.Abs(a.Y - b.Y);
 
-        // New
         return xDistance + yDistance;
-
-        // Old
-        //int remaining = Mathf.Abs(xDistance - yDistance);
-
-        //return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
     }
 
     private AStarCell GetLowestFCostCell(List<AStarCell> aStarCellList)
