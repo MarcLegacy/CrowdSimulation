@@ -238,18 +238,6 @@ public class MyGrid<TGridObject>
         return cardinalNeighborList[new Vector2Int(x, y)];
     }
 
-    public List<TGridObject> GetCellsWithObjects(string maskString)
-    {
-        List<TGridObject> cells = new List<TGridObject>();
-
-        foreach(Vector2Int gridPosition in GetGridPositionsWithObjects(maskString))
-        {
-            cells.Add(GetCell(gridPosition.x, gridPosition.y));
-        }
-
-        return cells;
-    }
-
     public List<Vector2Int> GetGridPositionsWithObjects(string maskString)
     {
         List<Vector2Int> gridPositions = new List<Vector2Int>();

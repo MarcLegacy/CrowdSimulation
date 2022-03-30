@@ -12,4 +12,6 @@ public static class GlobalConstants
 
     public const string OBSTACLES_STRING = "Obstacles";
     public const string UNITS_STRING = "Units";
+    public const string SPAWNS_STRING = "Spawns";
+    public const string TARGETS_STRING = "Targets";
 }

@@ -135,14 +135,6 @@ public class AStar
         }
     }
 
-    public void SetUnWalkableCells(string maskString)
-    {
-        foreach (AStarCell cell in Grid.GetCellsWithObjects(maskString))
-        {
-            cell.isWalkable = false;
-        }
-    }
-
     public void ResetCells(bool includeObstacles = false)
     {
         foreach (AStarCell cell in Grid.GridArray)

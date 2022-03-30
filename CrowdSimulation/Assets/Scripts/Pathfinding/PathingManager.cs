@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Unity.VisualScripting;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
@@ -13,6 +14,14 @@ public enum PathingMethod
     FlowFieldOnly,
     AreaPathing,
     PortalPathing
+}
+
+public enum CellType
+{
+    Free,
+    Unwalkable,
+    Spawn,
+    Target
 }
 
 public class PathingManager : MonoBehaviour
@@ -44,6 +53,7 @@ public class PathingManager : MonoBehaviour
     private List<PortalNode> portalPathNodes;
     private List<List<Vector3>> calculatedPortalLocations;
     private List<List<Vector3>> calculatedPortalPaths;
+    private List<Vector3> targetPositions;
 
     public float CellSize => cellSize;
     public int AreaSize => areaSize;
@@ -73,6 +83,7 @@ public class PathingManager : MonoBehaviour
     public AStar AStar { get; private set; }
     public HashSet<AreaNode> CheckedAreas { get; private set; }
     public PathingMethod PathingMethod => pathingMethod;
+    public Dictionary<Vector2Int, CellType> CellsInfo { get; private set; }
 
     #region Singleton
     public static PathingManager GetInstance()
@@ -104,6 +115,8 @@ public class PathingManager : MonoBehaviour
         portalManager = PortalManager.GetInstance();
         calculatedPortalLocations = new List<List<Vector3>>();
         calculatedPortalPaths = new List<List<Vector3>>();
+        CellsInfo = new Dictionary<Vector2Int, CellType>(FlowField.Grid.GridArray.GetLength(0) * FlowField.Grid.GridArray.GetLength(1));
+        targetPositions = new List<Vector3>();
 
         TargetPosition = baseObject.transform.position;
 
@@ -117,14 +130,16 @@ public class PathingManager : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
-        FlowField.CalculateCostField(GlobalConstants.OBSTACLES_STRING);
-        foreach (AreaNode area in AreaMap.Grid.GridArray)
-        {
-            area.AStar.SetUnWalkableCells(GlobalConstants.OBSTACLES_STRING);
-        }
+        SetCellData();
 
-        FlowField.CalculateFlowField(FlowField.Grid.GetCell(baseObject.transform.position));
+        if (targetPositions.Count == 0)
+        {
+            Debug.LogWarning("No GameObjects set to Layer: " + GlobalConstants.TARGETS_STRING);
+        }
+        else
+        {
+            FlowField.CalculateFlowField(FlowField.Grid.GetCell(targetPositions[0]));
+        }
     }
 
     private void Update()
@@ -343,5 +358,69 @@ public class PathingManager : MonoBehaviour
         return path;
     }
 
+    private void SetupCellInfo()
+    {
+        CellsInfo.Clear();
+        int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING, GlobalConstants.SPAWNS_STRING, GlobalConstants.TARGETS_STRING);
 
+        for (int x = 0; x < FlowField.Grid.Width; x++)
+        {
+            for (int y = 0; y < FlowField.Grid.Height; y++)
+            {
+                Vector3 cellPosition = FlowField.Grid.GetCellCenterWorldPosition(x, y);
+                Collider[] colliders =
+                    Physics.OverlapBox(cellPosition, Vector3.one * CellSize * 0.5f, Quaternion.identity, layerMask);
+
+                CellType cellType = CellType.Free;
+
+                foreach (Collider collider in colliders)
+                {
+                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
+                    {
+                        cellType = CellType.Unwalkable;
+                    }
+                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.SPAWNS_STRING))
+                    {
+                        cellType = CellType.Spawn;
+                    }
+                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.TARGETS_STRING))
+                    {
+                        cellType = CellType.Target;
+                    }
+                }
+
+                CellsInfo.Add(new Vector2Int(x, y), cellType);
+            }
+        }
+    }
+
+    private void SetCellData()
+    {
+        HeatMapManager heatMapManager = HeatMapManager.GetInstance();
+        SetupCellInfo();
+
+        foreach (KeyValuePair<Vector2Int, CellType> cellInfo in CellsInfo)
+        {
+            switch (cellInfo.Value)
+            {
+                case CellType.Unwalkable:
+                    AStar.Grid.GetCell(cellInfo.Key).isWalkable = false;
+                    FlowField.Grid.GetCell(cellInfo.Key).SetUnwalkable();
+                    if (heatMapManager.ShowObstacleMap)
+                    {
+                        heatMapManager.ColorCell(cellInfo.Key, HeatMapColor.Black);
+                    }
+
+                    AreaMap.Grid.GetCell(cellInfo.Key.x / AreaSize, cellInfo.Key.y / AreaSize).AStar.Grid
+                        .GetCell(cellInfo.Key.x % AreaSize, cellInfo.Key.y % AreaSize).isWalkable = false;
+                    break;
+                case CellType.Spawn:
+                    unitManager.spawnLocations.Add(FlowField.Grid.GetCellCenterWorldPosition(cellInfo.Key));
+                    break;
+                case CellType.Target:
+                    targetPositions.Add(FlowField.Grid.GetCellCenterWorldPosition(cellInfo.Key));
+                    break;
+            }
+        }
+    }
 }

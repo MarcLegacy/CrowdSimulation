@@ -73,15 +73,6 @@ public class FlowField
             cell.ResetCell();
         }
     }
-    
-
-    public void CalculateCostField(string maskString)
-    {
-        foreach (FlowFieldCell cell in Grid.GetCellsWithObjects(maskString))
-        {
-            cell.SetUnwalkable();
-        }
-    }
 
     public void CalculateIntegrationField(FlowFieldCell destinationCell)
     {

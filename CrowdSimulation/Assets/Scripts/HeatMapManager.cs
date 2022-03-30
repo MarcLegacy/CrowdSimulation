@@ -14,6 +14,8 @@ public class HeatMapManager : MonoBehaviour
     private MyGrid<int> grid;
     private Mesh mesh;
 
+    public bool ShowObstacleMap => showObstacleMap;
+
     #region Singleton
     public static HeatMapManager GetInstance()
     {
@@ -48,22 +50,6 @@ public class HeatMapManager : MonoBehaviour
             for (int y = 0; y < grid.Height; y++)
             {
                 grid.SetCell(x, y, -1);
-            }
-        }
-
-        StartCoroutine(DelayedStart());
-    }
-
-    IEnumerator DelayedStart()
-    {
-        yield return new WaitForEndOfFrame();
-
-        if (showObstacleMap)
-        {
-            List<Vector2Int> gridPositions = grid.GetGridPositionsWithObjects(GlobalConstants.OBSTACLES_STRING);
-            foreach (Vector2Int gridPosition in gridPositions)
-            {
-                grid.SetCell(gridPosition, 0);
             }
         }
     }

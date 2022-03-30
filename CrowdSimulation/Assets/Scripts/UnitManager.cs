@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 
 public class UnitManager : MonoBehaviour
@@ -16,6 +17,8 @@ public class UnitManager : MonoBehaviour
     [SerializeField] private int numUnitsPerSpawn = 100;
     [SerializeField] private float unitMoveSpeed = 10f;
     [SerializeField] [ReadOnly] private List<GameObject> unitsInGame;
+
+    public List<Vector3> spawnLocations;
 
     private PathingManager pathingManager;
 
@@ -40,16 +43,9 @@ public class UnitManager : MonoBehaviour
     {
         unitsInGame = new List<GameObject>();
         pathingManager = PathingManager.GetInstance();
+        spawnLocations = new List<Vector3>();
 
         StartCoroutine(SpawnUnitCoroutine());
-    }
-
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-
-        }
     }
 
     private void FixedUpdate()
@@ -96,26 +92,30 @@ public class UnitManager : MonoBehaviour
 
     private void SpawnUnits()
     {
+        if (spawnLocations.Count == 0)
+        {
+            Debug.LogWarning("No GameObjects set to Layer: " + GlobalConstants.SPAWNS_STRING);
+            return;
+        }
+
         MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
         int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
         {
             int positioningTries = 0;
-            Vector3 newPosition;
+            Vector3 newPosition = spawnLocations[Random.Range(0, spawnLocations.Count - 1)];
 
-            do
-            {
-                newPosition = Utilities.GetRandomPositionInBox(grid.GetCellCenterWorldPosition(0, grid.Height- 1),
-                    grid.GetCellCenterWorldPosition(grid.Width- 1, grid.Height- 1));
+            //do
+            //{
+            //    newPosition = Utilities.GetRandomPositionInBox(grid.GetCellCenterWorldPosition(0, grid.Height- 1),
+            //        grid.GetCellCenterWorldPosition(grid.Width- 1, grid.Height- 1));
 
-                positioningTries++;
-            } 
-            while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && pathingManager.FlowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
+            //    positioningTries++;
+            //} 
+            //while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && pathingManager.FlowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
 
-            //
-
-            if (positioningTries >= GlobalConstants.MAX_POSITIONING_TRIES) continue;
+            //if (positioningTries >= GlobalConstants.MAX_POSITIONING_TRIES) continue;
 
             GameObject unit = Instantiate(unitObject);
             UnitsInGame.Add(unit);
