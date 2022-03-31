@@ -18,7 +18,7 @@ public class UnitManager : MonoBehaviour
     [SerializeField] private float unitMoveSpeed = 10f;
     [SerializeField] [ReadOnly] private List<GameObject> unitsInGame;
 
-    public List<Vector3> spawnLocations;
+    [HideInInspector] public List<Vector3> spawnLocations;
 
     private PathingManager pathingManager;
 
@@ -103,7 +103,7 @@ public class UnitManager : MonoBehaviour
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
         {
-            int positioningTries = 0;
+            //int positioningTries = 0;
             Vector3 newPosition = spawnLocations[Random.Range(0, spawnLocations.Count - 1)];
 
             //do

@@ -41,7 +41,7 @@ public class PathingManager : MonoBehaviour
     [SerializeField] private bool showAStarArrows = false;
     [SerializeField] private bool showCalculatedPortalLocations = false;
     [SerializeField] private bool showCalculatedPathParths = false;
-    [SerializeField] private bool showExecutionTIme = false;
+    [SerializeField] private bool showExecutionTime = false;
     [SerializeField] private PathingMethod pathingMethod = PathingMethod.FlowFieldOnly;
 
     private bool calculateFlowField;
@@ -138,7 +138,24 @@ public class PathingManager : MonoBehaviour
         }
         else
         {
-            FlowField.CalculateFlowField(FlowField.Grid.GetCell(targetPositions[0]));
+            switch (pathingMethod)
+            {
+                case PathingMethod.FlowFieldOnly:
+                    Stopwatch stopWatch = Stopwatch.StartNew();
+                    FlowField.CalculateFlowField(FlowField.Grid.GetCell(targetPositions[0]));
+                    stopWatch.Stop();
+                    if (showExecutionTime)
+                    {
+                        Debug.Log("FlowField Execution Time: " + Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2) + "ms");
+                    }
+                    break;
+                case PathingMethod.AreaPathing:
+                    TargetPosition = targetPositions[0];
+                    break;
+                case PathingMethod.PortalPathing:
+                    TargetPosition = targetPositions[0];
+                    break;
+            }
         }
     }
 
@@ -151,7 +168,7 @@ public class PathingManager : MonoBehaviour
                 Stopwatch stopWatch = Stopwatch.StartNew();
                 FlowField.CalculateFlowField(FlowField.Grid.GetCell(Utilities.GetMouseWorldPosition()));
                 stopWatch.Stop();
-                if (showExecutionTIme)
+                if (showExecutionTime)
                 {
                     Debug.Log("FlowField Execution Time: " + Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2) + "ms");
                 }
@@ -170,7 +187,7 @@ public class PathingManager : MonoBehaviour
             BenchmarkManager.GetInstance().flowFieldExecutionTimes.Add(Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2));
             BenchmarkManager.GetInstance().pathingExecutionTimes.Add(pathingTimes.Sum());
 
-            if (showExecutionTIme)
+            if (showExecutionTime)
             {
                 Debug.Log("Summed A* Execution Time: " + pathingTimes.Sum() + "ms");
                 Debug.Log("FlowField Execution Time: " + Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2) + "ms");

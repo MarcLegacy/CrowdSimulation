@@ -259,7 +259,7 @@ MonoBehaviour:
   showAStarArrows: 0
   showCalculatedPortalLocations: 0
   showCalculatedPathParths: 0
-  showExecutionTIme: 1
+  showExecutionTime: 0
   pathingMethod: 1
 --- !u!4 &514380638
 Transform:

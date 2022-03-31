@@ -757,12 +757,12 @@ MonoBehaviour:
   baseObject: {fileID: 330532642}
   showFlowFieldDebugText: 0
   showFlowFieldGrid: 0
-  showFlowFieldArrows: 0
+  showFlowFieldArrows: 1
   showAreaGrid: 0
   showAStarArrows: 0
   showCalculatedPortalLocations: 0
   showCalculatedPathParths: 0
-  showExecutionTIme: 1
+  showExecutionTime: 0
   pathingMethod: 2
 --- !u!4 &1263911905
 Transform:
