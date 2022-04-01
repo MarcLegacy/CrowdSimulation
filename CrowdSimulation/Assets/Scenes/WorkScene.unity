@@ -258,7 +258,7 @@ MonoBehaviour:
   gridWidth: 40
   gridHeight: 40
   cellSize: 5
-  areaSize: 10
+  areaSize: 5
   mapObject: {fileID: 93879100}
   baseObject: {fileID: 214113584}
   showFlowFieldDebugText: 0
@@ -269,7 +269,7 @@ MonoBehaviour:
   showCalculatedPortalLocations: 0
   showCalculatedPathParths: 0
   showExecutionTime: 1
-  pathingMethod: 1
+  pathingMethod: 2
 --- !u!4 &376280604
 Transform:
   m_ObjectHideFlags: 0
