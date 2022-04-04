@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Reflection;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public static class Utilities
@@ -91,7 +90,7 @@ public static class Utilities
         Gizmos.color = (Color) color;
 
         Vector3 posA = (portal.GetCellCenterWorldPosition(portal.AreaACells[0]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[0])) * 0.5f;
-        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[^1]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[^1])) * 0.5f;
+        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[portal.AreaACells.Count - 1]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[portal.AreaBCells.Count - 1])) * 0.5f;
 
         Gizmos.DrawLine(posA, portal.GetEntranceCellAreaACenterWorldPosition());
         Gizmos.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB);
@@ -146,7 +145,8 @@ public static class Utilities
         if (color == null) color = Color.black;
 
         Vector3 posA = (portal.GetCellCenterWorldPosition(portal.AreaACells[0]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[0])) * 0.5f;
-        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[^1]) + portal.GetCellCenterWorldPosition(portal.AreaBCells[^1])) * 0.5f;
+        Vector3 posB = (portal.GetCellCenterWorldPosition(portal.AreaACells[portal.AreaACells.Count - 1]) +
+                        portal.GetCellCenterWorldPosition(portal.AreaBCells[portal.AreaBCells.Count - 1])) * 0.5f;
 
         Debug.DrawLine(posA, portal.GetEntranceCellAreaACenterWorldPosition(), (Color) color, duration);
         Debug.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB, (Color) color, duration);
