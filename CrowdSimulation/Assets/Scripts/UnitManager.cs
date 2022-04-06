@@ -98,8 +98,8 @@ public class UnitManager : MonoBehaviour
             return;
         }
 
-        MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
-        int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
+        //MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
+        //int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
         {

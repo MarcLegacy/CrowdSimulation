@@ -1,9 +1,11 @@
+using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEditor;
 using UnityEngine;
 
 public partial class MoveSystem : SystemBase
@@ -13,8 +15,6 @@ public partial class MoveSystem : SystemBase
     protected override void OnCreate()
     {
         endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-
-        EntityCommandBuffer entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
     }
 
     protected override void OnUpdate()
@@ -30,19 +30,35 @@ public partial class MoveSystem : SystemBase
         // Translation and Rotation components. Change it to process the component
         // types you want.
 
-        EntityCommandBuffer entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-        
+        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+
+        float deltaTime = Time.DeltaTime;
         
         Entities
-            .ForEach((ref Translation translation, in Rotation rotation) => {
-            // Implement the work to perform for each entity here.
-            // You should only access data that is local or that is a
-            // field on this job. Note that the 'rotation' parameter is
-            // marked as 'in', which means it cannot be modified,
-            // but allows this job to run in parallel with other jobs
-            // that want to read Rotation component data.
-            // For example,
-            //     translation.Value += math.mul(rotation.Value, new float3(0, 0, 1)) * deltaTime;
-            }).Schedule();
+            .ForEach((
+                Entity entity,
+                int entityInQueryIndex,
+                ref Translation translation, 
+                in Rotation rotation, 
+                in MoveComponent moveComponent, 
+                in MoveToPositionComponent moveToPositionComponent) => 
+            {
+                float distance = math.distance(translation.Value, moveToPositionComponent.position);
+
+                if (distance > 5)
+                {
+                    float3 direction = moveToPositionComponent.position - translation.Value;
+
+                    translation.Value += math.normalize(direction) * moveComponent.speed * deltaTime;
+                }
+                else
+                {
+                    entityCommandBuffer.RemoveComponent<MoveToPositionComponent>(entityInQueryIndex, entity);
+                }
+
+            })
+            .ScheduleParallel();
+
+        CompleteDependency();
     }
 }

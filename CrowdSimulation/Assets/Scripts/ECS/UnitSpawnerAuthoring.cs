@@ -18,6 +18,7 @@ public class UnitSpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     //    public float scale;
 
     [SerializeField] private GameObject unitPrefab;
+    [SerializeField] private int unitAmount = 100;
 
     public static Entity unitEntity;
 
@@ -39,8 +40,9 @@ public class UnitSpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity
             GameObjectConversionSettings.FromWorld(dstManager.World, blobAssetStore));
         dstManager.AddComponent<UnitComponent>(prefabEntity);
         dstManager.AddComponentData(prefabEntity, new MoveComponent { speed = 10 });
+        dstManager.AddComponent<SpawnEntityComponent>(prefabEntity);
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < unitAmount; i++)
         {
             dstManager.Instantiate(prefabEntity);
         }
