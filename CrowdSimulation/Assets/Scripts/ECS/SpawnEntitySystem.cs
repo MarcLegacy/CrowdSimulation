@@ -45,7 +45,7 @@ public partial class SpawnEntitySystem : SystemBase
                 translation.Value = positions[random.NextInt(0, positions.Count - 1)];
 
                 entityCommandBuffer.RemoveComponent<SpawnEntityComponent>(entity);
-                entityCommandBuffer.AddComponent(entity, new MoveToPositionComponent { position = float3.zero });
+                entityCommandBuffer.AddComponent(entity, new MoveToDirectionComponent { direction = float3.zero });
             })
             .WithoutBurst()
             .Run();

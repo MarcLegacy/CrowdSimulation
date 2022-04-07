@@ -1,3 +1,5 @@
+// class made from the following page: https://answers.unity.com/questions/489942/how-to-make-a-readonly-property-in-inspector.html
+
 using UnityEditor;
 using UnityEngine;
 

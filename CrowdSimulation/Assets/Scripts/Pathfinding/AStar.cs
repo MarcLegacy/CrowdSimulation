@@ -1,4 +1,4 @@
-// Script made by following Code Monkey's tutorial for making A* pathfinding
+// A* Algorithm made by following Code Monkey's tutorial "A* Pathfinding in Unity": https://www.youtube.com/watch?v=alU04hvz6L4
 
 using System;
 using System.Collections.Generic;

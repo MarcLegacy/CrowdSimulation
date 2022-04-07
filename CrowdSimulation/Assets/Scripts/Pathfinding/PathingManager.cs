@@ -47,6 +47,7 @@ public class PathingManager : MonoBehaviour
     private Vector3 targetPosition = Vector3.zero;
     private UnitManager unitManager;
     private PortalManager portalManager;
+    private BenchmarkManager benchmarkManager;
     private List<List<AStarCell>> paths;
     private List<double> pathingTimes;
     private List<PortalNode> portalPathNodes;
@@ -112,6 +113,7 @@ public class PathingManager : MonoBehaviour
         pathingTimes = new List<double>();
         unitManager = UnitManager.GetInstance();
         portalManager = PortalManager.GetInstance();
+        benchmarkManager = BenchmarkManager.GetInstance();
         calculatedPortalLocations = new List<List<Vector3>>();
         calculatedPortalPaths = new List<List<Vector3>>();
         CellsInfo = new Dictionary<Vector2Int, CellType>(FlowField.Grid.GridArray.GetLength(0) * FlowField.Grid.GridArray.GetLength(1));
@@ -183,8 +185,8 @@ public class PathingManager : MonoBehaviour
             Stopwatch stopWatch = Stopwatch.StartNew();
             CalculateFlowFieldWithAreas();
             stopWatch.Stop();
-            BenchmarkManager.GetInstance().flowFieldExecutionTimes.Add(Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2));
-            BenchmarkManager.GetInstance().pathingExecutionTimes.Add(pathingTimes.Sum());
+            benchmarkManager.flowFieldExecutionTimes.Add(Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2));
+            benchmarkManager.pathingExecutionTimes.Add(pathingTimes.Sum());
 
             if (showExecutionTime)
             {
@@ -235,6 +237,10 @@ public class PathingManager : MonoBehaviour
         }
     }
 
+    public void StartPathing(Vector3 startPosition, Vector3 targetPosition)
+    {
+        StartPathing(startPosition, targetPosition, out bool _);
+    }
     public void StartPathing(Vector3 startPosition, Vector3 targetPosition, out bool success)
     {
         success = false;
@@ -351,8 +357,6 @@ public class PathingManager : MonoBehaviour
             AStar.DrawPathArrows(path);
         }
     }
-
-
 
     private List<Vector3> GetPortalPaths(List<PortalNode> portalNodes)
     {

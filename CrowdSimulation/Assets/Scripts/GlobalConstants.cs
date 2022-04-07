@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public static class GlobalConstants
 {
     public const byte OBSTACLE_COST = byte.MaxValue;

@@ -11,52 +11,61 @@ using UnityEngine;
 public partial class MoveSystem : SystemBase
 {
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    private PathingManager pathingManager;
 
     protected override void OnCreate()
     {
         endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+
+        pathingManager = PathingManager.GetInstance();
     }
 
     protected override void OnUpdate()
     {
-        // Assign values to local variables captured in your job here, so that it has
-        // everything it needs to do its work when it runs later.
-        // For example,
-        //     float deltaTime = Time.DeltaTime;
-
-        // This declares a new kind of job, which is a unit of work to do.
-        // The job is declared as an Entities.ForEach with the target components as parameters,
-        // meaning it will process all entities in the world that have both
-        // Translation and Rotation components. Change it to process the component
-        // types you want.
+        if (pathingManager.FlowField == null) return;
 
         var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
-
         float deltaTime = Time.DeltaTime;
-        
+        MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
+
         Entities
             .ForEach((
-                Entity entity,
-                int entityInQueryIndex,
-                ref Translation translation, 
-                in Rotation rotation, 
-                in MoveComponent moveComponent, 
-                in MoveToPositionComponent moveToPositionComponent) => 
+                ref MoveToDirectionComponent moveToDirectionComponent,             
+                in Translation translation) =>
             {
-                float distance = math.distance(translation.Value, moveToPositionComponent.position);
+                if (flowFieldGrid.GetCellGridPosition(translation.Value) ==
+                    flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition)) return;
 
-                if (distance > 5)
+                FlowFieldCell flowFieldCell = flowFieldGrid.GetCell(translation.Value);
+
+                if (flowFieldCell == null) return;
+
+                if (flowFieldCell.bestDirection == GridDirection.None)
                 {
-                    float3 direction = moveToPositionComponent.position - translation.Value;
+                    if (pathingManager.CheckedAreas.Contains(pathingManager.AreaMap.Grid.GetCell(translation.Value))) return;
 
-                    translation.Value += math.normalize(direction) * moveComponent.speed * deltaTime;
+                    pathingManager.StartPathing(translation.Value, pathingManager.TargetPosition);
                 }
                 else
                 {
-                    entityCommandBuffer.RemoveComponent<MoveToPositionComponent>(entityInQueryIndex, entity);
+                    moveToDirectionComponent.direction =
+                        new float3(flowFieldCell.bestDirection.vector2D.x, 0f, flowFieldCell.bestDirection.vector2D.y);
                 }
-
             })
+            .WithName("PathForDirection_Job")
+            .WithoutBurst()
+            .Run();
+
+
+        Entities
+            .ForEach((
+                ref Translation translation,
+                in MoveComponent moveComponent,
+                in MoveToDirectionComponent moveToDirectionComponent) =>
+            {
+                translation.Value += moveToDirectionComponent.direction * moveComponent.speed * deltaTime;
+            })
+            .WithName("MoveToDirection_Job")
             .ScheduleParallel();
 
         CompleteDependency();

@@ -1,7 +1,5 @@
-// Script made by following Turbo Makes Games tutorial for making a Flow Field
-using System.Collections;
+// Script made by following Turbo Makes Games's tutorial "Tutorial - Flow Field Pathfinding in Unity": https://www.youtube.com/watch?v=tSe6ZqDKB0Y
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class GridDirection

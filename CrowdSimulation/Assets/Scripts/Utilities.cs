@@ -4,8 +4,6 @@ using UnityEngine;
 
 public static class Utilities
 {
-
-
     public static Vector3 GetMouseWorldPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

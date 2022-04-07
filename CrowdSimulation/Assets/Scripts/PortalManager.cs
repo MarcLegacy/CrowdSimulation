@@ -351,7 +351,6 @@ public class PortalManager : MonoBehaviour
         return lowestFCostNode;
     }
 
-
     private List<PortalNode> CalculatePath(PortalNode endPortalNode)
     {
         List<PortalNode> path = new List<PortalNode> { endPortalNode };
