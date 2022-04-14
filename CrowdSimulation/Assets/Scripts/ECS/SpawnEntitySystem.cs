@@ -11,10 +11,12 @@ using Random = Unity.Mathematics.Random;
 public partial class SpawnEntitySystem : SystemBase
 {
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    private float cellSize;
 
     protected override void OnCreate()
     {
         endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+        cellSize = PathingManager.GetInstance().CellSize;
     }
 
     protected override void OnUpdate()
@@ -42,10 +44,13 @@ public partial class SpawnEntitySystem : SystemBase
             {
                 if (positions.Count == 0) return;
 
-                translation.Value = positions[random.NextInt(0, positions.Count - 1)];
+                float3 cellPosition = random.NextFloat3(new float3(-cellSize * 0.5f, 0f, -cellSize * 0.5f),
+                    new float3(cellSize * 0.5f, 0f, cellSize * 0.5f));
+                translation.Value = positions[random.NextInt(0, positions.Count)] + cellPosition;
 
                 entityCommandBuffer.RemoveComponent<SpawnEntityComponent>(entity);
                 entityCommandBuffer.AddComponent(entity, new MoveToDirectionComponent { direction = float3.zero });
+                //entityCommandBuffer.AddComponent(entity, new Unity.Physics());
             })
             .WithoutBurst()
             .Run();

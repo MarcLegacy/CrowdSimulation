@@ -16,28 +16,28 @@ public class FlowField
         Grid = new MyGrid<FlowFieldCell>(width, height, cellSize, originPosition, (g, x, y) => new FlowFieldCell(g, x, y));
     }
 
-    public void CalculateFlowField(Vector3 worldPosition)
+    public void CalculateFlowField(Vector3 targetWorldPosition)
     {
-        CalculateFlowField(Grid.GetCell(worldPosition));
+        CalculateFlowField(Grid.GetCell(targetWorldPosition));
     }
-    public void CalculateFlowField(Vector2Int gridPosition)
+    public void CalculateFlowField(Vector2Int targetGridPosition)
     {
-        CalculateFlowField(Grid.GetCell(gridPosition));
+        CalculateFlowField(Grid.GetCell(targetGridPosition));
     }
     public void CalculateFlowField(int x, int y)
     {
         CalculateFlowField(Grid.GetCell(x, y));
     }
-    public void CalculateFlowField(FlowFieldCell destinationCell)
+    public void CalculateFlowField(FlowFieldCell targetCell)
     {
-        if (destinationCell == null)
+        if (targetCell == null)
         {
             Debug.LogWarning(this + ": " + MethodBase.GetCurrentMethod()?.Name + ": " + "Trying to calculate towards an invalid AStarCell!");
             return;
         }
 
         ResetCells();
-        CalculateIntegrationField(destinationCell);
+        CalculateIntegrationField(targetCell);
         CalculateVectorField();
     }
 

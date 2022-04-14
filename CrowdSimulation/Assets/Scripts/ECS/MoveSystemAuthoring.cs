@@ -1,15 +1,30 @@
-using System;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEditor;
 using UnityEngine;
+
+public class MoveSystemAuthoring : SystemAuthoring
+{
+    [SerializeField] private float unitBehaviorRadius = 5f;
+
+    private MoveSystem moveSystem;
+
+    protected override void Start()
+    {
+        moveSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MoveSystem>();
+
+        base.Start();
+    }
+
+    protected override void SetVariables()
+    {
+        moveSystem.unitBehaviorRadius = unitBehaviorRadius;
+    }
+}
 
 public partial class MoveSystem : SystemBase
 {
+    public float unitBehaviorRadius = 5f;
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
     private PathingManager pathingManager;
 
@@ -27,8 +42,11 @@ public partial class MoveSystem : SystemBase
         var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
         float deltaTime = Time.DeltaTime;
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
+        int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         Entities
+            .WithName("Unit_PathForDirection_Job")
+            .WithAll<UnitComponent>()
             .ForEach((
                 ref MoveToDirectionComponent moveToDirectionComponent,             
                 in Translation translation) =>
@@ -52,12 +70,12 @@ public partial class MoveSystem : SystemBase
                         new float3(flowFieldCell.bestDirection.vector2D.x, 0f, flowFieldCell.bestDirection.vector2D.y);
                 }
             })
-            .WithName("PathForDirection_Job")
             .WithoutBurst()
             .Run();
 
-
         Entities
+            .WithName("Unit_MoveToDirection_Job")
+            .WithAll<UnitComponent>()
             .ForEach((
                 ref Translation translation,
                 in MoveComponent moveComponent,
@@ -65,9 +83,19 @@ public partial class MoveSystem : SystemBase
             {
                 translation.Value += moveToDirectionComponent.direction * moveComponent.speed * deltaTime;
             })
-            .WithName("MoveToDirection_Job")
             .ScheduleParallel();
 
-        CompleteDependency();
+        Entities
+            .WithName("Unit_CollectNeighbors_Job")
+            .ForEach((in Translation translation) =>
+            {
+                Collider[] colliders = Physics.OverlapSphere(translation.Value, unitBehaviorRadius, layerMask);
+                foreach (Collider collider in colliders)
+                {
+                    Debug.DrawLine(translation.Value, collider.gameObject.transform.position, Color.red);
+                }
+            })
+            .WithoutBurst()
+            .Run();
     }
 }
