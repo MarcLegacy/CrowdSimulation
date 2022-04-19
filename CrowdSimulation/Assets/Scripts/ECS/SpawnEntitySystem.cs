@@ -4,6 +4,8 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Physics.Authoring;
 using Unity.Transforms;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
@@ -26,6 +28,7 @@ public partial class SpawnEntitySystem : SystemBase
         float deltaTime = Time.DeltaTime;
         Random random = new Random((uint)(deltaTime * 1000));
         List<float3> positions = new List<float3>();
+        
 
         if (UnitManager.GetInstance().spawnLocations != null && UnitManager.GetInstance().spawnLocations.Count > 0)
         {
@@ -34,9 +37,9 @@ public partial class SpawnEntitySystem : SystemBase
                 positions.Add(spawnLocation);
             }
         }
-        
+
         Entities
-            .WithAll<SpawnEntityComponent, UnitComponent>()
+            .WithAll<SpawnEntityComponent>()
             .ForEach((
                 Entity entity,
                 ref Translation translation, 
@@ -50,7 +53,26 @@ public partial class SpawnEntitySystem : SystemBase
 
                 entityCommandBuffer.RemoveComponent<SpawnEntityComponent>(entity);
                 entityCommandBuffer.AddComponent(entity, new MoveToDirectionComponent { direction = float3.zero });
-                //entityCommandBuffer.AddComponent(entity, new Unity.Physics());
+                entityCommandBuffer.AddComponent(entity, new PhysicsCollider()
+                {
+                    Value = Unity.Physics.CapsuleCollider.Create
+                    (
+                        new CapsuleGeometry()
+                        {
+                            Radius = 0.5f
+                        },
+                        new CollisionFilter()
+                        {
+                            BelongsTo = ~0u,
+                            CollidesWith = ~0u,
+                            GroupIndex = 0
+                        }
+                    )
+                });
+                entityCommandBuffer.AddSharedComponent(entity, new PhysicsWorldIndex());
+                //entityCommandBuffer.AddComponent<PhysicsVelocity>(entity);
+                //entityCommandBuffer.AddComponent<PhysicsDamping>(entity);
+                //entityCommandBuffer.AddComponent<PhysicsMass>(entity);
             })
             .WithoutBurst()
             .Run();

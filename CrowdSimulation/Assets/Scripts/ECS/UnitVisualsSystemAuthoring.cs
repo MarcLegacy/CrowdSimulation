@@ -39,6 +39,7 @@ public partial class UnitVisualsSystem : SystemBase
     public BehaviorForceDebug cohesion;
     public BehaviorForceDebug separation;
     public BehaviorForceDebug collisionAvoidance;
+
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
 
     protected override void OnCreate()

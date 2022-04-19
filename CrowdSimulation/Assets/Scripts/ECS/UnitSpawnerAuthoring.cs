@@ -22,6 +22,10 @@ public class UnitSpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity
         dstManager.AddComponentData(prefabEntity, new MoveComponent { speed = unitSpeed });
         dstManager.AddComponent<SpawnEntityComponent>(prefabEntity);
 
+        //var settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blobAssetStore);
+        //var prefabEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(unitPrefab, settings);
+        //var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+
         for (int i = 0; i < unitAmount; i++)
         {
             dstManager.Instantiate(prefabEntity);
