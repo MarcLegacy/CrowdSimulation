@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb54ea4f67dc17342bcd49954c53502d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DrawColliders: 1
+  DrawColliders: 0
   DrawColliderEdges: 0
   DrawColliderAabbs: 0
   DrawBroadphase: 0
@@ -767,24 +767,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1091353225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2540ba325b61054b828357591d4f71b, type: 3}
+  m_Script: {fileID: 11500000, guid: 4b124276c1bce8240aa9f881349f3647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   direction:
     showForce: 0
-    color: {r: 0, g: 0, b: 0, a: 0}
+    color: {r: 0.17377181, g: 0.44113097, b: 0.6698113, a: 1}
   alignment:
     showForce: 0
-    color: {r: 0, g: 0, b: 0, a: 0}
+    color: {r: 0, g: 0, b: 1, a: 1}
   cohesion:
     showForce: 0
-    color: {r: 0, g: 0, b: 0, a: 0}
+    color: {r: 0, g: 1, b: 0, a: 1}
   separation:
     showForce: 0
-    color: {r: 0, g: 0, b: 0, a: 0}
+    color: {r: 1, g: 0, b: 0, a: 1}
   collisionAvoidance:
     showForce: 0
-    color: {r: 0, g: 0, b: 0, a: 0}
+    color: {r: 0, g: 1, b: 0, a: 1}
 --- !u!4 &1091353227
 Transform:
   m_ObjectHideFlags: 0
@@ -1157,7 +1157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33f97e531cb6de641b2d721d95d77b1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitBehaviorRadius: 100
+  maxForce: 0.05
 --- !u!4 &1612429676
 Transform:
   m_ObjectHideFlags: 0
@@ -1249,7 +1249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 10
+  unitAmount: 100
   unitSpeed: 10
 --- !u!4 &1811022760
 Transform:
@@ -1297,7 +1297,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1928182065
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -70,9 +70,7 @@ public partial class SpawnEntitySystem : SystemBase
                     )
                 });
                 entityCommandBuffer.AddSharedComponent(entity, new PhysicsWorldIndex());
-                //entityCommandBuffer.AddComponent<PhysicsVelocity>(entity);
-                //entityCommandBuffer.AddComponent<PhysicsDamping>(entity);
-                //entityCommandBuffer.AddComponent<PhysicsMass>(entity);
+                entityCommandBuffer.AddBuffer<NeighborUnitBufferElement>(entity);
             })
             .WithoutBurst()
             .Run();

@@ -4,7 +4,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public class UnitSpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+public class UnitSpawnerAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
 {
     [SerializeField] private GameObject unitPrefab;
     [SerializeField] private int unitAmount = 100;

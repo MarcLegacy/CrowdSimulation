@@ -9,7 +9,7 @@ public struct BehaviorForceDebug
     public Color color;
 }
 
-public class UnitVisualsSystemAuthoring : SystemAuthoring
+public class UnitVisualsAuthoringSystem : AuthoringSystem
 {
     [SerializeField] private BehaviorForceDebug direction;
     [SerializeField] private BehaviorForceDebug alignment;
@@ -29,6 +29,10 @@ public class UnitVisualsSystemAuthoring : SystemAuthoring
     protected override void SetVariables()
     {
         unitVisualSystem.direction = direction;
+        unitVisualSystem.alignment = alignment;
+        unitVisualSystem.cohesion = cohesion;
+        unitVisualSystem.separation = separation;
+        unitVisualSystem.collisionAvoidance = collisionAvoidance;
     }
 }
 
@@ -49,36 +53,37 @@ public partial class UnitVisualsSystem : SystemBase
 
     protected override void OnUpdate()
     {
-        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
 
         Entities
             .WithName("Unit_ShowForces_Job")
             .WithAll<UnitComponent>()
-            .ForEach((ref Translation translation, in Rotation rotation, in MoveToDirectionComponent moveToDirectionComponent) =>
+            .ForEach((ref Translation translation, in Rotation rotation, in MoveComponent moveComponent, in MovementForcesComponent movementForcesComponent) =>
             {
                 if (direction.showForce)
                 {
-                    Debug.DrawRay(translation.Value, moveToDirectionComponent.direction, direction.color);
+                    Debug.DrawRay(translation.Value, moveComponent.velocity, direction.color);
+                    Debug.Log("Oui!");
                 }
 
                 if (alignment.showForce)
                 {
-                    Debug.DrawRay(translation.Value, moveToDirectionComponent.direction, alignment.color);
+                    Debug.DrawRay(translation.Value, movementForcesComponent.alignmentForce, alignment.color);
                 }
 
                 if (cohesion.showForce)
                 {
-                    Debug.DrawRay(translation.Value, moveToDirectionComponent.direction, cohesion.color);
+                    Debug.DrawRay(translation.Value, movementForcesComponent.cohesionForce, cohesion.color);
                 }
 
                 if (separation.showForce)
                 {
-                    Debug.DrawRay(translation.Value, moveToDirectionComponent.direction, separation.color);
+                    Debug.DrawRay(translation.Value, movementForcesComponent.separationForce, separation.color);
                 }
 
                 if (collisionAvoidance.showForce)
                 {
-                    Debug.DrawRay(translation.Value, moveToDirectionComponent.direction, collisionAvoidance.color);
+                    Debug.DrawRay(translation.Value, movementForcesComponent.collisionAvoidanceForce, collisionAvoidance.color);
                 }
             })
             .WithoutBurst()

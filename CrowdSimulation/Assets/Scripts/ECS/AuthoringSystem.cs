@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class SystemAuthoring : MonoBehaviour
+public abstract class AuthoringSystem : MonoBehaviour
 {
     private bool didStartExecute = false;
 
@@ -20,5 +20,5 @@ public abstract class SystemAuthoring : MonoBehaviour
         SetVariables();
     }
 
-    protected abstract void SetVariables();
+    protected virtual void SetVariables() {}
 }
