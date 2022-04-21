@@ -741,6 +741,52 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 84ba49b4c99663546973cf7209857f9b, type: 3}
+--- !u!1 &1029855571
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1029855573}
+  - component: {fileID: 1029855572}
+  m_Layer: 0
+  m_Name: MovementForcesSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1029855572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029855571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59d33e1f002b2444a93501f2ab77e4c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collisionRayOffset: 15
+  entitiesSkippedInFindNeighborsJob: 100
+  entitiesSkippedInObstacleAvoidanceJob: 10
+--- !u!4 &1029855573
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029855571}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 37.759598, y: -24.166986, z: 16.940212}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 18
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1091353225
 GameObject:
   m_ObjectHideFlags: 0
@@ -770,21 +816,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b124276c1bce8240aa9f881349f3647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  direction:
-    showForce: 0
-    color: {r: 0.17377181, g: 0.44113097, b: 0.6698113, a: 1}
+  velocity:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
   alignment:
-    showForce: 0
-    color: {r: 0, g: 0, b: 1, a: 1}
+    show: 0
+    color: {r: 0, g: 1, b: 0, a: 1}
   cohesion:
-    showForce: 0
+    show: 0
     color: {r: 0, g: 1, b: 0, a: 1}
   separation:
-    showForce: 0
+    show: 0
     color: {r: 1, g: 0, b: 0, a: 1}
-  collisionAvoidance:
-    showForce: 0
-    color: {r: 0, g: 1, b: 0, a: 1}
+  obstacleAvoidance:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  flockingNeighborRadius:
+    show: 0
+    color: {r: 1, g: 0, b: 0, a: 1}
+  obstacleRaycasts:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
 --- !u!4 &1091353227
 Transform:
   m_ObjectHideFlags: 0
@@ -1113,7 +1165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   showUnitHeatMap: 0
-  showObstacleMap: 1
+  showObstacleMap: 0
 --- !u!4 &1501038120
 Transform:
   m_ObjectHideFlags: 0
@@ -1230,7 +1282,7 @@ GameObject:
   - component: {fileID: 1811022759}
   - component: {fileID: 1811022761}
   m_Layer: 0
-  m_Name: UnitSpawnerAuthoring
+  m_Name: UnitSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1249,7 +1301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 100
+  unitAmount: 10000
   unitSpeed: 10
 --- !u!4 &1811022760
 Transform:

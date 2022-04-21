@@ -42,7 +42,7 @@ public static class Utilities
     {
         if (direction == Vector3.zero)
         {
-            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": direction == Vector3.zero");
+            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": velocity == Vector3.zero");
             return;
         }
 
@@ -98,11 +98,11 @@ public static class Utilities
     #endregion
     #region Draw Debug Functions
 
-    public static void DrawDebugArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null, float duration = 100f)
+    public static void DrawDebugArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null, float duration = 0.0f)
     {
         if (direction == Vector3.zero)
         {
-            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": direction == Vector3.zero");
+            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": velocity == Vector3.zero");
             return;
         }
 
@@ -122,7 +122,7 @@ public static class Utilities
         Debug.DrawLine(endPosition, endPosition + (left * arrowHeadLength), (Color) color, duration);
     }
 
-    public static void DrawDebugPathLines(List<Vector3> worldLocations, Color? color = null, float duration = 100f)
+    public static void DrawDebugPathLines(List<Vector3> worldLocations, Color? color = null, float duration = 0.0f)
     {
         if (worldLocations == null || worldLocations.Count == 0)
         {
@@ -138,7 +138,7 @@ public static class Utilities
         }
     }
 
-    public static void DrawDebugPortal(Portal portal, Color? color = null, float duration = 100f)
+    public static void DrawDebugPortal(Portal portal, Color? color = null, float duration = 0.0f)
     {
         if (color == null) color = Color.black;
 
@@ -150,7 +150,31 @@ public static class Utilities
         Debug.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB, (Color) color, duration);
         Debug.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition(), (Color) color, duration);
         Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, (Color) color, duration);
-    }  
+    }
+
+    public static void DrawDebugCircle(Vector3 position, float radius, Color? color = null, float duration = 0.0f)
+    {
+        if (color == null) color = Color.black;
+
+        float thetaScale = 0.01f;
+        float theta = 0f;
+
+        int size = (int)(1f / thetaScale + 1f);
+        Vector3 previousPosition = Vector3.zero;
+
+        for (int i = 0; i < size; i++)
+        {
+            theta += (2f * Mathf.PI * thetaScale);
+            float x = radius * Mathf.Cos(theta);
+            float y = radius * Mathf.Sin(theta);
+            if (i != 0)
+            {
+                Debug.DrawLine(previousPosition, position + new Vector3(x, 0, y), (Color)color, duration);
+            }
+
+            previousPosition = position + new Vector3(x, 0, y);
+        }
+    }
     #endregion
     #endregion
 

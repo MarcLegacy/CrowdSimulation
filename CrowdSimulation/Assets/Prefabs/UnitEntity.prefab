@@ -97,5 +97,5 @@ MonoBehaviour:
   alignmentWeight: 1
   cohesionWeight: 1
   separationWeight: 2
-  collisionAvoidanceWeight: 1
+  obstacleAvoidanceForce: 4
   flockingNeighborRadius: 10

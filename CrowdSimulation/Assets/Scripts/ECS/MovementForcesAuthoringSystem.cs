@@ -1,5 +1,3 @@
-
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -8,6 +6,10 @@ using UnityEngine;
 
 public class MovementForcesAuthoringSystem : AuthoringSystem
 {
+    public float collisionRayOffset = 15f;
+    public int entitiesSkippedInFindNeighborsJob = 10;
+    public int entitiesSkippedInObstacleAvoidanceJob = 10;
+
     private MovementForcesSystem movementForcesSystem;
 
     protected override void Start()
@@ -16,29 +18,51 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
 
         base.Start();
     }
+
+    protected override void SetVariables()
+    {
+        movementForcesSystem.collisionRayOffset = collisionRayOffset;
+        movementForcesSystem.entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
+        movementForcesSystem.entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
+    }
 }
 
 public partial class MovementForcesSystem : SystemBase
 {
-    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    public float collisionRayOffset;
+    public int entitiesSkippedInFindNeighborsJob;
+    public int entitiesSkippedInObstacleAvoidanceJob;
 
-    protected override void OnCreate()
-    {
-        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-    }
+    private int currentWorkingEntityInFindNeighborsJob;
+    private int currentWorkingEntityInObstacleAvoidanceJob;
 
     protected override void OnUpdate()
     {
-        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
+        int _entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
+        int _currentWorkingEntityInFindNeighborsJob = currentWorkingEntityInFindNeighborsJob;
+        int _entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
+        int _currentWorkingEntityInObstacleAvoidanceJob = currentWorkingEntityInObstacleAvoidanceJob;
+
         EntityQuery unitQuery = GetEntityQuery(ComponentType.ReadOnly<UnitComponent>(), ComponentType.ReadOnly<Translation>());
         NativeArray<Entity> unitEntities = unitQuery.ToEntityArray(Allocator.TempJob);
-        int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
+
+        if (currentWorkingEntityInFindNeighborsJob++ > _entitiesSkippedInFindNeighborsJob)
+        {
+            currentWorkingEntityInFindNeighborsJob = 0;
+        }
+
+        if (currentWorkingEntityInObstacleAvoidanceJob++ > _entitiesSkippedInObstacleAvoidanceJob)
+        {
+            currentWorkingEntityInObstacleAvoidanceJob = 0;
+        }
 
         Entities
-            .WithName("Units_FindNeighbors_Job")
+            .WithName("Units_FindNeighbors")
             .WithAll<UnitComponent>()
-            .ForEach((Entity entity, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer) =>
+            .ForEach((Entity entity, int entityInQueryIndex, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer) =>
             {
+                if (entityInQueryIndex % _entitiesSkippedInFindNeighborsJob != _currentWorkingEntityInFindNeighborsJob) return;
+
                 neighborUnitBuffer.Clear();
                 Translation translation = GetComponent<Translation>(entity);
 
@@ -58,9 +82,8 @@ public partial class MovementForcesSystem : SystemBase
             .WithDisposeOnCompletion(unitEntities)
             .Schedule();
 
-
         Entities
-            .WithName("Units_CalculateFlockingForces_Job")
+            .WithName("Units_CalculateFlockingForces")
             .WithAll<UnitComponent>()
             .ForEach((Entity entity, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer, ref MovementForcesComponent movementForceComponent) =>
             {
@@ -89,18 +112,43 @@ public partial class MovementForcesSystem : SystemBase
             .ScheduleParallel();
 
         Entities
-            .WithName("Units_ObstacleAvoidance_Job")
+            .WithName("Units_ObstacleAvoidance")
             .WithAll<UnitComponent>()
-            .ForEach((ref MovementForcesComponent movementForcesComponent, in Translation translation, in MoveComponent moveComponent) =>
+            .ForEach((
+                Entity entity, 
+                int entityInQueryIndex, 
+                ref MovementForcesComponent movementForcesComponent, 
+                in Translation translation,
+                in MoveComponent moveComponent) =>
             {
-                Collider[] colliders = Physics.OverlapSphere(translation.Value, movementForcesComponent.flockingNeighborRadius, layerMask);
-                float3 cohesionForce = float3.zero;
-                foreach (Collider collider in colliders)
-                {
-                    Debug.DrawLine(translation.Value, collider.gameObject.transform.position, Color.red);
+                if (entityInQueryIndex % _entitiesSkippedInObstacleAvoidanceJob != _currentWorkingEntityInObstacleAvoidanceJob) return;
 
-                    //cohesionForce = moveComponent.velocity - collider.
+                movementForcesComponent.obstacleAvoidanceForce = float3.zero;
+
+                Ray leftRay = new Ray(translation.Value,
+                    Quaternion.Euler(0, -collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius);
+                Ray rightRay = new Ray(translation.Value,
+                    Quaternion.Euler(0, collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius);
+                float3 obstacleAvoidanceForce = float3.zero;
+                if (Physics.Raycast(leftRay, out RaycastHit hit, movementForcesComponent.flockingNeighborRadius))
+                {
+                    if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
+                    {
+                        obstacleAvoidanceForce +=
+                            moveComponent.velocity - math.normalizesafe((float3)hit.transform.position - translation.Value);
+                    }
                 }
+
+                if (Physics.Raycast(rightRay, out hit, movementForcesComponent.flockingNeighborRadius))
+                {
+                    if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
+                    {
+                        obstacleAvoidanceForce +=
+                            moveComponent.velocity - math.normalizesafe((float3)hit.transform.position - translation.Value);
+                    }
+                }
+
+                movementForcesComponent.obstacleAvoidanceForce = obstacleAvoidanceForce;
             })
             .WithoutBurst()
             .Run();

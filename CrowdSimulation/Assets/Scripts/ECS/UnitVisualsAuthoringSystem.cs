@@ -3,19 +3,21 @@ using Unity.Transforms;
 using UnityEngine;
 
 [System.Serializable]
-public struct BehaviorForceDebug
+public struct DebugInfo
 {
-    public bool showForce;
+    public bool show;
     public Color color;
 }
 
 public class UnitVisualsAuthoringSystem : AuthoringSystem
 {
-    [SerializeField] private BehaviorForceDebug direction;
-    [SerializeField] private BehaviorForceDebug alignment;
-    [SerializeField] private BehaviorForceDebug cohesion;
-    [SerializeField] private BehaviorForceDebug separation;
-    [SerializeField] private BehaviorForceDebug collisionAvoidance;
+    [SerializeField] private DebugInfo velocity;
+    [SerializeField] private DebugInfo alignment;
+    [SerializeField] private DebugInfo cohesion;
+    [SerializeField] private DebugInfo separation;
+    [SerializeField] private DebugInfo obstacleAvoidance;
+    [SerializeField] private DebugInfo flockingNeighborRadius;
+    [SerializeField] private DebugInfo obstacleRaycasts;
 
     private UnitVisualsSystem unitVisualSystem;
 
@@ -28,62 +30,80 @@ public class UnitVisualsAuthoringSystem : AuthoringSystem
 
     protected override void SetVariables()
     {
-        unitVisualSystem.direction = direction;
+        unitVisualSystem.velocity = velocity;
         unitVisualSystem.alignment = alignment;
         unitVisualSystem.cohesion = cohesion;
         unitVisualSystem.separation = separation;
-        unitVisualSystem.collisionAvoidance = collisionAvoidance;
+        unitVisualSystem.obstacleAvoidanceAvoidance = obstacleAvoidance;
+        unitVisualSystem.flockingNeighborRadius = flockingNeighborRadius;
+        unitVisualSystem.obstacleRaycasts = obstacleRaycasts;
     }
 }
 
 public partial class UnitVisualsSystem : SystemBase
 {
-    public BehaviorForceDebug direction;
-    public BehaviorForceDebug alignment;
-    public BehaviorForceDebug cohesion;
-    public BehaviorForceDebug separation;
-    public BehaviorForceDebug collisionAvoidance;
+    private const float DEBUG_ARROW_SIZE = 2f;
 
-    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    public DebugInfo velocity;
+    public DebugInfo alignment;
+    public DebugInfo cohesion;
+    public DebugInfo separation;
+    public DebugInfo obstacleAvoidanceAvoidance;
+    public DebugInfo flockingNeighborRadius;
+    public DebugInfo obstacleRaycasts;
+
+    private MovementForcesSystem movementForcesSystem;
 
     protected override void OnCreate()
     {
-        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+        movementForcesSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MovementForcesSystem>();
     }
 
     protected override void OnUpdate()
     {
-        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-
         Entities
-            .WithName("Unit_ShowForces_Job")
+            .WithName("Units_ShowForces")
             .WithAll<UnitComponent>()
             .ForEach((ref Translation translation, in Rotation rotation, in MoveComponent moveComponent, in MovementForcesComponent movementForcesComponent) =>
             {
-                if (direction.showForce)
+                if (velocity.show)
                 {
-                    Debug.DrawRay(translation.Value, moveComponent.velocity, direction.color);
-                    Debug.Log("Oui!");
+                    Utilities.DrawDebugArrow(translation.Value, moveComponent.velocity, DEBUG_ARROW_SIZE, velocity.color);
                 }
 
-                if (alignment.showForce)
+                if (alignment.show)
                 {
-                    Debug.DrawRay(translation.Value, movementForcesComponent.alignmentForce, alignment.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.alignmentForce, DEBUG_ARROW_SIZE, velocity.color);
                 }
 
-                if (cohesion.showForce)
+                if (cohesion.show)
                 {
-                    Debug.DrawRay(translation.Value, movementForcesComponent.cohesionForce, cohesion.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.cohesionForce, DEBUG_ARROW_SIZE, velocity.color);
                 }
 
-                if (separation.showForce)
+                if (separation.show)
                 {
-                    Debug.DrawRay(translation.Value, movementForcesComponent.separationForce, separation.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.separationForce, DEBUG_ARROW_SIZE, velocity.color);
                 }
 
-                if (collisionAvoidance.showForce)
+                if (obstacleAvoidanceAvoidance.show)
                 {
-                    Debug.DrawRay(translation.Value, movementForcesComponent.collisionAvoidanceForce, collisionAvoidance.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.obstacleAvoidanceForce, DEBUG_ARROW_SIZE, velocity.color);
+                }
+
+                if (flockingNeighborRadius.show)
+                {
+                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.flockingNeighborRadius, flockingNeighborRadius.color);
+                }
+
+                if (obstacleRaycasts.show)
+                {
+                    Debug.DrawRay(translation.Value,
+                        Quaternion.Euler(0, movementForcesSystem.collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius,
+                        obstacleRaycasts.color);
+                    Debug.DrawRay(translation.Value,
+                        Quaternion.Euler(0, -movementForcesSystem.collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius,
+                        obstacleRaycasts.color);
                 }
             })
             .WithoutBurst()

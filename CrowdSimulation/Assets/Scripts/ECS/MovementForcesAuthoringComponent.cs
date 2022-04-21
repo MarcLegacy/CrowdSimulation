@@ -9,7 +9,7 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
     [SerializeField] private float alignmentWeight = 1f;
     [SerializeField] private float cohesionWeight = 1f;
     [SerializeField] private float separationWeight = 1f;
-    [SerializeField] private float collisionAvoidanceWeight = 1f;
+    [SerializeField] private float obstacleAvoidanceForce = 1f;
     [SerializeField] private float flockingNeighborRadius = 10f;
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
@@ -19,7 +19,7 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
             alignmentWeight = alignmentWeight,
             cohesionWeight = cohesionWeight,
             separationWeight = separationWeight,
-            collisionAvoidanceWeight = collisionAvoidanceWeight,
+            obstacleAvoidanceWeight = obstacleAvoidanceForce,
             flockingNeighborRadius = flockingNeighborRadius
         });
     }
@@ -34,8 +34,8 @@ public struct MovementForcesComponent : IComponentData
     public float3 cohesionForce;
     public float separationWeight;
     public float3 separationForce;
-    public float collisionAvoidanceWeight;
-    public float3 collisionAvoidanceForce;
+    public float obstacleAvoidanceWeight;
+    public float3 obstacleAvoidanceForce;
     public float flockingNeighborRadius;
 }
 

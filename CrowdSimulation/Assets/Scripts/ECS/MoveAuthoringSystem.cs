@@ -84,7 +84,7 @@ public partial class MoveSystem : SystemBase
             .Run();
 
         Entities
-            .WithName("Unit_Steering_Job")
+            .WithName("Units_Steering")
             .WithAll<UnitComponent>()
             .ForEach((
                 ref Translation translation,
@@ -93,12 +93,13 @@ public partial class MoveSystem : SystemBase
                 in MovementForcesComponent movementForcesComponent) =>
             {
                 float3 steering = moveToDirectionComponent.direction +
-                                                movementForcesComponent.alignmentForce * movementForcesComponent.alignmentWeight +
-                                                movementForcesComponent.cohesionForce * movementForcesComponent.cohesionWeight +
-                                                movementForcesComponent.separationForce * movementForcesComponent.separationWeight;
-                moveComponent.velocity = math.lerp(moveComponent.velocity, steering, _maxForce);
+                                  movementForcesComponent.alignmentForce * movementForcesComponent.alignmentWeight +
+                                  movementForcesComponent.cohesionForce * movementForcesComponent.cohesionWeight +
+                                  movementForcesComponent.separationForce * movementForcesComponent.separationWeight +
+                                  movementForcesComponent.obstacleAvoidanceForce * movementForcesComponent.obstacleAvoidanceWeight;
+                moveComponent.velocity = math.normalizesafe(math.lerp(moveComponent.velocity, steering, _maxForce));
 
-                translation.Value += math.normalizesafe(moveComponent.velocity) * moveComponent.speed * deltaTime;
+                translation.Value += moveComponent.velocity * moveComponent.speed * deltaTime;
             })
             .ScheduleParallel();
 
