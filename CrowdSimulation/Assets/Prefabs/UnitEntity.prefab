@@ -97,5 +97,33 @@ MonoBehaviour:
   alignmentWeight: 1
   cohesionWeight: 1
   separationWeight: 2
-  obstacleAvoidanceForce: 4
+  obstacleAvoidanceForce: 10
   flockingNeighborRadius: 10
+  alignment:
+    weight: 0
+    radius: 0
+    force:
+      x: 0
+      y: 0
+      z: 0
+  cohesion:
+    weight: 0
+    radius: 0
+    force:
+      x: 0
+      y: 0
+      z: 0
+  separation:
+    weight: 0
+    radius: 0
+    force:
+      x: 0
+      y: 0
+      z: 0
+  obstacleAvoidance:
+    weight: 0
+    radius: 5
+    force:
+      x: 0
+      y: 0
+      z: 0

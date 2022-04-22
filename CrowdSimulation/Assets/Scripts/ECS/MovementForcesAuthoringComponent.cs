@@ -3,6 +3,14 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
+[System.Serializable]
+public struct MovementForcesInfo
+{
+    public float weight;
+    public float radius;
+    [HideInInspector] public float3 force;
+}
+
 [DisallowMultipleComponent]
 public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
 {
@@ -11,6 +19,10 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
     [SerializeField] private float separationWeight = 1f;
     [SerializeField] private float obstacleAvoidanceForce = 1f;
     [SerializeField] private float flockingNeighborRadius = 10f;
+    [SerializeField] private MovementForcesInfo alignment = new MovementForcesInfo();
+    [SerializeField] private MovementForcesInfo cohesion = new MovementForcesInfo();
+    [SerializeField] private MovementForcesInfo separation = new MovementForcesInfo();
+    [SerializeField] private MovementForcesInfo obstacleAvoidance = new MovementForcesInfo();
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
@@ -20,7 +32,11 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
             cohesionWeight = cohesionWeight,
             separationWeight = separationWeight,
             obstacleAvoidanceWeight = obstacleAvoidanceForce,
-            flockingNeighborRadius = flockingNeighborRadius
+            flockingNeighborRadius = flockingNeighborRadius,
+            alignment = alignment,
+            cohesion = cohesion,
+            separation = separation,
+            obstacleAvoidance = obstacleAvoidance
         });
     }
 }
@@ -37,6 +53,10 @@ public struct MovementForcesComponent : IComponentData
     public float obstacleAvoidanceWeight;
     public float3 obstacleAvoidanceForce;
     public float flockingNeighborRadius;
+    public MovementForcesInfo alignment;
+    public MovementForcesInfo cohesion;
+    public MovementForcesInfo separation;
+    public MovementForcesInfo obstacleAvoidance;
 }
 
 

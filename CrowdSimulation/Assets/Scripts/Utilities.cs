@@ -98,7 +98,7 @@ public static class Utilities
     #endregion
     #region Draw Debug Functions
 
-    public static void DrawDebugArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null, float duration = 0.0f)
+    public static void DrawDebugArrow(Vector3 worldPosition, Vector3 direction, float size = 1f, Color? color = null, float duration = 0.0f)
     {
         if (direction == Vector3.zero)
         {
@@ -108,8 +108,8 @@ public static class Utilities
 
         float arrowHeadLength = 0.5f * size;
         float arrowHeadAngle = 20.0f;
-        Vector3 startPosition = new Vector3(position.x - direction.x * size * 0.5f, position.y - direction.y * size * 0.5f,
-            position.z - direction.z * size * 0.5f);
+        Vector3 startPosition = new Vector3(worldPosition.x - direction.x * size * 0.5f, worldPosition.y - direction.y * size * 0.5f,
+            worldPosition.z - direction.z * size * 0.5f);
         Vector3 endPosition = startPosition + (direction * size);
 
         if (color == null) color = Color.white;
@@ -152,8 +152,13 @@ public static class Utilities
         Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, (Color) color, duration);
     }
 
-    public static void DrawDebugCircle(Vector3 position, float radius, Color? color = null, float duration = 0.0f)
+    public static void DrawDebugCircle(Vector3 worldPosition, float radius, Color? color = null, float duration = 0.0f)
     {
+        if (radius == 0)
+        {
+            Debug.LogWarning(radius + " == 0");
+            return;
+        }
         if (color == null) color = Color.black;
 
         float thetaScale = 0.01f;
@@ -169,10 +174,10 @@ public static class Utilities
             float y = radius * Mathf.Sin(theta);
             if (i != 0)
             {
-                Debug.DrawLine(previousPosition, position + new Vector3(x, 0, y), (Color)color, duration);
+                Debug.DrawLine(previousPosition, worldPosition + new Vector3(x, 0, y), (Color)color, duration);
             }
 
-            previousPosition = position + new Vector3(x, 0, y);
+            previousPosition = worldPosition + new Vector3(x, 0, y);
         }
     }
     #endregion

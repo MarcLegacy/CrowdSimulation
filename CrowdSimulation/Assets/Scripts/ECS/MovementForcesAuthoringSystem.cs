@@ -125,12 +125,10 @@ public partial class MovementForcesSystem : SystemBase
 
                 movementForcesComponent.obstacleAvoidanceForce = float3.zero;
 
-                Ray leftRay = new Ray(translation.Value,
-                    Quaternion.Euler(0, -collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius);
-                Ray rightRay = new Ray(translation.Value,
-                    Quaternion.Euler(0, collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius);
+                Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayOffset, 0) * moveComponent.velocity);
+                Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayOffset, 0) * moveComponent.velocity);
                 float3 obstacleAvoidanceForce = float3.zero;
-                if (Physics.Raycast(leftRay, out RaycastHit hit, movementForcesComponent.flockingNeighborRadius))
+                if (Physics.Raycast(leftRay, out RaycastHit hit, movementForcesComponent.obstacleAvoidance.radius))
                 {
                     if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
                     {
@@ -139,7 +137,7 @@ public partial class MovementForcesSystem : SystemBase
                     }
                 }
 
-                if (Physics.Raycast(rightRay, out hit, movementForcesComponent.flockingNeighborRadius))
+                if (Physics.Raycast(rightRay, out hit, movementForcesComponent.obstacleAvoidance.radius))
                 {
                     if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
                     {

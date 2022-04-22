@@ -1,9 +1,10 @@
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
 [System.Serializable]
-public struct DebugInfo
+public struct MovementForcesDebugInfo
 {
     public bool show;
     public Color color;
@@ -11,13 +12,13 @@ public struct DebugInfo
 
 public class UnitVisualsAuthoringSystem : AuthoringSystem
 {
-    [SerializeField] private DebugInfo velocity;
-    [SerializeField] private DebugInfo alignment;
-    [SerializeField] private DebugInfo cohesion;
-    [SerializeField] private DebugInfo separation;
-    [SerializeField] private DebugInfo obstacleAvoidance;
-    [SerializeField] private DebugInfo flockingNeighborRadius;
-    [SerializeField] private DebugInfo obstacleRaycasts;
+    [SerializeField] private MovementForcesDebugInfo velocity;
+    [SerializeField] private MovementForcesDebugInfo alignment;
+    [SerializeField] private MovementForcesDebugInfo cohesion;
+    [SerializeField] private MovementForcesDebugInfo separation;
+    [SerializeField] private MovementForcesDebugInfo obstacleAvoidance;
+    [SerializeField] private MovementForcesDebugInfo flockingNeighborRadius;
+    [SerializeField] private MovementForcesDebugInfo obstacleRaycasts;
 
     private UnitVisualsSystem unitVisualSystem;
 
@@ -34,7 +35,7 @@ public class UnitVisualsAuthoringSystem : AuthoringSystem
         unitVisualSystem.alignment = alignment;
         unitVisualSystem.cohesion = cohesion;
         unitVisualSystem.separation = separation;
-        unitVisualSystem.obstacleAvoidanceAvoidance = obstacleAvoidance;
+        unitVisualSystem.obstacleAvoidance = obstacleAvoidance;
         unitVisualSystem.flockingNeighborRadius = flockingNeighborRadius;
         unitVisualSystem.obstacleRaycasts = obstacleRaycasts;
     }
@@ -44,13 +45,13 @@ public partial class UnitVisualsSystem : SystemBase
 {
     private const float DEBUG_ARROW_SIZE = 2f;
 
-    public DebugInfo velocity;
-    public DebugInfo alignment;
-    public DebugInfo cohesion;
-    public DebugInfo separation;
-    public DebugInfo obstacleAvoidanceAvoidance;
-    public DebugInfo flockingNeighborRadius;
-    public DebugInfo obstacleRaycasts;
+    public MovementForcesDebugInfo velocity;
+    public MovementForcesDebugInfo alignment;
+    public MovementForcesDebugInfo cohesion;
+    public MovementForcesDebugInfo separation;
+    public MovementForcesDebugInfo obstacleAvoidance;
+    public MovementForcesDebugInfo flockingNeighborRadius;
+    public MovementForcesDebugInfo obstacleRaycasts;
 
     private MovementForcesSystem movementForcesSystem;
 
@@ -66,29 +67,29 @@ public partial class UnitVisualsSystem : SystemBase
             .WithAll<UnitComponent>()
             .ForEach((ref Translation translation, in Rotation rotation, in MoveComponent moveComponent, in MovementForcesComponent movementForcesComponent) =>
             {
-                if (velocity.show)
+                if (velocity.show && !moveComponent.velocity.Equals(float3.zero))
                 {
                     Utilities.DrawDebugArrow(translation.Value, moveComponent.velocity, DEBUG_ARROW_SIZE, velocity.color);
                 }
 
-                if (alignment.show)
+                if (alignment.show && !movementForcesComponent.alignmentForce.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.alignmentForce, DEBUG_ARROW_SIZE, velocity.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.alignmentForce, DEBUG_ARROW_SIZE, alignment.color);
                 }
 
-                if (cohesion.show)
+                if (cohesion.show && !movementForcesComponent.cohesionForce.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.cohesionForce, DEBUG_ARROW_SIZE, velocity.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.cohesionForce, DEBUG_ARROW_SIZE, cohesion.color);
                 }
 
-                if (separation.show)
+                if (separation.show && !movementForcesComponent.separationForce.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.separationForce, DEBUG_ARROW_SIZE, velocity.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.separationForce, DEBUG_ARROW_SIZE, separation.color);
                 }
 
-                if (obstacleAvoidanceAvoidance.show)
+                if (obstacleAvoidance.show && !movementForcesComponent.obstacleAvoidanceForce.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.obstacleAvoidanceForce, DEBUG_ARROW_SIZE, velocity.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.obstacleAvoidanceForce, DEBUG_ARROW_SIZE, obstacleAvoidance.color);
                 }
 
                 if (flockingNeighborRadius.show)
@@ -99,10 +100,10 @@ public partial class UnitVisualsSystem : SystemBase
                 if (obstacleRaycasts.show)
                 {
                     Debug.DrawRay(translation.Value,
-                        Quaternion.Euler(0, movementForcesSystem.collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius,
+                        Quaternion.Euler(0, movementForcesSystem.collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
                         obstacleRaycasts.color);
                     Debug.DrawRay(translation.Value,
-                        Quaternion.Euler(0, -movementForcesSystem.collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.flockingNeighborRadius,
+                        Quaternion.Euler(0, -movementForcesSystem.collisionRayOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
                         obstacleRaycasts.color);
                 }
             })

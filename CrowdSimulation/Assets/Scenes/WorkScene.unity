@@ -385,6 +385,7 @@ MonoBehaviour:
   colorA: {r: 0.38679248, g: 0.23692253, b: 0.13318796, a: 0}
   colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
   numOfBorderCellsAvoided: 3
+  wallColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!4 &474486713
 Transform:
   m_ObjectHideFlags: 0
@@ -1301,7 +1302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 10000
+  unitAmount: 100
   unitSpeed: 10
 --- !u!4 &1811022760
 Transform:
