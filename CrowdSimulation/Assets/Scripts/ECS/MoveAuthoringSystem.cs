@@ -89,17 +89,21 @@ public partial class MoveSystem : SystemBase
             .ForEach((
                 ref Translation translation,
                 ref MoveComponent moveComponent,
+                ref Rotation rotation,
                 in MoveToDirectionComponent moveToDirectionComponent,
                 in MovementForcesComponent movementForcesComponent) =>
             {
                 float3 steering = moveToDirectionComponent.direction +
-                                  movementForcesComponent.alignmentForce * movementForcesComponent.alignmentWeight +
-                                  movementForcesComponent.cohesionForce * movementForcesComponent.cohesionWeight +
-                                  movementForcesComponent.separationForce * movementForcesComponent.separationWeight +
-                                  movementForcesComponent.obstacleAvoidanceForce * movementForcesComponent.obstacleAvoidanceWeight;
+                                  movementForcesComponent.alignment.force * movementForcesComponent.alignment.weight +
+                                  movementForcesComponent.cohesion.force * movementForcesComponent.cohesion.weight +
+                                  movementForcesComponent.separation.force * movementForcesComponent.separation.weight +
+                                  movementForcesComponent.obstacleAvoidance.force * movementForcesComponent.obstacleAvoidance.weight;
                 moveComponent.velocity = math.normalizesafe(math.lerp(moveComponent.velocity, steering, _maxForce));
 
+                if (moveComponent.velocity.Equals(float3.zero)) return;
+
                 translation.Value += moveComponent.velocity * moveComponent.speed * deltaTime;
+                rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), 90f);
             })
             .ScheduleParallel();
 

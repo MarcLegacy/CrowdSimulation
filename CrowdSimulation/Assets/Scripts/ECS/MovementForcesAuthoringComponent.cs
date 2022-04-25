@@ -14,11 +14,6 @@ public struct MovementForcesInfo
 [DisallowMultipleComponent]
 public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
 {
-    [SerializeField] private float alignmentWeight = 1f;
-    [SerializeField] private float cohesionWeight = 1f;
-    [SerializeField] private float separationWeight = 1f;
-    [SerializeField] private float obstacleAvoidanceForce = 1f;
-    [SerializeField] private float flockingNeighborRadius = 10f;
     [SerializeField] private MovementForcesInfo alignment = new MovementForcesInfo();
     [SerializeField] private MovementForcesInfo cohesion = new MovementForcesInfo();
     [SerializeField] private MovementForcesInfo separation = new MovementForcesInfo();
@@ -28,11 +23,6 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
     {
         dstManager.AddComponentData(entity, new MovementForcesComponent
         {
-            alignmentWeight = alignmentWeight,
-            cohesionWeight = cohesionWeight,
-            separationWeight = separationWeight,
-            obstacleAvoidanceWeight = obstacleAvoidanceForce,
-            flockingNeighborRadius = flockingNeighborRadius,
             alignment = alignment,
             cohesion = cohesion,
             separation = separation,
@@ -44,15 +34,6 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
 [Serializable]
 public struct MovementForcesComponent : IComponentData
 {
-    public float alignmentWeight;
-    public float3 alignmentForce;
-    public float cohesionWeight;
-    public float3 cohesionForce;
-    public float separationWeight;
-    public float3 separationForce;
-    public float obstacleAvoidanceWeight;
-    public float3 obstacleAvoidanceForce;
-    public float flockingNeighborRadius;
     public MovementForcesInfo alignment;
     public MovementForcesInfo cohesion;
     public MovementForcesInfo separation;

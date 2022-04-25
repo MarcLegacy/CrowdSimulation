@@ -5,4 +5,8 @@ using Unity.Entities;
 public struct NeighborUnitBufferElement : IBufferElementData
 {
     public Entity unit;
+    public bool inAlignmentRadius;
+    public bool inCohesionRadius;
+    public bool inSeparationRadius;
+
 }

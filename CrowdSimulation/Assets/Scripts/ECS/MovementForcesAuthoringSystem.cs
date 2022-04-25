@@ -59,7 +59,7 @@ public partial class MovementForcesSystem : SystemBase
         Entities
             .WithName("Units_FindNeighbors")
             .WithAll<UnitComponent>()
-            .ForEach((Entity entity, int entityInQueryIndex, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer) =>
+            .ForEach((Entity entity, int entityInQueryIndex, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer, in MovementForcesComponent movementForcesComponent) =>
             {
                 if (entityInQueryIndex % _entitiesSkippedInFindNeighborsJob != _currentWorkingEntityInFindNeighborsJob) return;
 
@@ -71,12 +71,15 @@ public partial class MovementForcesSystem : SystemBase
                     if (unitEntity == entity) continue;
 
                     Translation unitTranslation = GetComponent<Translation>(unitEntity);
+                    float distance = math.distance(translation.Value, unitTranslation.Value);
+                    NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement{unit = unitEntity};
 
-                    if (math.distance(translation.Value, unitTranslation.Value) < 10)
-                    {
-                        DynamicBuffer<Entity> entityBuffer = neighborUnitBuffer.Reinterpret<Entity>();
-                        entityBuffer.Add(unitEntity);
-                    }
+                    if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
+                    if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
+                    if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
+
+                    if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
+                        neighborUnitBuffer.Add(neighborUnit);
                 }
             })
             .WithDisposeOnCompletion(unitEntities)
@@ -87,27 +90,27 @@ public partial class MovementForcesSystem : SystemBase
             .WithAll<UnitComponent>()
             .ForEach((Entity entity, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer, ref MovementForcesComponent movementForceComponent) =>
             {
-                DynamicBuffer<Entity> entityBuffer = neighborUnitBuffer.Reinterpret<Entity>();
                 Translation translation = GetComponent<Translation>(entity);
                 float3 alignmentForce = float3.zero;
                 float3 cohesionForce = float3.zero;
                 float3 separationForce = float3.zero;
 
-                foreach (Entity unitEntity in entityBuffer)
+                foreach (NeighborUnitBufferElement neighborUnit in neighborUnitBuffer)
                 {
+                    Entity unitEntity = neighborUnit.unit;
                     Translation unitTranslation = GetComponent<Translation>(unitEntity);
 
-                    alignmentForce += GetComponent<MoveComponent>(unitEntity).velocity;
-                    cohesionForce += unitTranslation.Value;
-                    separationForce += unitTranslation.Value - translation.Value;
+                    if (neighborUnit.inAlignmentRadius) alignmentForce += GetComponent<MoveComponent>(unitEntity).velocity;
+                    if (neighborUnit.inCohesionRadius) cohesionForce += unitTranslation.Value;
+                    if (neighborUnit.inSeparationRadius) separationForce += unitTranslation.Value - translation.Value;
                 }
 
-                alignmentForce /= entityBuffer.Length;
-                cohesionForce /= entityBuffer.Length;
-                separationForce /= entityBuffer.Length;
-                movementForceComponent.alignmentForce = math.normalizesafe(alignmentForce);
-                movementForceComponent.cohesionForce = math.normalizesafe(cohesionForce - translation.Value);
-                movementForceComponent.separationForce = math.normalizesafe(-separationForce);
+                alignmentForce /= neighborUnitBuffer.Length;
+                cohesionForce /= neighborUnitBuffer.Length;
+                separationForce /= neighborUnitBuffer.Length;
+                movementForceComponent.alignment.force = math.normalizesafe(alignmentForce);
+                movementForceComponent.cohesion.force = math.normalizesafe(cohesionForce - translation.Value);
+                movementForceComponent.separation.force = math.normalizesafe(-separationForce);
             })
             .ScheduleParallel();
 
@@ -123,32 +126,31 @@ public partial class MovementForcesSystem : SystemBase
             {
                 if (entityInQueryIndex % _entitiesSkippedInObstacleAvoidanceJob != _currentWorkingEntityInObstacleAvoidanceJob) return;
 
-                movementForcesComponent.obstacleAvoidanceForce = float3.zero;
+                movementForcesComponent.obstacleAvoidance.force = float3.zero;
 
                 Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayOffset, 0) * moveComponent.velocity);
                 Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayOffset, 0) * moveComponent.velocity);
                 float3 obstacleAvoidanceForce = float3.zero;
-                if (Physics.Raycast(leftRay, out RaycastHit hit, movementForcesComponent.obstacleAvoidance.radius))
-                {
-                    if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
-                    {
-                        obstacleAvoidanceForce +=
-                            moveComponent.velocity - math.normalizesafe((float3)hit.transform.position - translation.Value);
-                    }
-                }
 
-                if (Physics.Raycast(rightRay, out hit, movementForcesComponent.obstacleAvoidance.radius))
-                {
-                    if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
-                    {
-                        obstacleAvoidanceForce +=
-                            moveComponent.velocity - math.normalizesafe((float3)hit.transform.position - translation.Value);
-                    }
-                }
+                obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
+                obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
 
-                movementForcesComponent.obstacleAvoidanceForce = obstacleAvoidanceForce;
+                movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
             })
             .WithoutBurst()
             .Run();
+    }
+
+    private float3 GetAvoidanceForce(float3 position, Ray ray, float rayLength)
+    {
+        if (Physics.Raycast(ray, out RaycastHit hit, rayLength))
+        {
+            if (hit.transform.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
+            {
+                return position - (float3)hit.point;
+            }
+        }
+
+        return float3.zero;
     }
 }
