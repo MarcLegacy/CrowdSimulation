@@ -4,6 +4,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
 using Unity.Transforms;
+using UnityEditor.Rendering;
 using UnityEngine;
 using Collider = UnityEngine.Collider;
 using SphereCollider = Unity.Physics.SphereCollider;
@@ -102,7 +103,12 @@ public partial class MoveSystem : SystemBase
 
                 if (moveComponent.velocity.Equals(float3.zero)) return;
 
-                translation.Value += moveComponent.velocity * moveComponent.speed * deltaTime;
+                if (moveComponent.currentSpeed < moveComponent.maxSpeed)
+                {
+                    moveComponent.currentSpeed += moveComponent.acceleration * deltaTime;
+                }
+
+                translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
                 rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), 90f);
             })
             .ScheduleParallel();

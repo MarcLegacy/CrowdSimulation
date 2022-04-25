@@ -28,6 +28,8 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
             separation = separation,
             obstacleAvoidance = obstacleAvoidance
         });
+
+        dstManager.AddBuffer<NeighborUnitBufferElement>(entity);
     }
 }
 
