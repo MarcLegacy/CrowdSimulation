@@ -12,22 +12,22 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
         dstManager.AddComponent<UnitComponent>(entity);
-        dstManager.AddComponentData(entity, new MoveComponent()
+        dstManager.AddComponentData(entity, new MoveComponent
         {
             maxSpeed = unitSO.speed,
             acceleration = unitSO.acceleration
 
         });
         dstManager.AddComponentData(entity, new MoveToDirectionComponent { direction = float3.zero });
-        dstManager.AddComponentData(entity, new PhysicsCollider()
+        dstManager.AddComponentData(entity, new PhysicsCollider
         {
             Value = Unity.Physics.CapsuleCollider.Create
             (
-                new CapsuleGeometry()
+                new CapsuleGeometry
                 {
                     Radius = 0.5f
                 },
-                new CollisionFilter()
+                new CollisionFilter
                 {
                     BelongsTo = ~0u,
                     CollidesWith = ~0u,
@@ -44,6 +44,7 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
             separation = unitSO.separation,
             obstacleAvoidance = unitSO.obstacleAvoidance
         });
+        dstManager.AddComponentData(entity, new UnitSenseComponent { distance = unitSO.senseDistance });
     }
 }
 

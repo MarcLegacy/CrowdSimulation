@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class MovementForcesAuthoringSystem : AuthoringSystem
 {
-    public float collisionRayOffset = 15f;
+    public float collisionRayAngleOffset = 15f;
     public int entitiesSkippedInFindNeighborsJob = 10;
     public int entitiesSkippedInObstacleAvoidanceJob = 10;
 
@@ -21,7 +21,7 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
 
     protected override void SetVariables()
     {
-        movementForcesSystem.collisionRayOffset = collisionRayOffset;
+        movementForcesSystem.collisionRayAngleOffset = collisionRayAngleOffset;
         movementForcesSystem.entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
         movementForcesSystem.entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
     }
@@ -29,7 +29,7 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
 
 public partial class MovementForcesSystem : SystemBase
 {
-    public float collisionRayOffset;
+    public float collisionRayAngleOffset;
     public int entitiesSkippedInFindNeighborsJob;
     public int entitiesSkippedInObstacleAvoidanceJob;
 
@@ -128,8 +128,8 @@ public partial class MovementForcesSystem : SystemBase
 
                 movementForcesComponent.obstacleAvoidance.force = float3.zero;
 
-                Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayOffset, 0) * moveComponent.velocity);
-                Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayOffset, 0) * moveComponent.velocity);
+                Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayAngleOffset, 0) * moveComponent.velocity);
+                Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayAngleOffset, 0) * moveComponent.velocity);
                 float3 obstacleAvoidanceForce = float3.zero;
 
                 obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);

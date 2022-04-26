@@ -7,6 +7,7 @@ public class UnitSO : ScriptableObject
 {
     public float speed = 10f;
     public float acceleration = 1f;
+    public float senseDistance = 1f;
 
     [Header("Movement Forces")]
     public MovementForcesInfo alignment = new MovementForcesInfo();

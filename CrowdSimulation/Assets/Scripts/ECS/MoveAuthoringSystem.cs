@@ -63,7 +63,11 @@ public partial class MoveSystem : SystemBase
                 in Translation translation) =>
             {
                 if (flowFieldGrid.GetCellGridPosition(translation.Value) ==
-                    flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition)) return;
+                    flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition))
+                {
+                    moveToDirectionComponent.direction = float3.zero;
+                    return;
+                }
 
                 FlowFieldCell flowFieldCell = flowFieldGrid.GetCell(translation.Value);
 
@@ -74,6 +78,7 @@ public partial class MoveSystem : SystemBase
                     if (pathingManager.CheckedAreas.Contains(pathingManager.AreaMap.Grid.GetCell(translation.Value))) return;
 
                     pathingManager.StartPathing(translation.Value, pathingManager.TargetPosition);
+                    
                 }
                 else
                 {
@@ -92,7 +97,8 @@ public partial class MoveSystem : SystemBase
                 ref MoveComponent moveComponent,
                 ref Rotation rotation,
                 in MoveToDirectionComponent moveToDirectionComponent,
-                in MovementForcesComponent movementForcesComponent) =>
+                in MovementForcesComponent movementForcesComponent,
+                in UnitSenseComponent unitSenseComponent) =>
             {
                 float3 steering = moveToDirectionComponent.direction +
                                   movementForcesComponent.alignment.force * movementForcesComponent.alignment.weight +
@@ -103,9 +109,29 @@ public partial class MoveSystem : SystemBase
 
                 if (moveComponent.velocity.Equals(float3.zero)) return;
 
-                if (moveComponent.currentSpeed < moveComponent.maxSpeed)
+                if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isBlocking)
                 {
-                    moveComponent.currentSpeed += moveComponent.acceleration * deltaTime;
+                    if (moveComponent.currentSpeed < moveComponent.maxSpeed)
+                    {
+                        moveComponent.currentSpeed += moveComponent.acceleration * deltaTime;
+                    }
+                }
+                else
+                {
+                    if (moveComponent.currentSpeed > 0f)
+                    {
+                        moveComponent.currentSpeed -= moveComponent.acceleration * deltaTime;
+                    }
+
+                    if (unitSenseComponent.leftIsBlocking && !unitSenseComponent.rightIsBlocking)
+                    {
+                        moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
+                    }
+
+                    if (unitSenseComponent.rightIsBlocking && !unitSenseComponent.leftIsBlocking)
+                    {
+                        moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
+                    }
                 }
 
                 translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;

@@ -771,7 +771,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59d33e1f002b2444a93501f2ab77e4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collisionRayOffset: 15
+  collisionRayAngleOffset: 15
   entitiesSkippedInFindNeighborsJob: 10
   entitiesSkippedInObstacleAvoidanceJob: 10
 --- !u!4 &1029855573
@@ -836,6 +836,9 @@ MonoBehaviour:
     show: 0
     color: {r: 0, g: 0, b: 0, a: 1}
   obstacleAvoidanceRays:
+    show: 0
+    color: {r: 1, g: 0, b: 0, a: 1}
+  sense:
     show: 0
     color: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &1091353227
@@ -1260,7 +1263,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnCollider: {fileID: 678019346}
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 100
+  unitAmount: 1000
 --- !u!4 &1811022760
 Transform:
   m_ObjectHideFlags: 0
