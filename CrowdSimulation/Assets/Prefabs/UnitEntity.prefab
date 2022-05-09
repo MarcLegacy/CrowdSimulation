@@ -96,6 +96,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitSO: {fileID: 11400000, guid: 4a4fe9fc915ab9e44a7982dd2b5f4fc8, type: 2}
+  unitName: Unit
 --- !u!1 &5865903169094610718
 GameObject:
   m_ObjectHideFlags: 0

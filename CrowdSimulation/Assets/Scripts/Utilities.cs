@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.Entities;
+using UnityEditor;
 using UnityEngine;
 
 public static class Utilities

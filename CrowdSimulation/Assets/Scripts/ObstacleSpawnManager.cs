@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Entities;
+using Unity.Physics;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
@@ -18,6 +20,8 @@ public class ObstacleSpawnManager : MonoBehaviour
     [SerializeField] private Color colorB = Color.clear;
     [SerializeField] private int numOfBorderCellsAvoided = 3;
     [SerializeField] private Color wallColor = Color.clear;
+    [SerializeField] private string obstacleName;
+    private BlobAssetStore blobAssetStore;
 
     #region Singleton
     public static ObstacleSpawnManager GetInstance()
@@ -34,6 +38,8 @@ public class ObstacleSpawnManager : MonoBehaviour
 
     private void Start()
     {
+        blobAssetStore = new BlobAssetStore();
+
         CreateWalls();
 
         for (int i = 0; i < obstacleAmount; i++)
@@ -42,12 +48,18 @@ public class ObstacleSpawnManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        blobAssetStore.Dispose();
+    }
+
     private void CreateObstacle()
     {
         Vector3 position = FindRandomPosition();
         if (position == Vector3.zero) return;
 
         GameObject obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        obstacle.name = obstacleName;
         Transform obstacleTransform = obstacle.transform;
         obstacleTransform.SetParent(transform, false);
         obstacleTransform.position = position;
@@ -57,6 +69,10 @@ public class ObstacleSpawnManager : MonoBehaviour
         obstacle.GetComponent<MeshRenderer>().materials[0].color = new Color(Random.Range(colorA.r, colorB.r), Random.Range(colorA.g, colorB.g),
             Random.Range(colorA.b, colorB.b));
         obstacle.layer = LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING);
+
+        GameObjectConversionSettings settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blobAssetStore);
+        Entity entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(obstacle, settings);
+        World.DefaultGameObjectInjectionWorld.EntityManager.SetName(entity, obstacleName);
     }
 
     private Vector3 FindRandomPosition()
@@ -116,5 +132,10 @@ public class ObstacleSpawnManager : MonoBehaviour
                     break;
             }
         }
+    }
+
+    private void ConvertToEntity()
+    {
+
     }
 }

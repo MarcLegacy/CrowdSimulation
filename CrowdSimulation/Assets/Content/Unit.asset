@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f74eade6036d3b48952a5f0c6a990b6, type: 3}
   m_Name: Unit
   m_EditorClassIdentifier: 
+  name: Unit
   speed: 10
   acceleration: 20
   senseDistance: 3

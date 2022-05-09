@@ -83,5 +83,39 @@ public partial class UnitSenseSystem : SystemBase
                 }
             })
             .ScheduleParallel();
+
+        //Entities
+        //    .WithName("Unit_TestPhysics")
+        //    .WithReadOnly(physicsWorld)
+        //    .WithAll<UnitComponent>()
+        //    .ForEach((Entity entity, ref Translation translation, ref UnitSenseComponent unitSenseComponent, in Rotation rotation) =>
+        //    {
+        //        float3 rayStartPos = translation.Value + math.forward(rotation.Value);
+        //        float3 rayEndPos = translation.Value + math.forward(rotation.Value) * 10;
+
+        //        Debug.DrawLine(rayStartPos, rayEndPos, Color.red);
+
+        //        CollisionFilter collisionFilter = new CollisionFilter
+        //        {
+        //            BelongsTo = ~0u,
+        //            CollidesWith = ~0u,
+        //            GroupIndex = 0
+        //        };
+
+        //        var rayInput = new RaycastInput
+        //        {
+        //            Start = rayStartPos,
+        //            End = rayEndPos,
+        //            Filter = collisionFilter
+        //        };
+
+        //        if (physicsWorld.CastRay(rayInput, out Unity.Physics.RaycastHit hit))
+        //        {
+        //            Debug.Log("PhysicsWorld: " + World.EntityManager.GetName(hit.Entity));
+
+        //        }
+        //    })
+        //    .WithoutBurst()
+        //    .Run();
     }
 }

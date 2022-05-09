@@ -70,6 +70,10 @@ public partial class MovementForcesSystem : SystemBase
                 {
                     if (unitEntity == entity) continue;
 
+                    MoveComponent moveComponent = GetComponent<MoveComponent>(entity);
+
+                    if (moveComponent.currentSpeed <= 0.0f) return;
+
                     Translation unitTranslation = GetComponent<Translation>(unitEntity);
                     float distance = math.distance(translation.Value, unitTranslation.Value);
                     NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement{unit = unitEntity};

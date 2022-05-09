@@ -99,18 +99,16 @@ public class AStar
                     continue;
                 }
 
-                int tentativeGCost = currentCell.GCost + CalculateHCost(currentCell, neighborCell);
-                if (tentativeGCost < neighborCell.GCost)
+                int newGCost = currentCell.GCost + CalculateHCost(currentCell, neighborCell);
+
+                if (newGCost < neighborCell.GCost)// && !openList.Contains(neighborCell))
                 {
                     neighborCell.cameFromCell = currentCell;
-                    neighborCell.GCost = tentativeGCost;
+                    neighborCell.GCost = newGCost;
                     neighborCell.HCost = CalculateHCost(neighborCell, endCell);
                     neighborCell.CalculateFCost();
 
-                    if (!openList.Contains(neighborCell))
-                    {
-                        openList.Add(neighborCell);
-                    }
+                    openList.Add(neighborCell);
                 }
             }
         }

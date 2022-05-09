@@ -386,6 +386,7 @@ MonoBehaviour:
   colorB: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0}
   numOfBorderCellsAvoided: 3
   wallColor: {r: 0, g: 0, b: 0, a: 0}
+  obstacleName: Obstacle
 --- !u!4 &474486713
 Transform:
   m_ObjectHideFlags: 0
@@ -1014,7 +1015,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1328091039
 MonoBehaviour:
   m_ObjectHideFlags: 0

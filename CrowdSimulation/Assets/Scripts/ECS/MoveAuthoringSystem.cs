@@ -30,7 +30,10 @@ public class MoveAuthoringSystem : AuthoringSystem
 
 public partial class MoveSystem : SystemBase
 {
+    private const float DELTA_ROTATE_DEGREES = 45f;
+
     public float maxForce;
+
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
     private PathingManager pathingManager;
 
@@ -49,11 +52,6 @@ public partial class MoveSystem : SystemBase
         float deltaTime = Time.DeltaTime;
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
         float _maxForce = maxForce;
-        //int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
-        //PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
-        //NativeList<ColliderCastHit> colliderCastHits = new NativeList<ColliderCastHit>(Allocator.TempJob);
-        //NativeList<DistanceHit> distanceHits = new NativeList<DistanceHit>(Allocator.TempJob);
-        //var translations = GetComponentDataFromEntity<Translation>(true);
 
         Entities
             .WithName("Unit_PathForDirection_Job")
@@ -109,6 +107,8 @@ public partial class MoveSystem : SystemBase
 
                 if (moveComponent.velocity.Equals(float3.zero)) return;
 
+                rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), DELTA_ROTATE_DEGREES);   // Seems they can get quicker loose if the rotation is already done before adjusting the velocity on the units in front of them
+
                 if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isBlocking)
                 {
                     if (moveComponent.currentSpeed < moveComponent.maxSpeed)
@@ -135,95 +135,7 @@ public partial class MoveSystem : SystemBase
                 }
 
                 translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
-                rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), 90f);
             })
             .ScheduleParallel();
-
-        //Entities
-        //    .WithName("Unit_CollectNeighbors_Job")
-        //    //.WithReadOnly(physicsWorld)
-        //    //.WithReadOnly(translations)
-        //    .WithAll<UnitComponent>()
-        //    .ForEach((Entity entity, in Translation translation, in Rotation rotation, in PhysicsCollider physicsCollider) =>
-        //    {
-        //        Collider[] colliders = Physics.OverlapSphere(translation.Value, unitBehaviorRadius, layerMask);
-        //        foreach (Collider collider in colliders)
-        //        {
-        //            //Debug.DrawLine(translation.Value, collider.gameObject.transform.position, Color.red);
-        //        }
-
-        //        //CollisionFilter filter = new CollisionFilter()
-        //        //{
-        //        //    BelongsTo = ~0u,
-        //        //    CollidesWith = ~0u,
-        //        //    GroupIndex = 0
-        //        //};
-
-        //        //CapsuleGeometry capsuleGeometry = new CapsuleGeometry()
-        //        //{
-        //        //    Radius = 0.5f
-        //        //};
-
-        //        //BlobAssetReference<Unity.Physics.Collider> capsuleCollider = Unity.Physics.CapsuleCollider.Create(capsuleGeometry, filter);
-
-        //        CollisionFilter filter = new CollisionFilter()
-        //        {
-        //            BelongsTo = ~0u,
-        //            CollidesWith = ~0u,
-        //            GroupIndex = 0
-        //        };
-
-        //        SphereGeometry geometry = new SphereGeometry()
-        //        {
-        //            Radius = unitBehaviorRadius
-        //        };
-
-        //        var sphereCollider = SphereCollider.Create(geometry, filter);
-
-        //        ColliderCastInput input = new ColliderCastInput()
-        //        {
-        //            //Collider = (Unity.Physics.Collider*)sphereCollider.GetUnsafePtr(),
-        //            Collider = physicsCollider.ColliderPtr,
-        //            Orientation = rotation.Value,
-        //            Start = translation.Value,
-        //            End = translation.Value
-        //        };
-
-        //        if (physicsWorld.CollisionWorld.CastCollider(input, ref colliderCastHits))
-        //        {
-        //            foreach (ColliderCastHit colliderCastHit in colliderCastHits)
-        //            {
-        //                Entity hitEntity = colliderCastHit.Entity;
-        //                if (hitEntity != entity)
-        //                {
-        //                    Debug.Log("Oui!");
-
-        //                    float3 hitEntityPosition = translations[hitEntity].Value;
-        //                    Debug.DrawLine(translation.Value, hitEntityPosition, Color.red);
-        //                }
-        //            }
-        //        }
-
-        //        sphereCollider.Dispose();
-        //        colliderCastHits.Clear();
-
-
-
-        //        if (physicsCollider.Value.Value.OverlapSphere(translation.Value, unitBehaviorRadius, ref distanceHits, filter))
-        //        {
-        //            foreach (DistanceHit distanceHit in distanceHits)
-        //            {
-        //                Entity hitEntity = distanceHit.Entity;
-        //                if (hitEntity != entity)
-        //                {
-        //                    Debug.Log(hitEntity);
-        //                }
-        //            }
-        //        }
-        //    })
-        //    .WithDisposeOnCompletion(colliderCastHits)
-        //    .WithDisposeOnCompletion(distanceHits)
-        //    .WithoutBurst()
-        //    .Run();
     }
 }
