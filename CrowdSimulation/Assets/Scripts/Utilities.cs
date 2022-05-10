@@ -4,6 +4,13 @@ using Unity.Entities;
 using UnityEditor;
 using UnityEngine;
 
+[System.Serializable]
+public struct ShowDebugInfo
+{
+    public bool show;
+    public Color color;
+}
+
 public static class Utilities
 {
     public static Vector3 GetMouseWorldPosition()
@@ -96,6 +103,37 @@ public static class Utilities
         Gizmos.DrawLine(portal.GetEntranceCellAreaACenterWorldPosition(), posB);
         Gizmos.DrawLine(posB, portal.GetEntranceCellAreaBCenterWorldPosition());
         Gizmos.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA);
+    }
+
+    public static void DrawGizmosCircle(Vector3 worldPosition, float radius, Color? color = null, float duration = 0.0f)
+    {
+        if (radius == 0)
+        {
+            Debug.LogWarning(radius + " == 0");
+            return;
+        }
+        if (color == null) color = Color.black;
+
+        float thetaScale = 0.01f;
+        float theta = 0f;
+
+        int size = (int)(1f / thetaScale + 1f);
+        Vector3 previousPosition = Vector3.zero;
+
+        Gizmos.color = (Color)color;
+
+        for (int i = 0; i < size; i++)
+        {
+            theta += (2f * Mathf.PI * thetaScale);
+            float x = radius * Mathf.Cos(theta);
+            float y = radius * Mathf.Sin(theta);
+            if (i != 0)
+            {
+                Gizmos.DrawLine(previousPosition, worldPosition + new Vector3(x, 0, y));
+            }
+
+            previousPosition = worldPosition + new Vector3(x, 0, y);
+        }
     }
     #endregion
     #region Draw Debug Functions

@@ -11,7 +11,7 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
-        dstManager.SetName(entity, unitSO.name);
+        dstManager.SetName(entity, unitSO.unitName);
         dstManager.AddComponent<UnitComponent>(entity);
         dstManager.AddComponentData(entity, new MoveComponent
         {

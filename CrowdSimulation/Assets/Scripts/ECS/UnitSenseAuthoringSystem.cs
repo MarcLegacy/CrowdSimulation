@@ -23,7 +23,7 @@ public partial class UnitSenseSystem : SystemBase
      
     protected override void OnUpdate()
     {
-        PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld; ;
+        PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
 
         Entities
             .WithName("Unit_Sensing")

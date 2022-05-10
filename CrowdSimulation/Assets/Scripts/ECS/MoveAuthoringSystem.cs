@@ -30,7 +30,7 @@ public class MoveAuthoringSystem : AuthoringSystem
 
 public partial class MoveSystem : SystemBase
 {
-    private const float DELTA_ROTATE_DEGREES = 45f;
+    private const float DELTA_ROTATE_DEGREES = 15f;
 
     public float maxForce;
 

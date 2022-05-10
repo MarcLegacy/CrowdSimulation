@@ -4,14 +4,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [System.Serializable]
-public struct showDebugInfo
-{
-    public bool show;
-    public Color color;
-}
-
-[System.Serializable]
-public struct showMovementDebugInfo
+public struct ShowMovementDebugInfo
 {
     public bool showForce;
     public bool showRadius;
@@ -20,13 +13,13 @@ public struct showMovementDebugInfo
 
 public class UnitVisualsAuthoringSystem : AuthoringSystem
 {
-    [SerializeField] private showDebugInfo velocity;
-    [SerializeField] private showMovementDebugInfo alignment;
-    [SerializeField] private showMovementDebugInfo cohesion;
-    [SerializeField] private showMovementDebugInfo separation;
-    [SerializeField] private showDebugInfo obstacleAvoidanceForce;
-    [SerializeField] private showDebugInfo obstacleAvoidanceRays;
-    [SerializeField] private showDebugInfo sense;
+    [SerializeField] private ShowDebugInfo velocity;
+    [SerializeField] private ShowMovementDebugInfo alignment;
+    [SerializeField] private ShowMovementDebugInfo cohesion;
+    [SerializeField] private ShowMovementDebugInfo separation;
+    [SerializeField] private ShowDebugInfo obstacleAvoidanceForce;
+    [SerializeField] private ShowDebugInfo obstacleAvoidanceRays;
+    [SerializeField] private ShowDebugInfo sense;
 
     private UnitVisualsSystem unitVisualSystem;
 
@@ -53,13 +46,13 @@ public partial class UnitVisualsSystem : SystemBase
 {
     private const float DEBUG_ARROW_SIZE = 2f;
 
-    public showDebugInfo velocity;
-    public showMovementDebugInfo alignment;
-    public showMovementDebugInfo cohesion;
-    public showMovementDebugInfo separation;
-    public showDebugInfo obstacleAvoidanceForce;
-    public showDebugInfo obstacleAvoiandeRays;
-    public showDebugInfo sense;
+    public ShowDebugInfo velocity;
+    public ShowMovementDebugInfo alignment;
+    public ShowMovementDebugInfo cohesion;
+    public ShowMovementDebugInfo separation;
+    public ShowDebugInfo obstacleAvoidanceForce;
+    public ShowDebugInfo obstacleAvoiandeRays;
+    public ShowDebugInfo sense;
 
     private MovementForcesSystem movementForcesSystem;
 

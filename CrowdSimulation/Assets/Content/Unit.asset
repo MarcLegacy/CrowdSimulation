@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f74eade6036d3b48952a5f0c6a990b6, type: 3}
   m_Name: Unit
   m_EditorClassIdentifier: 
-  name: Unit
+  unitName: Unit
   speed: 10
   acceleration: 20
   senseDistance: 3
@@ -38,7 +38,7 @@ MonoBehaviour:
       y: 0
       z: 0
   obstacleAvoidance:
-    weight: 10
+    weight: 5
     radius: 5
     force:
       x: 0
