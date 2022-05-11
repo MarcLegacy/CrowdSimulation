@@ -26,7 +26,7 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
             alignment = unitSO.alignment,
             cohesion = unitSO.cohesion,
             separation = unitSO.separation,
-            obstacleAvoidance = unitSO.obstacleAvoidance
+            obstacleAvoidance = unitSO.obstacleAvoidance,
         });
         dstManager.AddComponentData(entity, new UnitSenseComponent { distance = unitSO.senseDistance });
     }

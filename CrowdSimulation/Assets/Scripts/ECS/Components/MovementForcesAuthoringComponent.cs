@@ -26,7 +26,7 @@ public class MovementForcesAuthoringComponent : MonoBehaviour, IConvertGameObjec
             alignment = alignment,
             cohesion = cohesion,
             separation = separation,
-            obstacleAvoidance = obstacleAvoidance
+            obstacleAvoidance = obstacleAvoidance,
         });
 
         dstManager.AddBuffer<NeighborUnitBufferElement>(entity);

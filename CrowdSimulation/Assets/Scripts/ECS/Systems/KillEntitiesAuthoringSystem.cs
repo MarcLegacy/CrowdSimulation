@@ -1,13 +1,10 @@
-using Unity.Burst;
+
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
-using Unity.Transforms;
 using UnityEngine;
-using RaycastHit = UnityEngine.RaycastHit;
 
 public class KillEntitiesAuthoringSystem : AuthoringSystem
 {
@@ -80,22 +77,6 @@ public partial class KillEntitiesSystem : SystemBase
                                 }
                             }
                         }
-
-                        //RaycastInput raycastInput = new RaycastInput
-                        //{
-                        //    Start = mouseWorldPosition,
-                        //    End = mouseWorldPosition + new float3(0, 1, 0),
-                        //    Filter = collisionFilter
-                        //};
-
-                        //if (physicsWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit hit))
-                        //{
-                        //    if (HasComponent<UnitComponent>(hit.Entity))
-                        //    {
-                        //        entityCommandBuffer.AddComponent<DestroyComponent>(hit.Entity);
-                        //    }
-                        //}
-
                     })
                     .Schedule();
             }

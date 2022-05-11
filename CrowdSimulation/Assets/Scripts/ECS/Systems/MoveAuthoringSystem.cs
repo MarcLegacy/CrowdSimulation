@@ -1,13 +1,7 @@
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics;
-using Unity.Physics.Systems;
 using Unity.Transforms;
-using UnityEditor.Rendering;
 using UnityEngine;
-using Collider = UnityEngine.Collider;
-using SphereCollider = Unity.Physics.SphereCollider;
 
 public class MoveAuthoringSystem : AuthoringSystem
 {

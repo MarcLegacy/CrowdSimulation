@@ -7,5 +7,6 @@ public struct NeighborUnitBufferElement : IBufferElementData
     public bool inAlignmentRadius;
     public bool inCohesionRadius;
     public bool inSeparationRadius;
+    public bool inCollisionRadius;
 
 }

@@ -94,10 +94,13 @@ public partial class MovementForcesSystem : SystemBase
             .WithAll<UnitComponent>()
             .ForEach((Entity entity, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer, ref MovementForcesComponent movementForceComponent) =>
             {
-                Translation translation = GetComponent<Translation>(entity);
+                float3 position = GetComponent<Translation>(entity).Value;
                 float3 alignmentForce = float3.zero;
                 float3 cohesionForce = float3.zero;
                 float3 separationForce = float3.zero;
+                int alignmentCount = 0;
+                int cohesionCount = 0;
+                int separationCount = 0;
 
                 foreach (NeighborUnitBufferElement neighborUnit in neighborUnitBuffer)
                 {
@@ -105,18 +108,32 @@ public partial class MovementForcesSystem : SystemBase
 
                     if (!HasComponent<Translation>(unitEntity)) continue;
                     
-                    Translation unitTranslation = GetComponent<Translation>(unitEntity);
+                    float3 neighborPosition = GetComponent<Translation>(unitEntity).Value;
 
-                    if (neighborUnit.inAlignmentRadius) alignmentForce += GetComponent<MoveComponent>(unitEntity).velocity;
-                    if (neighborUnit.inCohesionRadius) cohesionForce += unitTranslation.Value;
-                    if (neighborUnit.inSeparationRadius) separationForce += unitTranslation.Value - translation.Value;
+                    if (neighborUnit.inAlignmentRadius)
+                    {
+                        alignmentForce += GetComponent<MoveComponent>(unitEntity).velocity;
+                        alignmentCount++;
+                    }
+
+                    if (neighborUnit.inCohesionRadius)
+                    {
+                        cohesionForce += neighborPosition;
+                        cohesionCount++;
+                    }
+
+                    if (neighborUnit.inSeparationRadius)
+                    {
+                        separationForce += neighborPosition - position;
+                        separationCount++;
+                    }
                 }
 
-                alignmentForce /= neighborUnitBuffer.Length;
-                cohesionForce /= neighborUnitBuffer.Length;
-                separationForce /= neighborUnitBuffer.Length;
+                alignmentForce /= alignmentCount;
+                cohesionForce /= cohesionCount;
+                separationForce /= separationCount;
                 movementForceComponent.alignment.force = math.normalizesafe(alignmentForce);
-                movementForceComponent.cohesion.force = math.normalizesafe(cohesionForce - translation.Value);
+                movementForceComponent.cohesion.force = math.normalizesafe(cohesionForce - position);
                 movementForceComponent.separation.force = math.normalizesafe(-separationForce);
             })
             .ScheduleParallel();
