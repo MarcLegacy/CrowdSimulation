@@ -34,13 +34,10 @@ public partial class MoveSystem : SystemBase
 
     public float maxForce;
 
-    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
     private PathingManager pathingManager;
 
     protected override void OnCreate()
     {
-        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-
         pathingManager = PathingManager.GetInstance();
     }
 
@@ -48,7 +45,6 @@ public partial class MoveSystem : SystemBase
     {
         if (pathingManager.FlowField == null) return;
 
-        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
         float deltaTime = Time.DeltaTime;
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
         float _maxForce = maxForce;

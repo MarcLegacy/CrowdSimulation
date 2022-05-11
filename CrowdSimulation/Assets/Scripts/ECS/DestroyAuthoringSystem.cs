@@ -68,7 +68,7 @@ public partial class DestroySystem : SystemBase
                 {
                     Entity unitEntity = neighborUnitBuffer[i].unit;
 
-                    if (_destroyedEntities.Contains(unitEntity))
+                    if (!HasComponent<Translation>(unitEntity) || _destroyedEntities.Contains(unitEntity))
                     {
                         neighborUnitBuffer.RemoveAt(i);
                     }
@@ -87,5 +87,8 @@ public partial class DestroySystem : SystemBase
             .Run();
 
         destroyedEntities.Clear();
+
+        beginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
+        endSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
 }

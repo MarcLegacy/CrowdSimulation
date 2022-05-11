@@ -13,10 +13,8 @@ public class UnitSpawnerAuthoringComponent : MonoBehaviour, IConvertGameObjectTo
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
-        using BlobAssetStore blobAssetStore = new BlobAssetStore();
-
         Entity prefabEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(unitPrefab,
-            GameObjectConversionSettings.FromWorld(dstManager.World, blobAssetStore));
+            GameObjectConversionSettings.FromWorld(dstManager.World, conversionSystem.BlobAssetStore));
 
         for (int i = 0; i < unitAmount; i++)
         {

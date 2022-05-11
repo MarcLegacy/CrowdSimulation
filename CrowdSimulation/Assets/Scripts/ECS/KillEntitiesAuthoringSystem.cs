@@ -58,8 +58,8 @@ public partial class KillEntitiesSystem : SystemBase
             {
                 Entities
                     .WithReadOnly(physicsWorld)
-                    .WithNone<UnitComponent, PhysicsCollider, Parent>()
-                    .ForEach((ref Translation translation, in Rotation rotation) => 
+                    .WithAll<GameManagerComponent>()
+                    .ForEach(() => 
                     {
                         NativeList<ColliderCastHit> hits = new NativeList<ColliderCastHit>(Allocator.Temp);
 
@@ -70,35 +70,37 @@ public partial class KillEntitiesSystem : SystemBase
                             GroupIndex = 0
                         };
 
-                        //if (physicsWorld.SphereCastAll(mouseWorldPosition, _killRadius, Vector3.up, 10f, ref hits, collisionFilter))
-                        //{
-                        //    foreach (ColliderCastHit hit in hits)
-                        //    {
-                        //        if (HasComponent<UnitComponent>(hit.Entity))
-                        //        {
-                        //            entityCommandBuffer.AddComponent<DestroyComponent>(hit.Entity);
-                        //        }
-                        //    }
-                        //}
-
-                        RaycastInput raycastInput = new RaycastInput
+                        if (physicsWorld.SphereCastAll(mouseWorldPosition, _killRadius, Vector3.up, 10f, ref hits, CollisionFilter.Default))
                         {
-                            Start = mouseWorldPosition,
-                            End = mouseWorldPosition + new float3(0, 1, 0),
-                            Filter = collisionFilter
-                        };
-
-                        if (physicsWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit hit))
-                        {
-                            if (HasComponent<UnitComponent>(hit.Entity))
+                            foreach (ColliderCastHit hit in hits)
                             {
-                                entityCommandBuffer.AddComponent<DestroyComponent>(hit.Entity);
+                                if (HasComponent<UnitComponent>(hit.Entity))
+                                {
+                                    entityCommandBuffer.AddComponent<DestroyComponent>(hit.Entity);
+                                }
                             }
                         }
+
+                        //RaycastInput raycastInput = new RaycastInput
+                        //{
+                        //    Start = mouseWorldPosition,
+                        //    End = mouseWorldPosition + new float3(0, 1, 0),
+                        //    Filter = collisionFilter
+                        //};
+
+                        //if (physicsWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit hit))
+                        //{
+                        //    if (HasComponent<UnitComponent>(hit.Entity))
+                        //    {
+                        //        entityCommandBuffer.AddComponent<DestroyComponent>(hit.Entity);
+                        //    }
+                        //}
 
                     })
                     .Schedule();
             }
         }
+
+        endSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
 }

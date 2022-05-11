@@ -20,23 +20,6 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
 
         });
         dstManager.AddComponentData(entity, new MoveToDirectionComponent { direction = float3.zero });
-        dstManager.AddComponentData(entity, new PhysicsCollider
-        {
-            Value = Unity.Physics.CapsuleCollider.Create
-            (
-                new CapsuleGeometry
-                {
-                    Radius = 0.5f
-                },
-                new CollisionFilter
-                {
-                    BelongsTo = ~0u,
-                    CollidesWith = ~0u,
-                    GroupIndex = 0
-                }
-            )
-        });
-        dstManager.AddSharedComponentData(entity, new PhysicsWorldIndex());
         dstManager.AddBuffer<NeighborUnitBufferElement>(entity);
         dstManager.AddComponentData(entity, new MovementForcesComponent
         {

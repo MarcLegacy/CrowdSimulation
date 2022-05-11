@@ -68,7 +68,7 @@ public partial class MovementForcesSystem : SystemBase
 
                 foreach (Entity unitEntity in unitEntities)
                 {
-                    if (unitEntity == entity) continue;
+                    if (unitEntity == entity || !HasComponent<Translation>(unitEntity)) continue;
 
                     MoveComponent moveComponent = GetComponent<MoveComponent>(entity);
 
@@ -102,6 +102,9 @@ public partial class MovementForcesSystem : SystemBase
                 foreach (NeighborUnitBufferElement neighborUnit in neighborUnitBuffer)
                 {
                     Entity unitEntity = neighborUnit.unit;
+
+                    if (!HasComponent<Translation>(unitEntity)) continue;
+                    
                     Translation unitTranslation = GetComponent<Translation>(unitEntity);
 
                     if (neighborUnit.inAlignmentRadius) alignmentForce += GetComponent<MoveComponent>(unitEntity).velocity;
