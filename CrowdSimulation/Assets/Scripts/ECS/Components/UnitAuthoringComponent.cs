@@ -29,6 +29,7 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
             obstacleAvoidance = unitSO.obstacleAvoidance,
         });
         dstManager.AddComponentData(entity, new UnitSenseComponent { distance = unitSO.senseDistance });
+        dstManager.AddComponent<GridIndexComponent>(entity);
     }
 }
 

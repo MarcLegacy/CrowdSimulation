@@ -989,7 +989,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1313630940}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 721d0a3d8016349428b86a5fa610fb3f, type: 3}
+  m_Script: {fileID: 11500000, guid: 51f1fdb54c55a8749a0d26cc0e650350, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   width: 40
@@ -1368,7 +1368,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnCollider: {fileID: 678019346}
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 1000
+  unitAmount: 5000
 --- !u!4 &1811022760
 Transform:
   m_ObjectHideFlags: 0

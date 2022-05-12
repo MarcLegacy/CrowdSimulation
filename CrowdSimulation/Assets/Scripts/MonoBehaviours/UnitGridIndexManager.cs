@@ -1,5 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class UnitGridIndexManager : MonoBehaviour
@@ -9,7 +13,11 @@ public class UnitGridIndexManager : MonoBehaviour
     [SerializeField] private float cellSize = 5f;
     [SerializeField] private GameObject map;
 
+    public NativeMultiHashMap<int2, Entity> indexMap;
+
     private MyGrid<int> grid;
+
+    public MyGrid<int> Grid => grid;
 
     #region Singleton
     public static UnitGridIndexManager GetInstance()
@@ -29,7 +37,13 @@ public class UnitGridIndexManager : MonoBehaviour
     {
         grid = new MyGrid<int>(width, height, cellSize, map.transform.TransformPoint(map.GetComponent<MeshFilter>().mesh.bounds.min));
 
-        grid.ShowDebugText();
+        indexMap = new NativeMultiHashMap<int2,Entity>(width * height, Allocator.Persistent);
+        //grid.ShowDebugText();
+    }
+
+    void OnDestroy()
+    {
+        indexMap.Dispose();
     }
 
     // Update is called once per frame
@@ -41,7 +55,5 @@ public class UnitGridIndexManager : MonoBehaviour
     void OnDrawGizmos()
     {
         if (grid == null) return;
-
-        grid.ShowGrid(Color.red);
     }
 }

@@ -8,11 +8,6 @@ using UnityEngine;
 
 public class UnitGridIndexAuthoringSystem : AuthoringSystem
 {
-    [SerializeField] private int width = 20;
-    [SerializeField] private int height = 20;
-    [SerializeField] private float cellSize = 5f;
-    [SerializeField] private GameObject map;
-
     private UnitGridIndexSystem unitGridIndexSystem;
 
     protected override void Start()
@@ -21,33 +16,62 @@ public class UnitGridIndexAuthoringSystem : AuthoringSystem
 
         base.Start();
     }
-
-    protected override void SetVariables()
-    {
-        unitGridIndexSystem.grid = new MyGrid<int>(width, height, cellSize, map.transform.TransformPoint(map.GetComponent<MeshFilter>().mesh.bounds.min));
-        unitGridIndexSystem.grid.ShowDebugText();
-    }
 }
 
 public partial class UnitGridIndexSystem : SystemBase
 {
-    public MyGrid<int> grid;
+    private UnitGridIndexManager unitGridIndexManager;
 
     protected override void OnCreate()
     {
+        unitGridIndexManager = UnitGridIndexManager.GetInstance();
     }
 
     protected override void OnUpdate()
     {
-        if (grid == null) return;
+        if (unitGridIndexManager == null || unitGridIndexManager.Grid == null || !unitGridIndexManager.indexMap.IsCreated) return;
 
-        //Entities
-        //    .WithAll<UnitComponent>()
-        //    .ForEach((ref Translation translation) => 
-        //    {
-        //        grid.SetCell(translation.Value, grid.GetCell(translation.Value) + 1);
-        //    })
-        //    .WithoutBurst()
-        //    .Run();
+        MyGrid<int> gridIndexGrid = unitGridIndexManager.Grid;
+        NativeMultiHashMap<int2, Entity> indexMap = unitGridIndexManager.indexMap;
+
+        Entities
+            .WithAll<UnitComponent>()
+            .ForEach((Entity entity, ref GridIndexComponent gridIndexComponent, in Translation translation) =>
+            {
+                if (gridIndexComponent.gridPosition.Equals(
+                        Utilities.Vector2IntToInt2(gridIndexGrid.GetCellGridPosition(translation.Value)))) return;
+
+                if (indexMap.TryGetFirstValue(gridIndexComponent.gridPosition, out Entity currentEntity,
+                        out NativeMultiHashMapIterator<int2> iterator))
+                {
+                    if (currentEntity.Equals(entity))
+                    {
+                        indexMap.Remove(iterator);
+                    }
+                    else
+                    {
+                        while (indexMap.TryGetNextValue(out currentEntity, ref iterator))
+                        {
+                            if (currentEntity.Equals(entity))
+                            {
+                                indexMap.Remove(iterator);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                gridIndexGrid.SetCell(Utilities.Int2toVector2Int(gridIndexComponent.gridPosition),
+                    indexMap.CountValuesForKey(gridIndexComponent.gridPosition));
+
+                gridIndexComponent.gridPosition = Utilities.Vector2IntToInt2(gridIndexGrid.GetCellGridPosition(translation.Value));
+
+                indexMap.Add(gridIndexComponent.gridPosition, entity);
+
+                gridIndexGrid.SetCell(Utilities.Int2toVector2Int(gridIndexComponent.gridPosition),
+                    indexMap.CountValuesForKey(gridIndexComponent.gridPosition));
+            })
+            .WithoutBurst()
+            .Run();
     }
 }

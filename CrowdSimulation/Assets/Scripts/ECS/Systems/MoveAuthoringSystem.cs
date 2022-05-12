@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -35,9 +36,9 @@ public partial class MoveSystem : SystemBase
         pathingManager = PathingManager.GetInstance();
     }
 
-    protected override unsafe void OnUpdate()
+    protected override void OnUpdate()
     {
-        if (pathingManager.FlowField == null) return;
+        if (pathingManager == null || pathingManager.FlowField == null) return;
 
         float deltaTime = Time.DeltaTime;
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
@@ -47,8 +48,10 @@ public partial class MoveSystem : SystemBase
             .WithName("Unit_PathForDirection_Job")
             .WithAll<UnitComponent>()
             .ForEach((
-                ref MoveToDirectionComponent moveToDirectionComponent,             
-                in Translation translation) =>
+                Entity entity,
+                ref MoveToDirectionComponent moveToDirectionComponent,
+                ref GridIndexComponent gridIndexComponent,
+                ref Translation translation) =>
             {
                 if (flowFieldGrid.GetCellGridPosition(translation.Value) ==
                     flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition))
@@ -59,14 +62,17 @@ public partial class MoveSystem : SystemBase
 
                 FlowFieldCell flowFieldCell = flowFieldGrid.GetCell(translation.Value);
 
-                if (flowFieldCell == null) return;
+                if (flowFieldCell == null)
+                {
+                    translation.Value += math.normalizesafe(float3.zero - translation.Value);
+                    return;
+                }
 
                 if (flowFieldCell.bestDirection == GridDirection.None)
                 {
                     if (pathingManager.CheckedAreas.Contains(pathingManager.AreaMap.Grid.GetCell(translation.Value))) return;
 
                     pathingManager.StartPathing(translation.Value, pathingManager.TargetPosition);
-                    
                 }
                 else
                 {

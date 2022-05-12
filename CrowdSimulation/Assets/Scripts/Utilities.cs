@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [System.Serializable]
 public struct ShowDebugInfo
@@ -42,6 +44,16 @@ public static class Utilities
     public static Vector3 GetRandomPositionInBox(Vector3 positionA, Vector3 positionB)
     {
         return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
+    }
+
+    public static int2 Vector2IntToInt2(Vector2Int vector2Int)
+    {
+        return new int2(vector2Int.x, vector2Int.y);
+    }
+
+    public static Vector2Int Int2toVector2Int(int2 int2)
+    {
+        return new Vector2Int(int2.x, int2.y);
     }
 
     #region Draw Functions
