@@ -20,7 +20,8 @@ public class ObstacleSpawnManager : MonoBehaviour
     [SerializeField] private Color colorB = Color.clear;
     [SerializeField] private int numOfBorderCellsAvoided = 3;
     [SerializeField] private Color wallColor = Color.clear;
-    [SerializeField] private string obstacleName;
+    [SerializeField] private string obstacleName = "Obstacle";
+    [SerializeField] private string wallName = "Wall";
     private BlobAssetStore blobAssetStore;
 
     #region Singleton
@@ -131,11 +132,10 @@ public class ObstacleSpawnManager : MonoBehaviour
                     wallTransform.position = new Vector3(mapPosition.x, 0, mapPosition.y - mapGridSize.y - wallTransform.localScale.y * WALL_OFFSET);
                     break;
             }
+
+            GameObjectConversionSettings settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blobAssetStore);
+            Entity entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(wall, settings);
+            World.DefaultGameObjectInjectionWorld.EntityManager.SetName(entity, wallName);
         }
-    }
-
-    private void ConvertToEntity()
-    {
-
     }
 }

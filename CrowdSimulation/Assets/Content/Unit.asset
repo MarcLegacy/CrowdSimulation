@@ -39,7 +39,7 @@ MonoBehaviour:
       z: 0
   obstacleAvoidance:
     weight: 5
-    radius: 5
+    radius: 3
     force:
       x: 0
       y: 0

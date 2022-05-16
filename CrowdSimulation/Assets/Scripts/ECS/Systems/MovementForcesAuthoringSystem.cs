@@ -18,6 +18,8 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
         movementForcesSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MovementForcesSystem>();
 
         base.Start();
+
+        UnityEngine.Random.InitState(0);
     }
 
     protected override void SetVariables()
@@ -180,34 +182,36 @@ public partial class MovementForcesSystem : SystemBase
             })
             .ScheduleParallel();
 
-        Entities
-            .WithName("Units_ObstacleAvoidance")
-            .WithAll<UnitComponent>()
-            .ForEach((
-                Entity entity, 
-                int entityInQueryIndex, 
-                ref MovementForcesComponent movementForcesComponent, 
-                in Translation translation,
-                in MoveComponent moveComponent) =>
-            {
-                if (entityInQueryIndex % _entitiesSkippedInObstacleAvoidanceJob != _currentWorkingEntityInObstacleAvoidanceJob) return;
+        //Entities
+        //    .WithName("Units_ObstacleAvoidance")
+        //    .WithAll<UnitComponent>()
+        //    .ForEach((
+        //        Entity entity,
+        //        int entityInQueryIndex,
+        //        ref MovementForcesComponent movementForcesComponent,
+        //        in Translation translation,
+        //        in MoveComponent moveComponent) =>
+        //    {
+        //        if (entityInQueryIndex % _entitiesSkippedInObstacleAvoidanceJob != _currentWorkingEntityInObstacleAvoidanceJob) return;
 
-                movementForcesComponent.obstacleAvoidance.force = float3.zero;
+        //        movementForcesComponent.obstacleAvoidance.force = float3.zero;
 
-                Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayAngleOffset, 0) * moveComponent.velocity);
-                Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayAngleOffset, 0) * moveComponent.velocity);
-                float3 obstacleAvoidanceForce = float3.zero;
+        //        Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayAngleOffset, 0) * moveComponent.velocity);
+        //        Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayAngleOffset, 0) * moveComponent.velocity);
+        //        float3 obstacleAvoidanceForce = float3.zero;
 
-                obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
-                obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
+        //        obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
+        //        obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
 
-                movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
-            })
-            .WithoutBurst()
-            .Run();
+        //        movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
+        //    })
+        //    .WithoutBurst()
+        //    .Run();
+
+        CompleteDependency();
     }
 
-    private float3 GetAvoidanceForce(float3 position, Ray ray, float rayLength)
+    private static float3 GetAvoidanceForce(float3 position, Ray ray, float rayLength)
     {
         if (Physics.Raycast(ray, out RaycastHit hit, rayLength))
         {

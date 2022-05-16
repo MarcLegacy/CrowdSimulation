@@ -39,7 +39,7 @@ public class BenchmarkManager : MonoBehaviour
         flowFieldExecutionTimes = new List<double>();
         pathingExecutionTimes = new List<double>();
 
-        //Random.InitState(3);
+        //UnityEngine.Random.InitState(2);
 
         unitManager.OnMaxUnitSpawned += OnMaxUnitsSpawned;
     }

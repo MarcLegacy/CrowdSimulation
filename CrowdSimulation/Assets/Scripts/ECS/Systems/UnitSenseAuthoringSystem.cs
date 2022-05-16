@@ -1,12 +1,19 @@
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
+using Unity.Physics.Authoring;
 using Unity.Physics.Systems;
 using Unity.Transforms;
 using UnityEngine;
+using RaycastHit = Unity.Physics.RaycastHit;
 
 public class UnitSenseAuthoringSystem : AuthoringSystem
 {
+    public int entitiesSkippedInJob = 1;
+    public PhysicsCategoryTags unitTag;
+    public PhysicsCategoryTags obstacleTag;
+
     private UnitSenseSystem unitSenseSystem;
 
     protected override void Start()
@@ -15,35 +22,64 @@ public class UnitSenseAuthoringSystem : AuthoringSystem
 
         base.Start();
     }
+
+    protected override void SetVariables()
+    {
+        unitSenseSystem.entitiesSkippedInJob = entitiesSkippedInJob;
+        unitSenseSystem.unitTag = unitTag;
+        unitSenseSystem.obstacleTag = obstacleTag;
+    }
 }
 
 public partial class UnitSenseSystem : SystemBase
 {
-    private const float senseRayAngleOffset = 20f;
-     
+    private const float SENSE_RAY_ANGLE_OFFSET = 20f;
+
+    public int entitiesSkippedInJob = 1;
+    public PhysicsCategoryTags unitTag;
+    public PhysicsCategoryTags obstacleTag;
+
+    private int currentWorkingEntityInJob;
+
     protected override void OnUpdate()
     {
+        int _entitiesSkippedInJob = entitiesSkippedInJob;
+        int _currentWorkingEntityInJob = currentWorkingEntityInJob;
+        PhysicsCategoryTags _unitTag = unitTag;
+        PhysicsCategoryTags _obstacleTag = obstacleTag;
         PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
+
+        if (currentWorkingEntityInJob++ > entitiesSkippedInJob)
+        {
+            currentWorkingEntityInJob = 0;
+        }
 
         Entities
             .WithName("Unit_Sensing")
             .WithReadOnly(physicsWorld)
             .WithAll<UnitComponent>()
-            .ForEach((Entity entity, ref Translation translation, ref UnitSenseComponent unitSenseComponent, in Rotation rotation) =>
+            .ForEach((
+                Entity entity,
+                int entityInQueryIndex,
+                ref Translation translation,
+                ref UnitSenseComponent unitSenseComponent,
+                ref MovementForcesComponent movementForcesComponent,
+                in Rotation rotation) =>
             {
+                if (entityInQueryIndex % _entitiesSkippedInJob != _currentWorkingEntityInJob) return;
+
                 float3 leftRayStartPos =
-                    translation.Value + (float3)(Quaternion.Euler(0, -senseRayAngleOffset, 0) * math.forward(rotation.Value));
+                    translation.Value + (float3)(Quaternion.Euler(0, -SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value));
                 float3 leftRayEndPos = translation.Value +
-                                       (float3)(Quaternion.Euler(0, -senseRayAngleOffset, 0) * math.forward(rotation.Value)) *
+                                       (float3)(Quaternion.Euler(0, -SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value)) *
                                        unitSenseComponent.distance;
                 float3 rightRayStartPos =
-                    translation.Value + (float3)(Quaternion.Euler(0, senseRayAngleOffset, 0) * math.forward(rotation.Value));
+                    translation.Value + (float3)(Quaternion.Euler(0, SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value));
                 float3 rightRayEndPos = translation.Value +
-                                        (float3)(Quaternion.Euler(0, senseRayAngleOffset, 0) * math.forward(rotation.Value)) *
+                                        (float3)(Quaternion.Euler(0, SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value)) *
                                         unitSenseComponent.distance;
 
-                //Debug.DrawLine(leftRayStartPos, leftRayEndPos, Color.red);
-                //Debug.DrawLine(rightRayStartPos, rightRayEndPos, Color.red);
+                movementForcesComponent.obstacleAvoidance.force = float3.zero;
 
                 CollisionFilter collisionFilter = new CollisionFilter
                 {
@@ -69,18 +105,41 @@ public partial class UnitSenseSystem : SystemBase
                 unitSenseComponent.isBlocking = false;
                 unitSenseComponent.leftIsBlocking = false;
                 unitSenseComponent.rightIsBlocking = false;
+                float3 obstacleAvoidanceForce = float3.zero;
 
-                if (physicsWorld.CastRay(leftRayInput, out Unity.Physics.RaycastHit hit))
+                NativeList<Unity.Physics.RaycastHit> hits = new NativeList<RaycastHit>(Allocator.Temp);
+
+                if (physicsWorld.CastRay(leftRayInput, ref hits))
                 {
                     unitSenseComponent.isBlocking = true;
                     unitSenseComponent.leftIsBlocking = true;
+
+                    foreach (var hit in hits)
+                    {
+                        if (!HasComponent<UnitComponent>(hit.Entity))
+                        {
+                            obstacleAvoidanceForce += (translation.Value - hit.Position);
+                            break;
+                        }
+                    }
                 }
 
-                if (physicsWorld.CastRay(rightRayInput))
+                if (physicsWorld.CastRay(rightRayInput, ref hits))
                 {
                     unitSenseComponent.isBlocking = true;
                     unitSenseComponent.rightIsBlocking = true;
+
+                    foreach (var hit in hits)
+                    {
+                        if (!HasComponent<UnitComponent>(hit.Entity))
+                        {
+                            obstacleAvoidanceForce += (translation.Value - hit.Position);
+                            break;
+                        }
+                    }
                 }
+
+                movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
             })
             .ScheduleParallel();
     }

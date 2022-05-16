@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -32,14 +33,18 @@ public partial class UnitGridIndexSystem : SystemBase
         if (unitGridIndexManager == null || unitGridIndexManager.Grid == null || !unitGridIndexManager.indexMap.IsCreated) return;
 
         MyGrid<int> gridIndexGrid = unitGridIndexManager.Grid;
+        float3 gridOriginPosition = gridIndexGrid.OriginPosition;
+        float cellSize = gridIndexGrid.CellSize;
         NativeMultiHashMap<int2, Entity> indexMap = unitGridIndexManager.indexMap;
+        NativeHashSet<int2> changedCellGridPositions = new NativeHashSet<int2>(unitGridIndexManager.Width * unitGridIndexManager.Height, Allocator.TempJob);
 
         Entities
+            .WithName("Units_IndexToGrid")
             .WithAll<UnitComponent>()
             .ForEach((Entity entity, ref GridIndexComponent gridIndexComponent, in Translation translation) =>
             {
                 if (gridIndexComponent.gridPosition.Equals(
-                        Utilities.Vector2IntToInt2(gridIndexGrid.GetCellGridPosition(translation.Value)))) return;
+                        GetCellGridPosition(translation.Value, gridOriginPosition, cellSize))) return;
 
                 if (indexMap.TryGetFirstValue(gridIndexComponent.gridPosition, out Entity currentEntity,
                         out NativeMultiHashMapIterator<int2> iterator))
@@ -61,17 +66,31 @@ public partial class UnitGridIndexSystem : SystemBase
                     }
                 }
 
-                gridIndexGrid.SetCell(Utilities.Int2toVector2Int(gridIndexComponent.gridPosition),
-                    indexMap.CountValuesForKey(gridIndexComponent.gridPosition));
+                changedCellGridPositions.Add(gridIndexComponent.gridPosition);
 
-                gridIndexComponent.gridPosition = Utilities.Vector2IntToInt2(gridIndexGrid.GetCellGridPosition(translation.Value));
+                gridIndexComponent.gridPosition = GetCellGridPosition(translation.Value, gridOriginPosition, cellSize);
 
                 indexMap.Add(gridIndexComponent.gridPosition, entity);
 
-                gridIndexGrid.SetCell(Utilities.Int2toVector2Int(gridIndexComponent.gridPosition),
-                    indexMap.CountValuesForKey(gridIndexComponent.gridPosition));
+                changedCellGridPositions.Add(gridIndexComponent.gridPosition);
             })
-            .WithoutBurst()
             .Run();
+
+        //CompleteDependency();
+
+        foreach (var changedCellGridPosition in changedCellGridPositions)
+        {
+            gridIndexGrid.SetCell(Utilities.Int2toVector2Int(changedCellGridPosition), indexMap.CountValuesForKey(changedCellGridPosition));
+        }
+
+        changedCellGridPositions.Dispose();
+    }
+
+    private static int2 GetCellGridPosition(float3 worldPosition, float3 gridOriginPosition, float gridCellSize)
+    {
+        int x = Mathf.FloorToInt((worldPosition - gridOriginPosition).x / gridCellSize);
+        int y = Mathf.FloorToInt((worldPosition - gridOriginPosition).z / gridCellSize);
+
+        return new int2(x, y);
     }
 }

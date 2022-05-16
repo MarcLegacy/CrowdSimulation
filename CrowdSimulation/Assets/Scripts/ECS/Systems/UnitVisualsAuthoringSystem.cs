@@ -37,7 +37,7 @@ public class UnitVisualsAuthoringSystem : AuthoringSystem
         unitVisualSystem.cohesion = cohesion;
         unitVisualSystem.separation = separation;
         unitVisualSystem.obstacleAvoidanceForce = obstacleAvoidanceForce;
-        unitVisualSystem.obstacleAvoiandeRays = obstacleAvoidanceRays;
+        unitVisualSystem.obstacleAvoidanceRays = obstacleAvoidanceRays;
         unitVisualSystem.sense = sense;
     }
 }
@@ -51,18 +51,21 @@ public partial class UnitVisualsSystem : SystemBase
     public ShowMovementDebugInfo cohesion;
     public ShowMovementDebugInfo separation;
     public ShowDebugInfo obstacleAvoidanceForce;
-    public ShowDebugInfo obstacleAvoiandeRays;
+    public ShowDebugInfo obstacleAvoidanceRays;
     public ShowDebugInfo sense;
 
-    private MovementForcesSystem movementForcesSystem;
+    //private MovementForcesSystem movementForcesSystem;
 
     protected override void OnCreate()
     {
-        movementForcesSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MovementForcesSystem>();
+        //movementForcesSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MovementForcesSystem>();
     }
 
     protected override void OnUpdate()
     {
+        if (!velocity.show && !alignment.showForce && !cohesion.showForce && !separation.showForce && !obstacleAvoidanceForce.show &&
+            !obstacleAvoidanceRays.show && !sense.show) return;
+
         Entities
             .WithName("Units_ShowForces")
             .WithAll<UnitComponent>()
@@ -113,15 +116,15 @@ public partial class UnitVisualsSystem : SystemBase
                     Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.obstacleAvoidance.force, DEBUG_ARROW_SIZE, obstacleAvoidanceForce.color);
                 }
 
-                if (obstacleAvoiandeRays.show)
-                {
-                    Debug.DrawRay(translation.Value,
-                        Quaternion.Euler(0, movementForcesSystem.collisionRayAngleOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
-                        obstacleAvoiandeRays.color);
-                    Debug.DrawRay(translation.Value,
-                        Quaternion.Euler(0, -movementForcesSystem.collisionRayAngleOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
-                        obstacleAvoiandeRays.color);
-                }
+                //if (obstacleAvoidanceRays.show)
+                //{
+                //    Debug.DrawRay(translation.Value,
+                //        Quaternion.Euler(0, movementForcesSystem.collisionRayAngleOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
+                //        obstacleAvoidanceRays.color);
+                //    Debug.DrawRay(translation.Value,
+                //        Quaternion.Euler(0, -movementForcesSystem.collisionRayAngleOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
+                //        obstacleAvoidanceRays.color);
+                //}
 
                 if (sense.show)
                 {

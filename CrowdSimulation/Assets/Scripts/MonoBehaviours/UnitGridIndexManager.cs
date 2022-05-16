@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
@@ -18,6 +19,8 @@ public class UnitGridIndexManager : MonoBehaviour
     private MyGrid<int> grid;
 
     public MyGrid<int> Grid => grid;
+    public int Width => width;
+    public int Height => height;
 
     #region Singleton
     public static UnitGridIndexManager GetInstance()
@@ -38,7 +41,7 @@ public class UnitGridIndexManager : MonoBehaviour
         grid = new MyGrid<int>(width, height, cellSize, map.transform.TransformPoint(map.GetComponent<MeshFilter>().mesh.bounds.min));
 
         indexMap = new NativeMultiHashMap<int2,Entity>(width * height, Allocator.Persistent);
-        //grid.ShowDebugText();
+        grid.ShowDebugText();
     }
 
     void OnDestroy()
@@ -52,8 +55,4 @@ public class UnitGridIndexManager : MonoBehaviour
 
     }
 
-    void OnDrawGizmos()
-    {
-        if (grid == null) return;
-    }
 }
