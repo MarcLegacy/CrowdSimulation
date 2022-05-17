@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -13,8 +14,20 @@ public class MoveAuthoringSystem : AuthoringSystem
     protected override void Start()
     {
         moveSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MoveSystem>();
+        moveSystem.pathingManager = PathingManager.GetInstance();
+        moveSystem.gridDirectionMap = new NativeHashMap<int2, int2>(moveSystem.pathingManager.GridWidth * moveSystem.pathingManager.GridHeight,
+            Allocator.Persistent);
 
         base.Start();
+
+        StartCoroutine(DelayedStart());
+    }
+
+    IEnumerator DelayedStart()
+    {
+        yield return new WaitForEndOfFrame();
+
+        moveSystem.pathingManager.FlowField.OnGridDirectionChanged += moveSystem.OnGridDirectionChanged;
     }
 
     protected override void SetVariables()
@@ -28,12 +41,19 @@ public partial class MoveSystem : SystemBase
     private const float DELTA_ROTATE_DEGREES = 15f;
 
     public float maxForce;
+    public NativeHashMap<int2, int2> gridDirectionMap;
 
-    private PathingManager pathingManager;
+    public PathingManager pathingManager;
 
     protected override void OnCreate()
     {
-        pathingManager = PathingManager.GetInstance();
+
+
+    }
+
+    protected override void OnDestroy()
+    {
+        gridDirectionMap.Dispose();
     }
 
     protected override void OnUpdate()
@@ -43,6 +63,10 @@ public partial class MoveSystem : SystemBase
         float deltaTime = Time.DeltaTime;
         MyGrid<FlowFieldCell> flowFieldGrid = pathingManager.FlowField.Grid;
         float _maxForce = maxForce;
+        float3 targetPosition = pathingManager.TargetPosition;
+        float3 gridOriginPosition = flowFieldGrid.OriginPosition;
+        float gridCellSize = flowFieldGrid.CellSize;
+        NativeHashMap<int2, int2> _gridDirectionMap = gridDirectionMap;
 
         Entities
             .WithName("Unit_PathForDirection_Job")
@@ -53,8 +77,8 @@ public partial class MoveSystem : SystemBase
                 ref GridIndexComponent gridIndexComponent,
                 ref Translation translation) =>
             {
-                if (flowFieldGrid.GetCellGridPosition(translation.Value) ==
-                    flowFieldGrid.GetCellGridPosition(pathingManager.TargetPosition))
+                if (Utilities.CalculateCellGridPosition(translation.Value, gridOriginPosition, gridCellSize)
+                    .Equals(Utilities.CalculateCellGridPosition(targetPosition, gridOriginPosition, gridCellSize)))
                 {
                     moveToDirectionComponent.direction = float3.zero;
                     return;
@@ -64,7 +88,7 @@ public partial class MoveSystem : SystemBase
 
                 if (flowFieldCell == null)
                 {
-                    translation.Value += math.normalizesafe(float3.zero - translation.Value);
+                    translation.Value += math.normalizesafe(float3.zero - translation.Value);   // Makes sure that the entities are pushed towards the middle of the map
                     return;
                 }
 
@@ -133,5 +157,28 @@ public partial class MoveSystem : SystemBase
                 translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
             })
             .ScheduleParallel();
+    }
+
+    public void OnGridDirectionChanged(object sender, FlowField.OnGridDirectionChangedEventArgs eventArgs)
+    {
+        //for (int x = 0; x < eventArgs.grid.Width; x++)
+        //{
+        //    for (int y = 0; y < eventArgs.grid.Height; y++)
+        //    {
+        //        if (gridDirectionMap.TryGetValue(new int2(x, y), out int2 item))
+        //        {
+        //            Debug.Log("item: " + item);
+        //            item = Utilities.Vector2IntToInt2(eventArgs.grid.GetCell(x, y).bestDirection.vector2D);
+        //            gridDirectionMap.TryGetValue(new int2(x, y), out int2 newItem);
+        //            Debug.Log("newItem: " + newItem);
+        //        }
+        //        else
+        //        {
+        //            gridDirectionMap.Add(new int2(x, y), Utilities.Vector2IntToInt2(eventArgs.grid.GetCell(x, y).bestDirection.vector2D));
+        //        }
+
+                
+        //    }
+        //}
     }
 }

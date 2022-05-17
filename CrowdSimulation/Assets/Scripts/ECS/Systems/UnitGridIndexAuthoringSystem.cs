@@ -21,16 +21,12 @@ public class UnitGridIndexAuthoringSystem : AuthoringSystem
     protected override void Start()
     {
         unitGridIndexSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>();
-
-        base.Start();
-    }
-
-    protected override void SetVariables()
-    {
         unitGridIndexSystem.grid =
             new MyGrid<int>(width, height, cellSize, map.transform.TransformPoint(map.GetComponent<MeshFilter>().mesh.bounds.min));
         unitGridIndexSystem.indexMap = new NativeMultiHashMap<int2, Entity>(width * height, Allocator.Persistent);
         if (showDebugText) unitGridIndexSystem.grid.ShowDebugText();
+
+        base.Start();
     }
 
     private void OnDrawGizmos()
@@ -95,9 +91,9 @@ public partial class UnitGridIndexSystem : SystemBase
 
                 changedCellGridPositions.Add(gridIndexComponent.gridPosition);
             })
-            .Run();
+            .Schedule();
 
-        //CompleteDependency();
+        CompleteDependency();
 
         foreach (var changedCellGridPosition in changedCellGridPositions)
         {

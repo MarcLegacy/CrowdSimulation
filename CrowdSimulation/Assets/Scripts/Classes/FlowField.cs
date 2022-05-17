@@ -1,5 +1,6 @@
 // Flowfield Algorithm made by following Turbo Makes Games's tutorial "Tutorial - Flow Field Pathfinding in Unity": https://www.youtube.com/watch?v=tSe6ZqDKB0Y
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -7,6 +8,12 @@ using Debug = UnityEngine.Debug;
 
 public class FlowField
 {
+    public event EventHandler<OnGridDirectionChangedEventArgs> OnGridDirectionChanged;
+    public class OnGridDirectionChangedEventArgs : EventArgs
+    {
+        public MyGrid<FlowFieldCell> grid;
+    }
+
     private const int MAX_INTEGRATION_COST = 200;
 
     public MyGrid<FlowFieldCell> Grid { get; }
@@ -115,5 +122,7 @@ public class FlowField
                 }
             }
         }
+
+        OnGridDirectionChanged?.Invoke(this, new OnGridDirectionChangedEventArgs { grid = Grid });
     }
 }

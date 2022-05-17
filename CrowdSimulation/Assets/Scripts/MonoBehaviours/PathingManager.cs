@@ -55,6 +55,8 @@ public class PathingManager : MonoBehaviour
     private List<List<Vector3>> calculatedPortalPaths;
     private List<Vector3> targetPositions;
 
+    public int GridWidth => gridWidth;
+    public int GridHeight => gridHeight;
     public float CellSize => cellSize;
     public int AreaSize => areaSize;
     public Vector3 TargetPosition
