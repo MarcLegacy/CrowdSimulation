@@ -7,7 +7,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [System.Serializable]
-public struct ShowDebugInfo
+public struct DebugInfo
 {
     public bool show;
     public Color color;
@@ -54,6 +54,21 @@ public static class Utilities
     public static Vector2Int Int2toVector2Int(int2 int2)
     {
         return new Vector2Int(int2.x, int2.y);
+    }
+
+    public static Vector2Int CalculateCellGridPosition(Vector3 cellWorldPosition, Vector3 gridOriginPosition, float gridCellSize)
+    {
+        int x = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).x / gridCellSize);
+        int y = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).z / gridCellSize);
+
+        return new Vector2Int(x, y);
+    }
+    public static int2 CalculateCellGridPosition(float3 cellWorldPosition, float3 gridOriginPosition, float gridCellSize)
+    {
+        int x = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).x / gridCellSize);
+        int y = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).z / gridCellSize);
+
+        return new int2(x, y);
     }
 
     #region Draw Functions

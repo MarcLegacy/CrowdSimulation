@@ -105,7 +105,7 @@ public partial class MoveSystem : SystemBase
 
                 rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), DELTA_ROTATE_DEGREES);   // Seems they can get quicker loose if the rotation is already done before adjusting the velocity on the units in front of them
 
-                if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isBlocking)
+                if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
                 {
                     if (moveComponent.currentSpeed < moveComponent.maxSpeed)
                     {
@@ -118,16 +118,16 @@ public partial class MoveSystem : SystemBase
                     {
                         moveComponent.currentSpeed -= moveComponent.acceleration * deltaTime;
                     }
+                }
 
-                    if (unitSenseComponent.leftIsBlocking && !unitSenseComponent.rightIsBlocking)
-                    {
-                        moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
-                    }
+                if (unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
+                {
+                    moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
+                }
 
-                    if (unitSenseComponent.rightIsBlocking && !unitSenseComponent.leftIsBlocking)
-                    {
-                        moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
-                    }
+                if (unitSenseComponent.isRightBlocking && !unitSenseComponent.isLeftBlocking)
+                {
+                    moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
                 }
 
                 translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;

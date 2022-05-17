@@ -39,18 +39,18 @@ public partial class MovementForcesSystem : SystemBase
     private int currentWorkingEntityInFindNeighborsJob;
     private int currentWorkingEntityInObstacleAvoidanceJob;
 
-    private UnitGridIndexManager unitGridIndexManager;
+    private UnitGridIndexSystem unitGridIndexSystem;
 
     protected override void OnCreate()
     {
-        unitGridIndexManager = UnitGridIndexManager.GetInstance();
+        unitGridIndexSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>();
     }
 
     protected override void OnUpdate()
     {
-        if (unitGridIndexManager == null || unitGridIndexManager.Grid == null || !unitGridIndexManager.indexMap.IsCreated) return;
+        if (unitGridIndexSystem.grid == null || !unitGridIndexSystem.indexMap.IsCreated) return;
 
-        NativeMultiHashMap<int2, Entity> indexMap = unitGridIndexManager.indexMap;
+        NativeMultiHashMap<int2, Entity> indexMap = unitGridIndexSystem.indexMap;
 
         int _entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
         int _currentWorkingEntityInFindNeighborsJob = currentWorkingEntityInFindNeighborsJob;

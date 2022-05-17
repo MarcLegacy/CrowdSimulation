@@ -18,8 +18,6 @@ public class UnitSenseAuthoringComponent : MonoBehaviour, IConvertGameObjectToEn
 public struct UnitSenseComponent : IComponentData
 {
     public float distance;
-    public bool isBlocking;
-    public float3 force;
-    public bool leftIsBlocking;
-    public bool rightIsBlocking;
+    public bool isLeftBlocking;
+    public bool isRightBlocking;
 }

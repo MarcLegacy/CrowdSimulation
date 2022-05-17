@@ -11,8 +11,6 @@ using RaycastHit = Unity.Physics.RaycastHit;
 public class UnitSenseAuthoringSystem : AuthoringSystem
 {
     public int entitiesSkippedInJob = 1;
-    public PhysicsCategoryTags unitTag;
-    public PhysicsCategoryTags obstacleTag;
 
     private UnitSenseSystem unitSenseSystem;
 
@@ -26,8 +24,6 @@ public class UnitSenseAuthoringSystem : AuthoringSystem
     protected override void SetVariables()
     {
         unitSenseSystem.entitiesSkippedInJob = entitiesSkippedInJob;
-        unitSenseSystem.unitTag = unitTag;
-        unitSenseSystem.obstacleTag = obstacleTag;
     }
 }
 
@@ -36,8 +32,6 @@ public partial class UnitSenseSystem : SystemBase
     private const float SENSE_RAY_ANGLE_OFFSET = 20f;
 
     public int entitiesSkippedInJob = 1;
-    public PhysicsCategoryTags unitTag;
-    public PhysicsCategoryTags obstacleTag;
 
     private int currentWorkingEntityInJob;
 
@@ -45,8 +39,6 @@ public partial class UnitSenseSystem : SystemBase
     {
         int _entitiesSkippedInJob = entitiesSkippedInJob;
         int _currentWorkingEntityInJob = currentWorkingEntityInJob;
-        PhysicsCategoryTags _unitTag = unitTag;
-        PhysicsCategoryTags _obstacleTag = obstacleTag;
         PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
 
         if (currentWorkingEntityInJob++ > entitiesSkippedInJob)
@@ -64,7 +56,8 @@ public partial class UnitSenseSystem : SystemBase
                 ref Translation translation,
                 ref UnitSenseComponent unitSenseComponent,
                 ref MovementForcesComponent movementForcesComponent,
-                in Rotation rotation) =>
+                in Rotation rotation,
+                in PhysicsCollider physicsCollider) =>
             {
                 if (entityInQueryIndex % _entitiesSkippedInJob != _currentWorkingEntityInJob) return;
 
@@ -81,61 +74,41 @@ public partial class UnitSenseSystem : SystemBase
 
                 movementForcesComponent.obstacleAvoidance.force = float3.zero;
 
-                CollisionFilter collisionFilter = new CollisionFilter
-                {
-                    BelongsTo = ~0u,
-                    CollidesWith = ~0u,
-                    GroupIndex = 0
-                };
-
-                var leftRayInput = new RaycastInput
+                RaycastInput leftRayInput = new RaycastInput
                 {
                     Start = leftRayStartPos,
                     End = leftRayEndPos,
-                    Filter = collisionFilter
+                    Filter = physicsCollider.Value.Value.Filter
                 };
 
-                var rightRayInput = new RaycastInput
+                RaycastInput rightRayInput = new RaycastInput
                 {
                     Start = rightRayStartPos,
                     End = rightRayEndPos,
-                    Filter = collisionFilter
+                    Filter = physicsCollider.Value.Value.Filter
                 };
 
-                unitSenseComponent.isBlocking = false;
-                unitSenseComponent.leftIsBlocking = false;
-                unitSenseComponent.rightIsBlocking = false;
+                unitSenseComponent.isLeftBlocking = false;
+                unitSenseComponent.isRightBlocking = false;
                 float3 obstacleAvoidanceForce = float3.zero;
 
-                NativeList<Unity.Physics.RaycastHit> hits = new NativeList<RaycastHit>(Allocator.Temp);
-
-                if (physicsWorld.CastRay(leftRayInput, ref hits))
+                if (physicsWorld.CastRay(leftRayInput, out RaycastHit hit))
                 {
-                    unitSenseComponent.isBlocking = true;
-                    unitSenseComponent.leftIsBlocking = true;
+                    unitSenseComponent.isLeftBlocking = true;
 
-                    foreach (var hit in hits)
+                    if (!HasComponent<UnitComponent>(hit.Entity))
                     {
-                        if (!HasComponent<UnitComponent>(hit.Entity))
-                        {
-                            obstacleAvoidanceForce += (translation.Value - hit.Position);
-                            break;
-                        }
+                        obstacleAvoidanceForce += (translation.Value - hit.Position);
                     }
                 }
 
-                if (physicsWorld.CastRay(rightRayInput, ref hits))
+                if (physicsWorld.CastRay(rightRayInput, out hit))
                 {
-                    unitSenseComponent.isBlocking = true;
-                    unitSenseComponent.rightIsBlocking = true;
+                    unitSenseComponent.isRightBlocking = true;
 
-                    foreach (var hit in hits)
+                    if (!HasComponent<UnitComponent>(hit.Entity))
                     {
-                        if (!HasComponent<UnitComponent>(hit.Entity))
-                        {
-                            obstacleAvoidanceForce += (translation.Value - hit.Position);
-                            break;
-                        }
+                        obstacleAvoidanceForce += (translation.Value - hit.Position);
                     }
                 }
 

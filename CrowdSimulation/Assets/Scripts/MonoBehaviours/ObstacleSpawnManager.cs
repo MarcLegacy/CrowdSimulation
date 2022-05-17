@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Entities;
 using Unity.Physics;
+using Unity.Physics.Authoring;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
@@ -22,6 +23,7 @@ public class ObstacleSpawnManager : MonoBehaviour
     [SerializeField] private Color wallColor = Color.clear;
     [SerializeField] private string obstacleName = "Obstacle";
     [SerializeField] private string wallName = "Wall";
+
     private BlobAssetStore blobAssetStore;
 
     #region Singleton
@@ -73,7 +75,14 @@ public class ObstacleSpawnManager : MonoBehaviour
 
         GameObjectConversionSettings settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blobAssetStore);
         Entity entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(obstacle, settings);
-        World.DefaultGameObjectInjectionWorld.EntityManager.SetName(entity, obstacleName);
+        EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        entityManager.SetName(entity, obstacleName);
+        entityManager.GetComponentData<PhysicsCollider>(entity).Value.Value.Filter = new CollisionFilter()
+        {
+            BelongsTo = PhysicsCategoryTagNames.OBSTACLE,
+            CollidesWith = PhysicsCategoryTagNames.UNIT,
+            GroupIndex = 0
+        };
     }
 
     private Vector3 FindRandomPosition()
@@ -135,7 +144,15 @@ public class ObstacleSpawnManager : MonoBehaviour
 
             GameObjectConversionSettings settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blobAssetStore);
             Entity entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(wall, settings);
-            World.DefaultGameObjectInjectionWorld.EntityManager.SetName(entity, wallName);
+            EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            entityManager.SetName(entity, wallName);
+            entityManager.GetComponentData<PhysicsCollider>(entity).Value.Value.Filter = new CollisionFilter()
+            {
+                BelongsTo = PhysicsCategoryTagNames.OBSTACLE,
+                CollidesWith = PhysicsCategoryTagNames.UNIT,
+                GroupIndex = 0
+            };
+
         }
     }
 }

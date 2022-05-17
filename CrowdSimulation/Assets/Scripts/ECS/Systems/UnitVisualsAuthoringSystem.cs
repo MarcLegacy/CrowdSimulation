@@ -13,13 +13,13 @@ public struct ShowMovementDebugInfo
 
 public class UnitVisualsAuthoringSystem : AuthoringSystem
 {
-    [SerializeField] private ShowDebugInfo velocity;
+    [SerializeField] private DebugInfo velocity;
     [SerializeField] private ShowMovementDebugInfo alignment;
     [SerializeField] private ShowMovementDebugInfo cohesion;
     [SerializeField] private ShowMovementDebugInfo separation;
-    [SerializeField] private ShowDebugInfo obstacleAvoidanceForce;
-    [SerializeField] private ShowDebugInfo obstacleAvoidanceRays;
-    [SerializeField] private ShowDebugInfo sense;
+    [SerializeField] private DebugInfo obstacleAvoidanceForce;
+    [SerializeField] private DebugInfo obstacleAvoidanceRays;
+    [SerializeField] private DebugInfo sense;
 
     private UnitVisualsSystem unitVisualSystem;
 
@@ -46,13 +46,13 @@ public partial class UnitVisualsSystem : SystemBase
 {
     private const float DEBUG_ARROW_SIZE = 2f;
 
-    public ShowDebugInfo velocity;
+    public DebugInfo velocity;
     public ShowMovementDebugInfo alignment;
     public ShowMovementDebugInfo cohesion;
     public ShowMovementDebugInfo separation;
-    public ShowDebugInfo obstacleAvoidanceForce;
-    public ShowDebugInfo obstacleAvoidanceRays;
-    public ShowDebugInfo sense;
+    public DebugInfo obstacleAvoidanceForce;
+    public DebugInfo obstacleAvoidanceRays;
+    public DebugInfo sense;
 
     //private MovementForcesSystem movementForcesSystem;
 
