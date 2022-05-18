@@ -56,17 +56,17 @@ public static class Utilities
         return new Vector2Int(int2.x, int2.y);
     }
 
-    public static Vector2Int CalculateCellGridPosition(Vector3 cellWorldPosition, Vector3 gridOriginPosition, float gridCellSize)
+    public static Vector2Int CalculateCellGridPosition(Vector3 worldPosition, Vector3 gridOriginPosition, float gridCellSize)
     {
-        int x = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).x / gridCellSize);
-        int y = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).z / gridCellSize);
+        int x = Mathf.FloorToInt((worldPosition - gridOriginPosition).x / gridCellSize);
+        int y = Mathf.FloorToInt((worldPosition - gridOriginPosition).z / gridCellSize);
 
         return new Vector2Int(x, y);
     }
-    public static int2 CalculateCellGridPosition(float3 cellWorldPosition, float3 gridOriginPosition, float gridCellSize)
+    public static int2 CalculateCellGridPosition(float3 worldPosition, float3 gridOriginPosition, float gridCellSize)
     {
-        int x = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).x / gridCellSize);
-        int y = Mathf.FloorToInt((cellWorldPosition - gridOriginPosition).z / gridCellSize);
+        int x = Mathf.FloorToInt((worldPosition - gridOriginPosition).x / gridCellSize);
+        int y = Mathf.FloorToInt((worldPosition - gridOriginPosition).z / gridCellSize);
 
         return new int2(x, y);
     }

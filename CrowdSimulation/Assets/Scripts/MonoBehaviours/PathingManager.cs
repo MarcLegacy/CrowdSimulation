@@ -126,6 +126,8 @@ public class PathingManager : MonoBehaviour
         if (showFlowFieldDebugText) FlowField.Grid.ShowDebugText();
 
         StartCoroutine(DelayedStart());
+
+        //UnityEngine.Random.InitState(0);
     }
 
     // Because for an unknown reason, the position of the colliders aren't yet set on the position of the gameObject in the same frame.
@@ -187,8 +189,8 @@ public class PathingManager : MonoBehaviour
             Stopwatch stopWatch = Stopwatch.StartNew();
             CalculateFlowFieldWithAreas();
             stopWatch.Stop();
-            benchmarkManager.flowFieldExecutionTimes.Add(Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2));
-            benchmarkManager.pathingExecutionTimes.Add(pathingTimes.Sum());
+            benchmarkManager?.flowFieldExecutionTimes.Add(Math.Round(stopWatch.Elapsed.TotalMilliseconds, 2));
+            benchmarkManager?.pathingExecutionTimes.Add(pathingTimes.Sum());
 
             if (showExecutionTime)
             {

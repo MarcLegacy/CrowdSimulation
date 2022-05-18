@@ -18,8 +18,6 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
         movementForcesSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<MovementForcesSystem>();
 
         base.Start();
-
-        UnityEngine.Random.InitState(0);
     }
 
     protected override void SetVariables()

@@ -115,5 +115,34 @@ public partial class UnitSenseSystem : SystemBase
                 movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
             })
             .ScheduleParallel();
+
+        //Entities
+        //    .WithName("Units_TestColliderCasting")
+        //    .WithReadOnly(physicsWorld)
+        //    .WithAll<UnitComponent>()
+        //    .ForEach((Entity entity, DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer, in Translation translation, in PhysicsCollider physicsCollider) =>
+        //    {
+        //        NativeList<ColliderCastHit> outHits = new NativeList<ColliderCastHit>(Allocator.Temp);
+
+        //        //Utilities.DrawDebugCircle(translation.Value, 5f, Color.blue);
+        //        neighborUnitBuffer.Clear();
+
+        //        if (physicsWorld.SphereCastAll(translation.Value, 5f, Vector3.up, 1f, ref outHits, physicsCollider.Value.Value.Filter))
+        //        {
+        //            foreach (ColliderCastHit outHit in outHits)
+        //            {
+        //                if (outHit.Entity.Equals(entity)) continue;
+
+
+        //                NeighborUnitBufferElement neighborUnitBufferElement = new NeighborUnitBufferElement()
+        //                {
+        //                    unit = outHit.Entity
+        //                };
+        //                neighborUnitBuffer.Add(neighborUnitBufferElement);
+        //            }
+        //        }
+
+        //    })
+        //    .ScheduleParallel();
     }
 }
