@@ -528,7 +528,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &978190040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -800,7 +800,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnCollider: {fileID: 246783403}
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 9000
+  unitAmount: 10
 --- !u!4 &1153233825
 Transform:
   m_ObjectHideFlags: 0
@@ -1138,6 +1138,10 @@ PrefabInstance:
     - target: {fileID: 4136054594195432788, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
       propertyPath: m_Name
       value: Systems
+      objectReference: {fileID: 0}
+    - target: {fileID: 5788275804505349114, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
+      propertyPath: entitiesSkippedInFindNeighborsJob
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6340912858246151391, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
       propertyPath: map

@@ -89,8 +89,9 @@ public partial class MovementForcesSystem : SystemBase
                         if (!unitEntity.Equals(entity) && HasComponent<Translation>(unitEntity))
                         {
                             MoveComponent moveComponent = GetComponent<MoveComponent>(entity);
+                            MoveComponent unitMoveComponent = GetComponent<MoveComponent>(unitEntity);
 
-                            if (moveComponent.currentSpeed <= 0.0f) return;
+                            if (moveComponent.currentSpeed <= 0.0f || unitMoveComponent.currentSpeed <= 0.0f) return;
 
                             Translation unitTranslation = GetComponent<Translation>(unitEntity);
                             float distance = math.distance(translation.Value, unitTranslation.Value);
