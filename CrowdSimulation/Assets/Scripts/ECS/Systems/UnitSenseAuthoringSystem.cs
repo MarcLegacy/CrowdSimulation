@@ -105,7 +105,8 @@ public partial class UnitSenseSystem : SystemBase
 
                     if (!HasComponent<UnitComponent>(hit.Entity))
                     {
-                        obstacleAvoidanceForce += (translation.Value - hit.Position);
+                        obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);
+                        //obstacleAvoidanceForce += hit.SurfaceNormal;
                     }
                 }
 
@@ -115,7 +116,8 @@ public partial class UnitSenseSystem : SystemBase
 
                     if (!HasComponent<UnitComponent>(hit.Entity))
                     {
-                        obstacleAvoidanceForce += (translation.Value - hit.Position);
+                        obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);
+                        //obstacleAvoidanceForce += hit.SurfaceNormal;
                     }
                 }
 
