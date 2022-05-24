@@ -7,9 +7,10 @@ using UnityEngine;
 
 public class MovementForcesAuthoringSystem : AuthoringSystem
 {
-    public float collisionRayAngleOffset = 15f;
-    public int entitiesSkippedInFindNeighborsJob = 10;
-    public int entitiesSkippedInObstacleAvoidanceJob = 10;
+    [SerializeField] private float collisionRayAngleOffset = 15f;
+    [SerializeField] private int entitiesSkippedInFindNeighborsJob = 10;
+    [SerializeField] private int entitiesSkippedInObstacleAvoidanceJob = 10;
+    [SerializeField] private float pushAwayForce = 0.2f;
 
     private MovementForcesSystem movementForcesSystem;
 
@@ -25,14 +26,18 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
         movementForcesSystem.collisionRayAngleOffset = collisionRayAngleOffset;
         movementForcesSystem.entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
         movementForcesSystem.entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
+        movementForcesSystem.pushAwayForce = pushAwayForce;
     }
 }
 
 public partial class MovementForcesSystem : SystemBase
 {
+    private const float SCALE_DEFAULT = 1f;
+
     public float collisionRayAngleOffset;
     public int entitiesSkippedInFindNeighborsJob;
     public int entitiesSkippedInObstacleAvoidanceJob;
+    public float pushAwayForce = 0.2f;
 
     private int currentWorkingEntityInFindNeighborsJob;
     private int currentWorkingEntityInObstacleAvoidanceJob;
@@ -54,6 +59,7 @@ public partial class MovementForcesSystem : SystemBase
         int _currentWorkingEntityInFindNeighborsJob = currentWorkingEntityInFindNeighborsJob;
         int _entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
         int _currentWorkingEntityInObstacleAvoidanceJob = currentWorkingEntityInObstacleAvoidanceJob;
+        float _pushAwayForce = pushAwayForce;
 
         if (currentWorkingEntityInFindNeighborsJob++ > _entitiesSkippedInFindNeighborsJob)
         {
@@ -97,11 +103,12 @@ public partial class MovementForcesSystem : SystemBase
                                 float unitCurrentSpeed = GetComponent<MoveComponent>(unitEntity).currentSpeed;
                                 float3 unitPosition = GetComponent<Translation>(unitEntity).Value;
 
-                                //if (distance < 1.0f) translation.Value += math.normalizesafe(translation.Value - unitPosition) * 0.25f;
+                                float distance = math.distance(translation.Value, unitPosition);
+
+                                if (distance < SCALE_DEFAULT) translation.Value += math.normalizesafe(translation.Value - unitPosition) * _pushAwayForce;
 
                                 if (unitCurrentSpeed <= 0.0f) continue;
 
-                                float distance = math.distance(translation.Value, unitPosition);
                                 NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
 
                                 if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
@@ -117,7 +124,7 @@ public partial class MovementForcesSystem : SystemBase
 
                 SetComponent(entity, translation);
             })
-            .ScheduleParallel();
+            .Schedule();
 
         Entities
             .WithName("Units_CalculateFlockingForces")

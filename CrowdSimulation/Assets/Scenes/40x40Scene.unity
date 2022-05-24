@@ -800,7 +800,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnCollider: {fileID: 246783403}
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 100
+  unitAmount: 1000
 --- !u!4 &1153233825
 Transform:
   m_ObjectHideFlags: 0

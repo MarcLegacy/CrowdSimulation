@@ -101,8 +101,11 @@ public partial class UnitSenseSystem : SystemBase
 
                 if (physicsWorld.CastRay(leftRayInput, out RaycastHit hit))
                 {
-                    unitSenseComponent.isLeftBlocking = true;
-
+                    if (math.distance(translation.Value, hit.Position) < 2.0f)
+                    {
+                        unitSenseComponent.isLeftBlocking = true;
+                    }
+                    
                     if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);
@@ -112,8 +115,11 @@ public partial class UnitSenseSystem : SystemBase
 
                 if (physicsWorld.CastRay(rightRayInput, out hit))
                 {
-                    unitSenseComponent.isRightBlocking = true;
-
+                    if (math.distance(translation.Value, hit.Position) < 2.0f)
+                    {
+                        unitSenseComponent.isRightBlocking = true;
+                    }
+                    
                     if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);
