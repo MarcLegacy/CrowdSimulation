@@ -67,9 +67,10 @@ public partial class MovementForcesSystem : SystemBase
 
         Entities
             .WithName("Units_NewFindNeighbors")
+            .WithReadOnly(indexMap)
             .WithAll<UnitComponent>()
-            .ForEach((
-                Entity entity,
+            .ForEach(
+                (Entity entity,
                 int entityInQueryIndex,
                 DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer,
                 in MovementForcesComponent movementForcesComponent,
@@ -79,6 +80,9 @@ public partial class MovementForcesSystem : SystemBase
 
                 neighborUnitBuffer.Clear();
                 Translation translation = GetComponent<Translation>(entity);
+                float currentSpeed = GetComponent<MoveComponent>(entity).currentSpeed;
+
+                if (currentSpeed <= 0.0f) return;
 
                 for (int i = 0; i < 9; i++)
                 {
@@ -86,52 +90,34 @@ public partial class MovementForcesSystem : SystemBase
 
                     if (indexMap.TryGetFirstValue(gridPosition, out Entity unitEntity, out NativeMultiHashMapIterator<int2> iterator))
                     {
-                        if (!unitEntity.Equals(entity) && HasComponent<Translation>(unitEntity))
+                        do
                         {
-                            MoveComponent moveComponent = GetComponent<MoveComponent>(entity);
-                            MoveComponent unitMoveComponent = GetComponent<MoveComponent>(unitEntity);
-
-                            if (moveComponent.currentSpeed <= 0.0f || unitMoveComponent.currentSpeed <= 0.0f) return;
-
-                            Translation unitTranslation = GetComponent<Translation>(unitEntity);
-                            float distance = math.distance(translation.Value, unitTranslation.Value);
-                            NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
-
-                            if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
-                            if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
-                            if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
-
-                            if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
-                                neighborUnitBuffer.Add(neighborUnit);
-                        }
-                        else
-                        {
-                            while (indexMap.TryGetNextValue(out unitEntity, ref iterator))
+                            if (!unitEntity.Equals(entity) && HasComponent<Translation>(unitEntity))
                             {
-                                if (!unitEntity.Equals(entity) && HasComponent<Translation>(unitEntity))
-                                {
-                                    MoveComponent moveComponent = GetComponent<MoveComponent>(entity);
-                                    MoveComponent unitMoveComponent = GetComponent<MoveComponent>(unitEntity);
+                                float unitCurrentSpeed = GetComponent<MoveComponent>(unitEntity).currentSpeed;
+                                float3 unitPosition = GetComponent<Translation>(unitEntity).Value;
 
-                                    if (moveComponent.currentSpeed <= 0.0f || unitMoveComponent.currentSpeed <= 0.0f) return;
+                                //if (distance < 1.0f) translation.Value += math.normalizesafe(translation.Value - unitPosition) * 0.25f;
 
-                                    Translation unitTranslation = GetComponent<Translation>(unitEntity);
-                                    float distance = math.distance(translation.Value, unitTranslation.Value);
-                                    NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
+                                if (unitCurrentSpeed <= 0.0f) continue;
 
-                                    if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
-                                    if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
-                                    if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
+                                float distance = math.distance(translation.Value, unitPosition);
+                                NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
 
-                                    if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
-                                        neighborUnitBuffer.Add(neighborUnit);
-                                }
+                                if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
+                                if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
+                                if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
+
+                                if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
+                                    neighborUnitBuffer.Add(neighborUnit);
                             }
-                        }
+                        } while (indexMap.TryGetNextValue(out unitEntity, ref iterator));
                     }
                 }
+
+                SetComponent(entity, translation);
             })
-            .Schedule();
+            .ScheduleParallel();
 
         Entities
             .WithName("Units_CalculateFlockingForces")
