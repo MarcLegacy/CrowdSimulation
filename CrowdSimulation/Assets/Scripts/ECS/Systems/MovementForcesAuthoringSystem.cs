@@ -105,7 +105,7 @@ public partial class MovementForcesSystem : SystemBase
 
                                 float distance = math.distance(translation.Value, unitPosition);
 
-                                if (distance < SCALE_DEFAULT) translation.Value += math.normalizesafe(translation.Value - unitPosition) * _pushAwayForce;
+                                //if (distance < SCALE_DEFAULT) translation.Value += math.normalizesafe(translation.Value - unitPosition) * _pushAwayForce;
 
                                 if (unitCurrentSpeed <= 0.0f) continue;
 
@@ -122,9 +122,9 @@ public partial class MovementForcesSystem : SystemBase
                     }
                 }
 
-                SetComponent(entity, translation);
+                //SetComponent(entity, translation);
             })
-            .Schedule();
+            .ScheduleParallel();
 
         Entities
             .WithName("Units_CalculateFlockingForces")
