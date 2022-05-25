@@ -105,7 +105,7 @@ public partial class UnitSenseSystem : SystemBase
                     {
                         unitSenseComponent.isLeftBlocking = true;
                     }
-                    
+
                     if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);
@@ -119,7 +119,7 @@ public partial class UnitSenseSystem : SystemBase
                     {
                         unitSenseComponent.isRightBlocking = true;
                     }
-                    
+
                     if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);

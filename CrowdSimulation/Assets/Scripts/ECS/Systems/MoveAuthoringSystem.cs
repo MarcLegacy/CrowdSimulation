@@ -117,11 +117,13 @@ public partial class MoveSystem : SystemBase
                                   movementForcesComponent.cohesion.force * movementForcesComponent.cohesion.weight +
                                   movementForcesComponent.separation.force * movementForcesComponent.separation.weight +
                                   movementForcesComponent.obstacleAvoidance.force * movementForcesComponent.obstacleAvoidance.weight;
+
                 moveComponent.velocity = math.normalizesafe(math.lerp(moveComponent.velocity, steering, _maxForce));
 
                 if (moveComponent.velocity.Equals(float3.zero)) return;
 
-                rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), DELTA_ROTATE_DEGREES);   // Seems they can get quicker loose if the rotation is already done before adjusting the velocity on the units in front of them
+                //rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up), DELTA_ROTATE_DEGREES);   // Seems they can get quicker loose if the rotation is already done before adjusting the velocity on the units in front of them
+                rotation.Value = math.slerp(rotation.Value, quaternion.LookRotation(moveComponent.velocity, math.up()), deltaTime * DELTA_ROTATE_DEGREES);
 
                 if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
                 {
@@ -138,6 +140,7 @@ public partial class MoveSystem : SystemBase
                     }
                 }
 
+                // TODO: Maybe rotate instead of velocity
                 if (unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
                 {
                     moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
@@ -148,7 +151,15 @@ public partial class MoveSystem : SystemBase
                     moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
                 }
 
-                translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
+                if (movementForcesComponent.tempAvoidanceDirection.Equals(float3.zero))
+                {
+                    translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
+                }
+                else
+                {
+                    translation.Value += movementForcesComponent.tempAvoidanceDirection * 0.3f * moveComponent.currentSpeed * deltaTime;
+                }
+
             })
             .ScheduleParallel();
 

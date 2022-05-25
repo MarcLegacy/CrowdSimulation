@@ -79,7 +79,7 @@ public partial class MovementForcesSystem : SystemBase
                 (Entity entity,
                 int entityInQueryIndex,
                 DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer,
-                in MovementForcesComponent movementForcesComponent,
+                ref MovementForcesComponent movementForcesComponent,
                 in GridIndexComponent gridIndexComponent) =>
             {
                 if (entityInQueryIndex % _entitiesSkippedInFindNeighborsJob != _currentWorkingEntityInFindNeighborsJob) return;
@@ -87,6 +87,9 @@ public partial class MovementForcesSystem : SystemBase
                 neighborUnitBuffer.Clear();
                 Translation translation = GetComponent<Translation>(entity);
                 float currentSpeed = GetComponent<MoveComponent>(entity).currentSpeed;
+                float currentDistance = SCALE_DEFAULT;
+                int total = 0;
+                movementForcesComponent.tempAvoidanceDirection = 0;
 
                 if (currentSpeed <= 0.0f) return;
 
@@ -98,7 +101,7 @@ public partial class MovementForcesSystem : SystemBase
                     {
                         do
                         {
-                            if (!unitEntity.Equals(entity) && HasComponent<Translation>(unitEntity))
+                            if (!unitEntity.Equals(entity) && HasComponent<Translation>(unitEntity))    // Check other Entity and existing
                             {
                                 float unitCurrentSpeed = GetComponent<MoveComponent>(unitEntity).currentSpeed;
                                 float3 unitPosition = GetComponent<Translation>(unitEntity).Value;
@@ -107,20 +110,31 @@ public partial class MovementForcesSystem : SystemBase
 
                                 //if (distance < SCALE_DEFAULT) translation.Value += math.normalizesafe(translation.Value - unitPosition) * _pushAwayForce;
 
-                                if (unitCurrentSpeed <= 0.0f) continue;
+                                if (unitCurrentSpeed > 0.0f)    // Avoids standing agents
+                                {
+                                    NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
 
-                                NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
+                                    if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
+                                    if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
+                                    if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
 
-                                if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
-                                if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
-                                if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
+                                    if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
+                                        neighborUnitBuffer.Add(neighborUnit);
+                                }
 
-                                if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
-                                    neighborUnitBuffer.Add(neighborUnit);
+                                if (distance < currentDistance)
+                                {
+                                    currentDistance = distance;
+                                    float3 fromToVector = translation.Value - unitPosition;
+                                    movementForcesComponent.tempAvoidanceDirection = math.normalize(fromToVector / currentDistance);
+                                    total++;
+                                }
                             }
                         } while (indexMap.TryGetNextValue(out unitEntity, ref iterator));
                     }
                 }
+
+                if (total > 0) movementForcesComponent.tempAvoidanceDirection /= total;
 
                 //SetComponent(entity, translation);
             })
