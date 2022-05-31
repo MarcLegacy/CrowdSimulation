@@ -25,6 +25,12 @@ public enum CellType
 
 public class PathingManager : MonoBehaviour
 {
+    public event EventHandler<OnCellsInfoCollectedEventArgs> OnCellsInfoCollected;
+    public class OnCellsInfoCollectedEventArgs : EventArgs
+    {
+        public Dictionary<Vector2Int, CellType> cellsInfo;
+    }
+
     private const byte IGNORED_CELL = 254;
 
     [SerializeField] private int gridWidth = 10;
@@ -340,14 +346,9 @@ public class PathingManager : MonoBehaviour
 
         foreach (FlowFieldCell flowFieldCell in FlowField.Grid.GridArray)
         {
-            if (CheckedAreas.Contains(AreaMap.Grid.GetCell(FlowField.Grid.GetCellWorldPosition(flowFieldCell.GridPosition))))
-            {
-                flowFieldCell.Cost = 1;
-            }
-            else
-            {
-                flowFieldCell.Cost = IGNORED_CELL;
-            }
+            flowFieldCell.Cost = CheckedAreas.Contains(AreaMap.Grid.GetCell(FlowField.Grid.GetCellWorldPosition(flowFieldCell.GridPosition)))
+                ? (byte)1
+                : IGNORED_CELL;
         }
 
         FlowField.CalculateIntegrationField(FlowField.Grid.GetCell(targetPosition));
@@ -399,23 +400,16 @@ public class PathingManager : MonoBehaviour
 
                 foreach (Collider collider in colliders)
                 {
-                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING))
-                    {
-                        cellType = CellType.Unwalkable;
-                    }
-                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.SPAWNS_STRING))
-                    {
-                        cellType = CellType.Spawn;
-                    }
-                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.TARGETS_STRING))
-                    {
-                        cellType = CellType.Target;
-                    }
+                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.OBSTACLES_STRING)) cellType = CellType.Unwalkable;
+                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.SPAWNS_STRING)) cellType = CellType.Spawn;
+                    if (collider.gameObject.layer == LayerMask.NameToLayer(GlobalConstants.TARGETS_STRING)) cellType = CellType.Target;
                 }
 
                 CellsInfo.Add(new Vector2Int(x, y), cellType);
             }
         }
+
+        OnCellsInfoCollected?.Invoke(this, new OnCellsInfoCollectedEventArgs() { cellsInfo = CellsInfo});
     }
 
     private void SetCellData()

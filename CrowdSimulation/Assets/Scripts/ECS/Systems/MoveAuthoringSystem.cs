@@ -66,7 +66,7 @@ public partial class MoveSystem : SystemBase
         NativeHashSet<float3>.ParallelWriter checkPositionsParallel = checkPositions.AsParallelWriter();
 
         Entities
-            .WithName("Unit_PathForDirection_Job")
+            .WithName("Unit_PathForDirection")
             .WithReadOnly(_gridDirectionMap)
             .WithAll<UnitComponent>()
             .ForEach((
@@ -144,11 +144,15 @@ public partial class MoveSystem : SystemBase
                 if (unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
                 {
                     moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
+                    //moveComponent.velocity = math.lerp(moveComponent.velocity, movementForcesComponent.obstacleAvoidance.force, 0.2f);
+                    //moveComponent.velocity = movementForcesComponent.obstacleAvoidance.force;
                 }
 
                 if (unitSenseComponent.isRightBlocking && !unitSenseComponent.isLeftBlocking)
                 {
                     moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
+                    //moveComponent.velocity = math.lerp(moveComponent.velocity, movementForcesComponent.obstacleAvoidance.force, 0.2f);
+                    //moveComponent.velocity = movementForcesComponent.obstacleAvoidance.force;
                 }
 
                 if (movementForcesComponent.tempAvoidanceDirection.Equals(float3.zero))

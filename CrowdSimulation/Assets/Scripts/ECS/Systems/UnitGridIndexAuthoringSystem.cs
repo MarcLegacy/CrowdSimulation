@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -38,12 +39,27 @@ public class UnitGridIndexAuthoringSystem : AuthoringSystem
 
 public partial class UnitGridIndexSystem : SystemBase
 {
+    public event EventHandler<OnSpawnLeftEventArgs> OnSpawnLeft;
+    public class OnSpawnLeftEventArgs : EventArgs
+    {
+        public List<Entity> entities;
+    }
+
     public MyGrid<int> grid;
     public NativeMultiHashMap<int2, Entity> indexMap;
+
+    private NativeList<int2> spawnGridPositions;
+
+    protected override void OnCreate()
+    {
+        PathingManager.GetInstance().OnCellsInfoCollected += OnCellsInfoCollected;
+        spawnGridPositions = new NativeList<int2>(Allocator.Persistent);
+    }
 
     protected override void OnDestroy()
     {
         indexMap.Dispose();
+        spawnGridPositions.Dispose();
     }
 
     protected override void OnUpdate()
@@ -55,9 +71,12 @@ public partial class UnitGridIndexSystem : SystemBase
         float cellSize = _grid.CellSize;
         NativeMultiHashMap<int2, Entity> _indexMap = indexMap;
         NativeHashSet<int2> changedCellGridPositions = new NativeHashSet<int2>(grid.Width * grid.Height, Allocator.TempJob);
+        NativeList<Entity> entitiesSpawnLeft = new NativeList<Entity>(Allocator.TempJob);
+        NativeList<int2> _spawnGridPositions = spawnGridPositions;
 
         Entities
             .WithName("Units_IndexToGrid")
+            .WithReadOnly(_spawnGridPositions)
             .WithAll<UnitComponent>()
             .ForEach((Entity entity, ref GridIndexComponent gridIndexComponent, in Translation translation) =>
             {
@@ -84,6 +103,15 @@ public partial class UnitGridIndexSystem : SystemBase
                     }
                 }
 
+                if (_spawnGridPositions.Length != 0)
+                {
+                    if (_spawnGridPositions.Contains(gridIndexComponent.gridPosition) &&
+                        !_spawnGridPositions.Contains(Utilities.CalculateCellGridPosition(translation.Value, gridOriginPosition, cellSize)))
+                    {
+                        entitiesSpawnLeft.Add(entity);
+                    }
+                }
+
                 changedCellGridPositions.Add(gridIndexComponent.gridPosition);
 
                 gridIndexComponent.gridPosition = Utilities.CalculateCellGridPosition(translation.Value, gridOriginPosition, cellSize);
@@ -101,8 +129,33 @@ public partial class UnitGridIndexSystem : SystemBase
             _grid.SetCell(Utilities.Int2toVector2Int(changedCellGridPosition), _indexMap.CountValuesForKey(changedCellGridPosition));
         }
 
+        if (entitiesSpawnLeft.Length != 0)
+        {
+            List<Entity> newEntitiesList = new List<Entity>(entitiesSpawnLeft.Length);
+
+            foreach (Entity entity in entitiesSpawnLeft)
+            {
+                newEntitiesList.Add(entity);
+            }
+
+            OnSpawnLeft?.Invoke(this, new OnSpawnLeftEventArgs() { entities = newEntitiesList });
+        }
+
         changedCellGridPositions.Dispose();
+        entitiesSpawnLeft.Dispose();
     }
 
+    private void OnCellsInfoCollected(object sender, PathingManager.OnCellsInfoCollectedEventArgs eventArgs)
+    {
+        spawnGridPositions.Clear();
 
+        foreach (var cellInfo in eventArgs.cellsInfo)
+        {
+
+            if (cellInfo.Value == CellType.Spawn)
+            {
+                spawnGridPositions.Add(Utilities.Vector2IntToInt2(cellInfo.Key));
+            }
+        }
+    }
 }
