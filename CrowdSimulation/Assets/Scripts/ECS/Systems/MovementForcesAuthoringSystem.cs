@@ -89,7 +89,7 @@ public partial class MovementForcesSystem : SystemBase
                 float currentSpeed = GetComponent<MoveComponent>(entity).currentSpeed;
                 float currentDistance = SCALE_DEFAULT;
                 int total = 0;
-                movementForcesComponent.tempAvoidanceDirection = 0;
+                movementForcesComponent.tempAvoidanceDirection = float3.zero;
 
                 if (currentSpeed <= 0.0f) return;
 

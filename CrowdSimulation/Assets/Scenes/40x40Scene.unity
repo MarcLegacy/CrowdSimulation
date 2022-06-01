@@ -800,7 +800,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnCollider: {fileID: 246783403}
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 1
+  unitAmount: 100
 --- !u!4 &1153233825
 Transform:
   m_ObjectHideFlags: 0
@@ -1137,6 +1137,18 @@ PrefabInstance:
     - target: {fileID: -8762709373478427619, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
       propertyPath: entitiesSkippedInFindNeighborsJob
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
+      propertyPath: velocity.show
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
+      propertyPath: velocity.color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
+      propertyPath: velocity.color.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3161587325255818693, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
       propertyPath: m_RootOrder

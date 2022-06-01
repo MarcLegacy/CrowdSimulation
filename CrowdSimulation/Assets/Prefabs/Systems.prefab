@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -8762709373478427619}
   - component: {fileID: 6340912858246151391}
   - component: {fileID: 5788275804505349114}
+  - component: {fileID: 2355398094665727056}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -62,6 +63,7 @@ MonoBehaviour:
   collisionRayAngleOffset: 15
   entitiesSkippedInFindNeighborsJob: 10
   entitiesSkippedInObstacleAvoidanceJob: 10
+  pushAwayForce: 0.2
 --- !u!114 &6340912858246151391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,3 +97,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entitiesSkippedInJob: 1
+--- !u!114 &2355398094665727056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4136054594195432788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b124276c1bce8240aa9f881349f3647, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocity:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  alignment:
+    showForce: 0
+    showRadius: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  cohesion:
+    showForce: 0
+    showRadius: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  separation:
+    showForce: 0
+    showRadius: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  obstacleAvoidanceForce:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  obstacleAvoidanceRays:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
+  sense:
+    show: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
