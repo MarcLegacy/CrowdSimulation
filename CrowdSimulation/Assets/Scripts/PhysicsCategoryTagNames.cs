@@ -8,4 +8,5 @@ public struct PhysicsCategoryTagNames
     public const uint EVERYTHING = uint.MaxValue;
     public const uint OBSTACLE = 1;
     public const uint UNIT = 2;
+    // Next is 4, then 8 etc.
 }

@@ -21,7 +21,6 @@ public class LogFPS : MonoBehaviour
         }
         else
         {
-            //This code will break if you set your refreshTime to 0, which makes no sense.
             lastFramerate = (float)frameCounter / timeCounter;
             frameCounter = 0;
             timeCounter = 0.0f;
