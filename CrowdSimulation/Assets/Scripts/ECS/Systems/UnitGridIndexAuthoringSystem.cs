@@ -23,17 +23,17 @@ public class UnitGridIndexAuthoringSystem : AuthoringSystem
     protected override void Start()
     {
         unitGridIndexSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>();
-        unitGridIndexSystem.grid =
+        unitGridIndexSystem.m_grid =
             new MyGrid<int>(width, height, cellSize, map.transform.TransformPoint(map.GetComponent<MeshFilter>().mesh.bounds.min));
-        unitGridIndexSystem.indexMap = new NativeMultiHashMap<int2, Entity>(width * height, Allocator.Persistent);
-        if (showDebugText) unitGridIndexSystem.grid.ShowDebugText();
+        unitGridIndexSystem.m_indexMap = new NativeMultiHashMap<int2, Entity>(width * height, Allocator.Persistent);
+        if (showDebugText) unitGridIndexSystem.m_grid.ShowDebugText();
 
         base.Start();
     }
 
     private void OnDrawGizmos()
     {
-        if (gridDebug.show) unitGridIndexSystem.grid.ShowGrid(gridDebug.color);
+        if (gridDebug.show && unitGridIndexSystem != null) unitGridIndexSystem.m_grid.ShowGrid(gridDebug.color);
     }
 }
 
@@ -52,61 +52,61 @@ public partial class UnitGridIndexSystem : SystemBase
         public List<Entity> entities;
     }
 
-    public MyGrid<int> grid;
-    public NativeMultiHashMap<int2, Entity> indexMap;
+    public MyGrid<int> m_grid;
+    public NativeMultiHashMap<int2, Entity> m_indexMap;
 
-    private NativeList<int2> spawnGridPositions;
-    private int2 targetGridPosition;
+    private NativeList<int2> m_spawnGridPositions;
+    private int2 m_targetGridPosition;
 
     protected override void OnCreate()
     {
         PathingManager.GetInstance().OnCellsInfoCollected += OnCellsInfoCollected;
-        spawnGridPositions = new NativeList<int2>(Allocator.Persistent);
+        m_spawnGridPositions = new NativeList<int2>(Allocator.Persistent);
     }
 
     protected override void OnDestroy()
     {
-        indexMap.Dispose();
-        spawnGridPositions.Dispose();
+        m_indexMap.Dispose();
+        m_spawnGridPositions.Dispose();
     }
 
     protected override void OnUpdate()
     {
-        if (grid == null || !indexMap.IsCreated) return;
+        if (m_grid == null || !m_indexMap.IsCreated) return;
 
-        MyGrid<int> _grid = grid;
-        float3 gridOriginPosition = _grid.OriginPosition;
-        float cellSize = _grid.CellSize;
-        NativeMultiHashMap<int2, Entity> _indexMap = indexMap;
-        NativeHashSet<int2> changedCellGridPositions = new NativeHashSet<int2>(grid.Width * grid.Height, Allocator.TempJob);
+        MyGrid<int> grid = m_grid;
+        float3 gridOriginPosition = grid.OriginPosition;
+        float cellSize = grid.CellSize;
+        NativeMultiHashMap<int2, Entity> indexMap = m_indexMap;
+        NativeHashSet<int2> changedCellGridPositions = new NativeHashSet<int2>(m_grid.Width * m_grid.Height, Allocator.TempJob);
         NativeList<Entity> entitiesSpawnLeft = new NativeList<Entity>(Allocator.TempJob);
-        NativeList<int2> _spawnGridPositions = spawnGridPositions;
-        int2 _targetGridPosition = targetGridPosition;
+        NativeList<int2> spawnGridPositions = m_spawnGridPositions;
+        int2 targetGridPosition = m_targetGridPosition;
         NativeList<Entity> entitiesReachedTarget = new NativeList<Entity>(Allocator.TempJob);
 
         Entities
             .WithName("Units_IndexToGrid")
-            .WithReadOnly(_spawnGridPositions)
+            .WithReadOnly(spawnGridPositions)
             .WithAll<UnitComponent>()
             .ForEach((Entity entity, ref GridIndexComponent gridIndexComponent, in Translation translation) =>
             {
                 if (gridIndexComponent.gridPosition.Equals(
                         Utilities.CalculateCellGridPosition(translation.Value, gridOriginPosition, cellSize))) return;
 
-                if (_indexMap.TryGetFirstValue(gridIndexComponent.gridPosition, out Entity currentEntity,
+                if (indexMap.TryGetFirstValue(gridIndexComponent.gridPosition, out Entity currentEntity,
                         out NativeMultiHashMapIterator<int2> iterator))
                 {
                     if (currentEntity.Equals(entity))
                     {
-                        _indexMap.Remove(iterator);
+                        indexMap.Remove(iterator);
                     }
                     else
                     {
-                        while (_indexMap.TryGetNextValue(out currentEntity, ref iterator))
+                        while (indexMap.TryGetNextValue(out currentEntity, ref iterator))
                         {
                             if (currentEntity.Equals(entity))
                             {
-                                _indexMap.Remove(iterator);
+                                indexMap.Remove(iterator);
                                 break;
                             }
                         }
@@ -115,16 +115,16 @@ public partial class UnitGridIndexSystem : SystemBase
 
                 int2 newGridPosition = Utilities.CalculateCellGridPosition(translation.Value, gridOriginPosition, cellSize);
 
-                if (_spawnGridPositions.Length != 0)
+                if (spawnGridPositions.Length != 0)
                 {
-                    if (_spawnGridPositions.Contains(gridIndexComponent.gridPosition) &&
-                        !_spawnGridPositions.Contains(newGridPosition))
+                    if (spawnGridPositions.Contains(gridIndexComponent.gridPosition) &&
+                        !spawnGridPositions.Contains(newGridPosition))
                     {
                         entitiesSpawnLeft.Add(entity);
                     }
                 }
 
-                if (!gridIndexComponent.gridPosition.Equals(_targetGridPosition) && newGridPosition.Equals(_targetGridPosition))
+                if (!gridIndexComponent.gridPosition.Equals(targetGridPosition) && newGridPosition.Equals(targetGridPosition))
                 {
                     entitiesReachedTarget.Add(entity);
                 }
@@ -133,7 +133,7 @@ public partial class UnitGridIndexSystem : SystemBase
 
                 gridIndexComponent.gridPosition = newGridPosition;
 
-                _indexMap.Add(gridIndexComponent.gridPosition, entity);
+                indexMap.Add(gridIndexComponent.gridPosition, entity);
 
                 changedCellGridPositions.Add(gridIndexComponent.gridPosition);
             })
@@ -143,7 +143,7 @@ public partial class UnitGridIndexSystem : SystemBase
 
         foreach (var changedCellGridPosition in changedCellGridPositions)
         {
-            _grid.SetCell(Utilities.Int2toVector2Int(changedCellGridPosition), _indexMap.CountValuesForKey(changedCellGridPosition));
+            grid.SetCell(Utilities.Int2toVector2Int(changedCellGridPosition), indexMap.CountValuesForKey(changedCellGridPosition));
         }
 
         if (entitiesSpawnLeft.Length != 0)
@@ -177,17 +177,17 @@ public partial class UnitGridIndexSystem : SystemBase
 
     private void OnCellsInfoCollected(object sender, PathingManager.OnCellsInfoCollectedEventArgs eventArgs)
     {
-        spawnGridPositions.Clear();
+        m_spawnGridPositions.Clear();
 
         foreach (var cellInfo in eventArgs.cellsInfo)
         {
             switch (cellInfo.Value)
             {
                 case CellType.Spawn:
-                    spawnGridPositions.Add(Utilities.Vector2IntToInt2(cellInfo.Key));
+                    m_spawnGridPositions.Add(Utilities.Vector2IntToInt2(cellInfo.Key));
                     break;
                 case CellType.Target:
-                    targetGridPosition = Utilities.Vector2IntToInt2(cellInfo.Key);
+                    m_targetGridPosition = Utilities.Vector2IntToInt2(cellInfo.Key);
                     break;
             }
         }

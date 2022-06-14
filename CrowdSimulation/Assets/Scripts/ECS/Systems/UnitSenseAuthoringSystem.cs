@@ -25,7 +25,7 @@ public class UnitSenseAuthoringSystem : AuthoringSystem
 
     protected override void SetVariables()
     {
-        unitSenseSystem.entitiesSkippedInJob = entitiesSkippedInJob;
+        unitSenseSystem.m_entitiesSkippedInJob = entitiesSkippedInJob;
     }
 }
 
@@ -33,19 +33,19 @@ public partial class UnitSenseSystem : SystemBase
 {
     private const float SENSE_RAY_ANGLE_OFFSET = 20f;
 
-    public int entitiesSkippedInJob = 1;
+    public int m_entitiesSkippedInJob = 1;
 
-    private int currentWorkingEntityInJob;
+    private int m_currentWorkingEntityInJob;
 
     protected override void OnUpdate()
     {
-        int _entitiesSkippedInJob = entitiesSkippedInJob;
-        int _currentWorkingEntityInJob = currentWorkingEntityInJob;
+        int entitiesSkippedInJob = m_entitiesSkippedInJob;
+        int currentWorkingEntityInJob = m_currentWorkingEntityInJob;
         PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
 
-        if (currentWorkingEntityInJob++ > entitiesSkippedInJob)
+        if (m_currentWorkingEntityInJob++ > m_entitiesSkippedInJob)
         {
-            currentWorkingEntityInJob = 0;
+            m_currentWorkingEntityInJob = 0;
         }
 
         Entities
@@ -61,8 +61,9 @@ public partial class UnitSenseSystem : SystemBase
                 in Rotation rotation,
                 in PhysicsCollider physicsCollider) =>
             {
-                if (_entitiesSkippedInJob != 0 && entityInQueryIndex % _entitiesSkippedInJob != _currentWorkingEntityInJob) return;
+                if (entitiesSkippedInJob != 0 && entityInQueryIndex % entitiesSkippedInJob != currentWorkingEntityInJob) return;
 
+                //return;
                 float3 leftRayStartPos =
                     translation.Value + (float3)(Quaternion.Euler(0, -SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value));
                 float3 leftRayEndPos = translation.Value +
@@ -101,7 +102,7 @@ public partial class UnitSenseSystem : SystemBase
                         unitSenseComponent.isLeftBlocking = true;
                     }
 
-                    if (!HasComponent<UnitComponent>(hit.Entity))
+                    //if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(-hit.SurfaceNormal.z, hit.SurfaceNormal.y, hit.SurfaceNormal.x);   // Rotates the direction of the surface normal 90 degrees clockwise.
                     }
@@ -114,7 +115,7 @@ public partial class UnitSenseSystem : SystemBase
                         unitSenseComponent.isRightBlocking = true;
                     }
 
-                    if (!HasComponent<UnitComponent>(hit.Entity))
+                    //if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);   // Rotates the direction of the surface normal 90 degrees counter-clockwise.
                     }

@@ -32,13 +32,13 @@ public class UnitVisualsAuthoringSystem : AuthoringSystem
 
     protected override void SetVariables()
     {
-        unitVisualSystem.velocity = velocity;
-        unitVisualSystem.alignment = alignment;
-        unitVisualSystem.cohesion = cohesion;
-        unitVisualSystem.separation = separation;
-        unitVisualSystem.obstacleAvoidanceForce = obstacleAvoidanceForce;
-        unitVisualSystem.obstacleAvoidanceRays = obstacleAvoidanceRays;
-        unitVisualSystem.sense = sense;
+        unitVisualSystem.m_velocity = velocity;
+        unitVisualSystem.m_alignment = alignment;
+        unitVisualSystem.m_cohesion = cohesion;
+        unitVisualSystem.m_separation = separation;
+        unitVisualSystem.m_obstacleAvoidanceForce = obstacleAvoidanceForce;
+        unitVisualSystem.m_obstacleAvoidanceRays = obstacleAvoidanceRays;
+        unitVisualSystem.m_sense = sense;
     }
 }
 
@@ -46,13 +46,13 @@ public partial class UnitVisualsSystem : SystemBase
 {
     private const float DEBUG_ARROW_SIZE = 2f;
 
-    public DebugInfo velocity;
-    public ShowMovementDebugInfo alignment;
-    public ShowMovementDebugInfo cohesion;
-    public ShowMovementDebugInfo separation;
-    public DebugInfo obstacleAvoidanceForce;
-    public DebugInfo obstacleAvoidanceRays;
-    public DebugInfo sense;
+    public DebugInfo m_velocity;
+    public ShowMovementDebugInfo m_alignment;
+    public ShowMovementDebugInfo m_cohesion;
+    public ShowMovementDebugInfo m_separation;
+    public DebugInfo m_obstacleAvoidanceForce;
+    public DebugInfo m_obstacleAvoidanceRays;
+    public DebugInfo m_sense;
 
     //private MovementForcesSystem movementForcesSystem;
 
@@ -63,8 +63,8 @@ public partial class UnitVisualsSystem : SystemBase
 
     protected override void OnUpdate()
     {
-        if (!velocity.show && !alignment.showForce && !cohesion.showForce && !separation.showForce && !obstacleAvoidanceForce.show &&
-            !obstacleAvoidanceRays.show && !sense.show) return;
+        if (!m_velocity.show && !m_alignment.showForce && !m_cohesion.showForce && !m_separation.showForce && !m_obstacleAvoidanceForce.show &&
+            !m_obstacleAvoidanceRays.show && !m_sense.show) return;
 
         Entities
             .WithName("Units_ShowForces")
@@ -76,59 +76,59 @@ public partial class UnitVisualsSystem : SystemBase
                 in MovementForcesComponent movementForcesComponent,
                 in UnitSenseComponent unitSenseComponent) =>
             {
-                if (velocity.show && !moveComponent.velocity.Equals(float3.zero))
+                if (m_velocity.show && !moveComponent.velocity.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, moveComponent.velocity, DEBUG_ARROW_SIZE, velocity.color);
+                    Utilities.DrawDebugArrow(translation.Value, moveComponent.velocity, DEBUG_ARROW_SIZE, m_velocity.color);
                 }
 
-                if (alignment.showForce && !movementForcesComponent.alignment.force.Equals(float3.zero))
+                if (m_alignment.showForce && !movementForcesComponent.alignment.force.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.alignment.force, DEBUG_ARROW_SIZE, alignment.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.alignment.force, DEBUG_ARROW_SIZE, m_alignment.color);
                 }
 
-                if (alignment.showRadius)
+                if (m_alignment.showRadius)
                 {
-                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.alignment.radius, alignment.color);
+                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.alignment.radius, m_alignment.color);
                 }
 
-                if (cohesion.showForce && !movementForcesComponent.cohesion.force.Equals(float3.zero))
+                if (m_cohesion.showForce && !movementForcesComponent.cohesion.force.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.cohesion.force, DEBUG_ARROW_SIZE, cohesion.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.cohesion.force, DEBUG_ARROW_SIZE, m_cohesion.color);
                 }
 
-                if (cohesion.showRadius)
+                if (m_cohesion.showRadius)
                 {
-                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.cohesion.radius, cohesion.color);
+                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.cohesion.radius, m_cohesion.color);
                 }
 
-                if (separation.showForce && !movementForcesComponent.separation.force.Equals(float3.zero))
+                if (m_separation.showForce && !movementForcesComponent.separation.force.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.separation.force, DEBUG_ARROW_SIZE, separation.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.separation.force, DEBUG_ARROW_SIZE, m_separation.color);
                 }
 
-                if (separation.showRadius)
+                if (m_separation.showRadius)
                 {
-                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.separation.radius, separation.color);
+                    Utilities.DrawDebugCircle(translation.Value, movementForcesComponent.separation.radius, m_separation.color);
                 }
 
-                if (obstacleAvoidanceForce.show && !movementForcesComponent.obstacleAvoidance.force.Equals(float3.zero))
+                if (m_obstacleAvoidanceForce.show && !movementForcesComponent.obstacleAvoidance.force.Equals(float3.zero))
                 {
-                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.obstacleAvoidance.force, DEBUG_ARROW_SIZE, obstacleAvoidanceForce.color);
+                    Utilities.DrawDebugArrow(translation.Value, movementForcesComponent.obstacleAvoidance.force, DEBUG_ARROW_SIZE, m_obstacleAvoidanceForce.color);
                 }
 
-                //if (obstacleAvoidanceRays.show)
+                //if (m_obstacleAvoidanceRays.show)
                 //{
                 //    Debug.DrawRay(translation.Value,
-                //        Quaternion.Euler(0, movementForcesSystem.collisionRayAngleOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
-                //        obstacleAvoidanceRays.color);
+                //        Quaternion.Euler(0, movementForcesSystem.m_collisionRayAngleOffset, 0) * moveComponent.m_velocity * movementForcesComponent.obstacleAvoidance.radius,
+                //        m_obstacleAvoidanceRays.color);
                 //    Debug.DrawRay(translation.Value,
-                //        Quaternion.Euler(0, -movementForcesSystem.collisionRayAngleOffset, 0) * moveComponent.velocity * movementForcesComponent.obstacleAvoidance.radius,
-                //        obstacleAvoidanceRays.color);
+                //        Quaternion.Euler(0, -movementForcesSystem.m_collisionRayAngleOffset, 0) * moveComponent.m_velocity * movementForcesComponent.obstacleAvoidance.radius,
+                //        m_obstacleAvoidanceRays.color);
                 //}
 
-                if (sense.show)
+                if (m_sense.show)
                 {
-                    Debug.DrawRay(translation.Value, moveComponent.velocity * unitSenseComponent.distance, sense.color);
+                    Debug.DrawRay(translation.Value, moveComponent.velocity * unitSenseComponent.distance, m_sense.color);
                 }
             })
             .WithoutBurst()

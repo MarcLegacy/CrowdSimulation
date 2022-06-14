@@ -179,7 +179,7 @@ public class ScoreMovement : MonoBehaviour
         if (!entityManager.HasComponent<Translation>(entity)) return;
 
         GridIndexComponent gridIndexComponent = entityManager.GetComponentData<GridIndexComponent>(entity);
-        var indexMap = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>().indexMap;
+        var indexMap = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>().m_indexMap;
         Vector3 position = entityManager.GetComponentData<Translation>(entity).Value;
         float4 color = colorBlue;
 

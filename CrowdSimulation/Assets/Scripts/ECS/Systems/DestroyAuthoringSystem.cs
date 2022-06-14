@@ -16,56 +16,56 @@ public class DestroyAuhoringSystem : AuthoringSystem
 
 public partial class DestroySystem : SystemBase
 {
-    private BeginSimulationEntityCommandBufferSystem beginSimulationEntityCommandBufferSystem;
-    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    private BeginSimulationEntityCommandBufferSystem m_beginSimECBS;
+    private EndSimulationEntityCommandBufferSystem m_endSimECBS;
 
-    private NativeList<Entity> destroyedEntities;
+    private NativeList<Entity> m_destroyedEntities;
 
     protected override void OnCreate()
     {
-        beginSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
-        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+        m_beginSimECBS = World.GetOrCreateSystem<BeginSimulationEntityCommandBufferSystem>();
+        m_endSimECBS = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
 
-        destroyedEntities = new NativeList<Entity>(Allocator.Persistent);
+        m_destroyedEntities = new NativeList<Entity>(Allocator.Persistent);
     }
 
     protected override void OnDestroy()
     {
-        destroyedEntities.Dispose();
+        m_destroyedEntities.Dispose();
     }
 
     protected override void OnUpdate()
     {
-        var beginSimulationEntityCommandBuffer = beginSimulationEntityCommandBufferSystem.CreateCommandBuffer();
-        var endSimulationEntityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
+        var beginSimECB = m_beginSimECBS.CreateCommandBuffer();
+        var endSimECB = m_endSimECBS.CreateCommandBuffer();
 
-        NativeList<Entity> _destroyedEntities = destroyedEntities;
+        NativeList<Entity> destroyedEntities = m_destroyedEntities;
 
         Entities
             .WithName("Unit_RemoveComponent")
-            .WithReadOnly(_destroyedEntities)
+            .WithReadOnly(destroyedEntities)
             .WithAll<DestroyComponent, UnitComponent>()
             .ForEach((Entity entity) =>
             {
-                endSimulationEntityCommandBuffer.RemoveComponent<UnitComponent>(entity);
+                endSimECB.RemoveComponent<UnitComponent>(entity);
 
-                _destroyedEntities.Add(entity);
+                destroyedEntities.Add(entity);
             })
             .Run();
 
         Entities
             .WithName("Unit_RemoveReferences")
-            .WithReadOnly(_destroyedEntities)
+            .WithReadOnly(destroyedEntities)
             .WithAll<UnitComponent>()
             .ForEach((DynamicBuffer<NeighborUnitBufferElement> neighborUnitBuffer) =>
             {
-                if (_destroyedEntities.IsEmpty) return;
+                if (destroyedEntities.IsEmpty) return;
 
                 for (int i = neighborUnitBuffer.Length - 1; i >= 0; i--)
                 {
                     Entity unitEntity = neighborUnitBuffer[i].unit;
 
-                    if (!HasComponent<Translation>(unitEntity) || _destroyedEntities.Contains(unitEntity))
+                    if (!HasComponent<Translation>(unitEntity) || destroyedEntities.Contains(unitEntity))
                     {
                         neighborUnitBuffer.RemoveAt(i);
                     }
@@ -79,13 +79,13 @@ public partial class DestroySystem : SystemBase
             .WithNone<UnitComponent>()
             .ForEach((Entity entity) =>
             {
-                beginSimulationEntityCommandBuffer.DestroyEntity(entity);
+                beginSimECB.DestroyEntity(entity);
             })
             .Run();
 
-        destroyedEntities.Clear();
+        m_destroyedEntities.Clear();
 
-        beginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
-        endSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
+        m_beginSimECBS.AddJobHandleForProducer(Dependency);
+        m_endSimECBS.AddJobHandleForProducer(Dependency);
     }
 }

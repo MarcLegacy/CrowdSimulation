@@ -23,10 +23,10 @@ public class MovementForcesAuthoringSystem : AuthoringSystem
 
     protected override void SetVariables()
     {
-        movementForcesSystem.collisionRayAngleOffset = collisionRayAngleOffset;
-        movementForcesSystem.entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
-        movementForcesSystem.entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
-        movementForcesSystem.pushAwayForce = pushAwayForce;
+        movementForcesSystem.m_collisionRayAngleOffset = collisionRayAngleOffset;
+        movementForcesSystem.m_entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
+        movementForcesSystem.m_entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
+        movementForcesSystem.m_pushAwayForce = pushAwayForce;
     }
 }
 
@@ -34,41 +34,41 @@ public partial class MovementForcesSystem : SystemBase
 {
     private const float SCALE_DEFAULT = 1f;
 
-    public float collisionRayAngleOffset;
-    public int entitiesSkippedInFindNeighborsJob;
-    public int entitiesSkippedInObstacleAvoidanceJob;
-    public float pushAwayForce = 0.2f;
+    public float m_collisionRayAngleOffset;
+    public int m_entitiesSkippedInFindNeighborsJob;
+    public int m_entitiesSkippedInObstacleAvoidanceJob;
+    public float m_pushAwayForce = 0.2f;
 
-    private int currentWorkingEntityInFindNeighborsJob;
-    private int currentWorkingEntityInObstacleAvoidanceJob;
+    private int m_currentWorkingEntityInFindNeighborsJob;
+    private int m_currentWorkingEntityInObstacleAvoidanceJob;
 
-    private UnitGridIndexSystem unitGridIndexSystem;
+    private UnitGridIndexSystem m_unitGridIndexSystem;
 
     protected override void OnCreate()
     {
-        unitGridIndexSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>();
+        m_unitGridIndexSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitGridIndexSystem>();
     }
 
     protected override void OnUpdate()
     {
-        if (unitGridIndexSystem.grid == null || !unitGridIndexSystem.indexMap.IsCreated) return;
+        if (m_unitGridIndexSystem.m_grid == null || !m_unitGridIndexSystem.m_indexMap.IsCreated) return;
 
-        NativeMultiHashMap<int2, Entity> indexMap = unitGridIndexSystem.indexMap;
+        NativeMultiHashMap<int2, Entity> indexMap = m_unitGridIndexSystem.m_indexMap;
 
-        int _entitiesSkippedInFindNeighborsJob = entitiesSkippedInFindNeighborsJob;
-        int _currentWorkingEntityInFindNeighborsJob = currentWorkingEntityInFindNeighborsJob;
-        int _entitiesSkippedInObstacleAvoidanceJob = entitiesSkippedInObstacleAvoidanceJob;
-        int _currentWorkingEntityInObstacleAvoidanceJob = currentWorkingEntityInObstacleAvoidanceJob;
-        float _pushAwayForce = pushAwayForce;
+        int entitiesSkippedInFindNeighborsJob = m_entitiesSkippedInFindNeighborsJob;
+        int currentWorkingEntityInFindNeighborsJob = m_currentWorkingEntityInFindNeighborsJob;
+        int entitiesSkippedInObstacleAvoidanceJob = m_entitiesSkippedInObstacleAvoidanceJob;
+        int currentWorkingEntityInObstacleAvoidanceJob = m_currentWorkingEntityInObstacleAvoidanceJob;
+        float pushAwayForce = m_pushAwayForce;
 
-        if (currentWorkingEntityInFindNeighborsJob++ > _entitiesSkippedInFindNeighborsJob)
+        if (m_currentWorkingEntityInFindNeighborsJob++ > entitiesSkippedInFindNeighborsJob)
         {
-            currentWorkingEntityInFindNeighborsJob = 0;
+            m_currentWorkingEntityInFindNeighborsJob = 0;
         }
 
-        if (currentWorkingEntityInObstacleAvoidanceJob++ > _entitiesSkippedInObstacleAvoidanceJob)
+        if (m_currentWorkingEntityInObstacleAvoidanceJob++ > entitiesSkippedInObstacleAvoidanceJob)
         {
-            currentWorkingEntityInObstacleAvoidanceJob = 0;
+            m_currentWorkingEntityInObstacleAvoidanceJob = 0;
         }
 
         Entities
@@ -82,7 +82,7 @@ public partial class MovementForcesSystem : SystemBase
                 ref MovementForcesComponent movementForcesComponent,
                 in GridIndexComponent gridIndexComponent) =>
             {
-                if (entityInQueryIndex % _entitiesSkippedInFindNeighborsJob != _currentWorkingEntityInFindNeighborsJob) return;
+                if (entityInQueryIndex % entitiesSkippedInFindNeighborsJob != currentWorkingEntityInFindNeighborsJob) return;
 
                 neighborUnitBuffer.Clear();
                 Translation translation = GetComponent<Translation>(entity);
@@ -203,14 +203,14 @@ public partial class MovementForcesSystem : SystemBase
 
         //        movementForcesComponent.obstacleAvoidance.force = float3.zero;
 
-        //        Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -collisionRayAngleOffset, 0) * moveComponent.velocity);
-        //        Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, collisionRayAngleOffset, 0) * moveComponent.velocity);
-        //        float3 obstacleAvoidanceForce = float3.zero;
+        //        Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -m_collisionRayAngleOffset, 0) * moveComponent.m_velocity);
+        //        Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, m_collisionRayAngleOffset, 0) * moveComponent.m_velocity);
+        //        float3 m_obstacleAvoidanceForce = float3.zero;
 
-        //        obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
-        //        obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
+        //        m_obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
+        //        m_obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
 
-        //        movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
+        //        movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(m_obstacleAvoidanceForce);
         //    })
         //    .WithoutBurst()
         //    .Run();
@@ -264,9 +264,9 @@ public partial class MovementForcesSystem : SystemBase
 //            float distance = math.distance(translation.Value, unitTranslation.Value);
 //            NeighborUnitBufferElement neighborUnit = new NeighborUnitBufferElement { unit = unitEntity };
 
-//            if (distance < movementForcesComponent.alignment.radius) neighborUnit.inAlignmentRadius = true;
-//            if (distance < movementForcesComponent.cohesion.radius) neighborUnit.inCohesionRadius = true;
-//            if (distance < movementForcesComponent.separation.radius) neighborUnit.inSeparationRadius = true;
+//            if (distance < movementForcesComponent.m_alignment.radius) neighborUnit.inAlignmentRadius = true;
+//            if (distance < movementForcesComponent.m_cohesion.radius) neighborUnit.inCohesionRadius = true;
+//            if (distance < movementForcesComponent.m_separation.radius) neighborUnit.inSeparationRadius = true;
 
 //            if (neighborUnit.inAlignmentRadius || neighborUnit.inCohesionRadius || neighborUnit.inSeparationRadius)
 //                neighborUnitBuffer.Add(neighborUnit);

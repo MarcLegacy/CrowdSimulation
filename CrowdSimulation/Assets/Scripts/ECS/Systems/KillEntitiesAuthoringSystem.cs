@@ -22,15 +22,15 @@ public class KillEntitiesAuthoringSystem : AuthoringSystem
 
     protected override void SetVariables()
     {
-        killEntitiesSystem.killRadius = killRadius;
-        killEntitiesSystem.radiusColor = radiusColor;
+        killEntitiesSystem.m_killRadius = killRadius;
+        killEntitiesSystem.m_radiusColor = radiusColor;
     }
 }
 
 public partial class KillEntitiesSystem : SystemBase
 {
-    public float killRadius = 10f;
-    public Color radiusColor = Color.black;
+    public float m_killRadius = 10f;
+    public Color m_radiusColor = Color.black;
 
     private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
 
@@ -43,13 +43,13 @@ public partial class KillEntitiesSystem : SystemBase
     {
         var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
         PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
-        float _killRadius = killRadius;
+        float killRadius = m_killRadius;
 
         if (Input.GetKey(KeyCode.LeftControl))
         {
             float3 mouseWorldPosition = Utilities.GetMouseWorldPosition();
 
-            Utilities.DrawDebugCircle(mouseWorldPosition, killRadius, radiusColor);
+            Utilities.DrawDebugCircle(mouseWorldPosition, m_killRadius, m_radiusColor);
 
             if (Input.GetMouseButtonDown(1))
             {
@@ -67,7 +67,7 @@ public partial class KillEntitiesSystem : SystemBase
                             GroupIndex = 0
                         };
 
-                        if (physicsWorld.SphereCastAll(mouseWorldPosition, _killRadius, Vector3.up, 10f, ref hits, CollisionFilter.Default))
+                        if (physicsWorld.SphereCastAll(mouseWorldPosition, killRadius, Vector3.up, 10f, ref hits, CollisionFilter.Default))
                         {
                             foreach (ColliderCastHit hit in hits)
                             {

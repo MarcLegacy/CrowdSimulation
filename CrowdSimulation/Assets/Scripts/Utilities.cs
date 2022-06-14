@@ -78,7 +78,7 @@ public static class Utilities
     {
         if (direction == Vector3.zero)
         {
-            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": velocity == Vector3.zero");
+            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": m_velocity == Vector3.zero");
             return;
         }
 
@@ -169,7 +169,7 @@ public static class Utilities
     {
         if (direction == Vector3.zero)
         {
-            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": velocity == Vector3.zero");
+            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": m_velocity == Vector3.zero");
             return;
         }
 

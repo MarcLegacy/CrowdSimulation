@@ -98,7 +98,7 @@ public class UnitManager : MonoBehaviour
             return;
         }
 
-        //MyGrid<FlowFieldCell> grid = PathingManager.GetInstance().FlowField.Grid;
+        //MyGrid<FlowFieldCell> m_grid = PathingManager.GetInstance().FlowField.Grid;
         //int layerMask = LayerMask.GetMask(GlobalConstants.OBSTACLES_STRING);
 
         for (int i = 0; i < numUnitsPerSpawn; i++)
@@ -108,12 +108,12 @@ public class UnitManager : MonoBehaviour
 
             //do
             //{
-            //    newPosition = Utilities.GetRandomPositionInBox(grid.GetCellCenterWorldPosition(0, grid.Height- 1),
-            //        grid.GetCellCenterWorldPosition(grid.Width- 1, grid.Height- 1));
+            //    newPosition = Utilities.GetRandomPositionInBox(m_grid.GetCellCenterWorldPosition(0, m_grid.Height- 1),
+            //        m_grid.GetCellCenterWorldPosition(m_grid.Width- 1, m_grid.Height- 1));
 
             //    positioningTries++;
             //} 
-            //while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && pathingManager.FlowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
+            //while (positioningTries < GlobalConstants.MAX_POSITIONING_TRIES && m_pathingManager.FlowField.Grid.GetCell(newPosition).Cost == byte.MaxValue);
 
             //if (positioningTries >= GlobalConstants.MAX_POSITIONING_TRIES) continue;
 
