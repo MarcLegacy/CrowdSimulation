@@ -143,7 +143,7 @@ public partial class UnitGridIndexSystem : SystemBase
 
         foreach (var changedCellGridPosition in changedCellGridPositions)
         {
-            grid.SetCell(Utilities.Int2toVector2Int(changedCellGridPosition), indexMap.CountValuesForKey(changedCellGridPosition));
+            grid.SetCell(Utilities.Int2ToVector2Int(changedCellGridPosition), indexMap.CountValuesForKey(changedCellGridPosition));
         }
 
         if (entitiesSpawnLeft.Length != 0)

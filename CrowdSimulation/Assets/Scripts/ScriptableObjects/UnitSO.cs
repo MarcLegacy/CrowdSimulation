@@ -15,4 +15,6 @@ public class UnitSO : ScriptableObject
     public MovementForcesInfo cohesion = new MovementForcesInfo();
     public MovementForcesInfo separation = new MovementForcesInfo();
     public MovementForcesInfo obstacleAvoidance = new MovementForcesInfo();
+    public MovementForcesInfo collisionAvoidance = new MovementForcesInfo();
+    public MovementForcesInfo collisionPrediction = new MovementForcesInfo();
 }

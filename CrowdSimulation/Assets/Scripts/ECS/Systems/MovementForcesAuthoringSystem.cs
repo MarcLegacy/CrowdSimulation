@@ -87,9 +87,9 @@ public partial class MovementForcesSystem : SystemBase
                 neighborUnitBuffer.Clear();
                 Translation translation = GetComponent<Translation>(entity);
                 float currentSpeed = GetComponent<MoveComponent>(entity).currentSpeed;
-                float currentDistance = SCALE_DEFAULT;
+                float currentDistance = movementForcesComponent.collisionAvoidance.radius;
                 int total = 0;
-                movementForcesComponent.tempAvoidanceDirection = float3.zero;
+                movementForcesComponent.collisionAvoidance.force = float3.zero;
 
                 if (currentSpeed <= 0.0f) return;
 
@@ -126,7 +126,7 @@ public partial class MovementForcesSystem : SystemBase
                                 {
                                     currentDistance = distance;
                                     float3 fromToVector = translation.Value - unitPosition;
-                                    movementForcesComponent.tempAvoidanceDirection = math.normalize(fromToVector / currentDistance);
+                                    movementForcesComponent.collisionAvoidance.force = math.normalize(fromToVector / currentDistance);
                                     total++;
                                 }
                             }
@@ -134,7 +134,7 @@ public partial class MovementForcesSystem : SystemBase
                     }
                 }
 
-                if (total > 0) movementForcesComponent.tempAvoidanceDirection /= total;
+                if (total > 0) movementForcesComponent.collisionAvoidance.force /= total;
 
                 //SetComponent(entity, translation);
             })

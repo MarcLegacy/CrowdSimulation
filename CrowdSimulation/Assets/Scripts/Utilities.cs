@@ -15,12 +15,22 @@ public struct DebugInfo
 
 public static class Utilities
 {
+    /// <summary>
+    /// Gets the position in the world that the mouse is hovering over.
+    /// </summary>
+    /// <returns> Returns the first position that the mouse hovers over. </returns>
     public static Vector3 GetMouseWorldPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         return Physics.Raycast(ray, out RaycastHit raycastHit) ? raycastHit.point : Vector3.zero;
     }
     
+    /// <summary>
+    /// Finds all the game objects with a certain layer.
+    /// Heavy Operation!
+    /// </summary>
+    /// <param name="layer"> The layer to find the game objects with. </param>
+    /// <returns> Returns all the game objects with the layer. </returns>
     public static List<GameObject> FindGameObjects(int layer)
     {
         GameObject[] allGameObjects = Object.FindObjectsOfType<GameObject>();
@@ -36,26 +46,55 @@ public static class Utilities
 
         return gameObjects;
     }
+    /// <summary>
+    /// Finds all the game objects with a certain mask.
+    /// Heavy Operation!
+    /// </summary>
+    /// <param name="maskString"> The mask to find the game objects with. </param>
+    /// <returns> Returns all the game objects with the mask. </returns>
     public static List<GameObject> FindGameObjects(string maskString)
     {
         return FindGameObjects(LayerMask.NameToLayer(maskString));
     }
 
-    public static Vector3 GetRandomPositionInBox(Vector3 positionA, Vector3 positionB)
+    /// <summary>
+    /// Gets a random position in a box between the two corners.
+    /// </summary>
+    /// <param name="cornerA"> Begin corner. </param>
+    /// <param name="cornerB"> End corner. </param>
+    /// <returns> Returns a random position. </returns>
+    public static Vector3 GetRandomPositionInBox(Vector3 cornerA, Vector3 cornerB)
     {
-        return new Vector3(Random.Range(positionA.x, positionB.x), Random.Range(positionA.y, positionB.y), Random.Range(positionA.z, positionB.z));
+        return new Vector3(Random.Range(cornerA.x, cornerB.x), Random.Range(cornerA.y, cornerB.y), Random.Range(cornerA.z, cornerB.z));
     }
 
+    /// <summary>
+    /// Converts an Vector2Int to a int2.
+    /// </summary>
+    /// <param name="vector2Int"> Variable to convert. </param>
+    /// <returns> Returns the converted variable. </returns>
     public static int2 Vector2IntToInt2(Vector2Int vector2Int)
     {
         return new int2(vector2Int.x, vector2Int.y);
     }
 
-    public static Vector2Int Int2toVector2Int(int2 int2)
+    /// <summary>
+    /// Converts an int2 to a Vector2Int.
+    /// </summary>
+    /// <param name="int2"> Variable to convert. </param>
+    /// <returns> Returns the converted variable. </returns>
+    public static Vector2Int Int2ToVector2Int(int2 int2)
     {
         return new Vector2Int(int2.x, int2.y);
     }
 
+    /// <summary>
+    /// Calculates what the grid position of the cell is on the given world position.
+    /// </summary>
+    /// <param name="worldPosition"> Position to get the cell from. </param>
+    /// <param name="gridOriginPosition"> Origin position of the grid. </param>
+    /// <param name="gridCellSize"> Cell size of the grid. </param>
+    /// <returns> Returns the grid position of the cell </returns>
     public static Vector2Int CalculateCellGridPosition(Vector3 worldPosition, Vector3 gridOriginPosition, float gridCellSize)
     {
         int x = Mathf.FloorToInt((worldPosition - gridOriginPosition).x / gridCellSize);
@@ -63,6 +102,13 @@ public static class Utilities
 
         return new Vector2Int(x, y);
     }
+    /// <summary>
+    /// Calculates what the grid position of the cell is on the given world position.
+    /// </summary>
+    /// <param name="worldPosition"> Position to get the cell from. </param>
+    /// <param name="gridOriginPosition"> Origin position of the grid. </param>
+    /// <param name="gridCellSize"> Cell size of the grid. </param>
+    /// <returns> Returns the grid position of the cell </returns>
     public static int2 CalculateCellGridPosition(float3 worldPosition, float3 gridOriginPosition, float gridCellSize)
     {
         int x = Mathf.FloorToInt((worldPosition - gridOriginPosition).x / gridCellSize);
@@ -71,21 +117,75 @@ public static class Utilities
         return new int2(x, y);
     }
 
+    #region Rotation Functions
+
+    /// <summary>
+    /// Rotates the vector around the angles in clockwise direction.
+    /// </summary>
+    /// <param name="vector"> vector to rotate. </param>
+    /// <param name="angles"> the angles to rotate with. </param>
+    /// <returns> Returns the rotated vector </returns>
+    public static Vector3 RotateVector(Vector3 vector, Vector3 angles)
+    {
+        return Quaternion.Euler(angles) * vector;
+    }
+
+    /// <summary>
+    /// Rotates the vector around the x-axis in clockwise direction.
+    /// </summary>
+    /// <param name="vector"> vector to rotate. </param>
+    /// <param name="angle"> the angle to rotate with. </param>
+    /// <returns> Returns the rotated vector </returns>
+    public static Vector3 RotateVectorXAxis(Vector3 vector, float angle)
+    {
+        return Quaternion.Euler(angle, 0f, 0f) * vector;
+    }
+
+    /// <summary>
+    /// Rotates the vector around the y-axis in clockwise direction.
+    /// </summary>
+    /// <param name="vector"> vector to rotate. </param>
+    /// <param name="angle"> the angle to rotate with. </param>
+    /// <returns> Returns the rotated vector </returns>
+    public static Vector3 RotateVectorYAxis(Vector3 vector, float angle)
+    {
+        return Quaternion.Euler(0f, angle, 0f) * vector;
+    }
+
+    /// <summary>
+    /// Rotates the vector around the z-axis in clockwise direction.
+    /// </summary>
+    /// <param name="vector"> vector to rotate. </param>
+    /// <param name="angle"> the angle to rotate with. </param>
+    /// <returns> Returns the rotated vector </returns>
+    public static Vector3 RotateVectorZAxis(Vector3 vector, float angle)
+    {
+        return Quaternion.Euler(0f, 0f, angle) * vector;
+    }
+    #endregion
+
     #region Draw Functions
     #region Draw Giszmos Functions
 
-    public static void DrawGizmosArrow(Vector3 position, Vector3 direction, float size = 1f, Color? color = null)
+    /// <summary>
+    /// Draws a Gizmos arrow with.
+    /// </summary>
+    /// <param name="centerWorldPosition"> Position that the arrow will center around. </param>
+    /// <param name="direction"> The direction to point the arrow towards to. </param>
+    /// <param name="size"> The size of the arrow. </param>
+    /// <param name="color"> The color of the arrow. </param>
+    public static void DrawGizmosArrow(Vector3 centerWorldPosition, Vector3 direction, float size = 1f, Color? color = null)
     {
         if (direction == Vector3.zero)
         {
-            Debug.LogWarning("Utilities: " + MethodBase.GetCurrentMethod()?.Name + ": m_velocity == Vector3.zero");
+            Debug.LogWarning("No valid direction given!");
             return;
         }
 
         float arrowHeadLength = 0.5f * size;
         float arrowHeadAngle = 20.0f;
-        Vector3 startPosition = new Vector3(position.x - direction.x * size * 0.5f, position.y - direction.y * size * 0.5f,
-            position.z - direction.z * size * 0.5f);
+        Vector3 startPosition = new Vector3(centerWorldPosition.x - direction.x * size * 0.5f, centerWorldPosition.y - direction.y * size * 0.5f,
+            centerWorldPosition.z - direction.z * size * 0.5f);
         Vector3 endPosition = startPosition + (direction * size);
 
         if (color == null) color = Color.white;
@@ -99,6 +199,11 @@ public static class Utilities
         Gizmos.DrawLine(endPosition, endPosition + (left * arrowHeadLength));
     }
 
+    /// <summary>
+    /// Draws a Gizmos path.
+    /// </summary>
+    /// <param name="worldLocations"> The positions to draw lines between. </param>
+    /// <param name="color"> The color of the path. </param>
     public static void DrawGizmosPathLines(List<Vector3> worldLocations, Color? color = null)
     {
         if (worldLocations == null || worldLocations.Count == 0)
@@ -117,6 +222,11 @@ public static class Utilities
         }
     }
 
+    /// <summary>
+    /// Draws a Gizmos portal.
+    /// </summary>
+    /// <param name="portal"> The Portal to draw. </param>
+    /// <param name="color"> The color of the Portal. </param>
     public static void DrawGizmosPortal(Portal portal, Color? color = null)
     {
         if (color == null) color = Color.black;
@@ -132,7 +242,13 @@ public static class Utilities
         Gizmos.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA);
     }
 
-    public static void DrawGizmosCircle(Vector3 worldPosition, float radius, Color? color = null, float duration = 0.0f)
+    /// <summary>
+    /// Draws a Gizmos circle.
+    /// </summary>
+    /// <param name="centerWorldPosition"> Position to draw the circle around with. </param>
+    /// <param name="radius"> The radius of the circle. </param>
+    /// <param name="color"> The color of the circle. </param>
+    public static void DrawGizmosCircle(Vector3 centerWorldPosition, float radius, Color? color = null)
     {
         if (radius == 0)
         {
@@ -156,16 +272,24 @@ public static class Utilities
             float y = radius * Mathf.Sin(theta);
             if (i != 0)
             {
-                Gizmos.DrawLine(previousPosition, worldPosition + new Vector3(x, 0, y));
+                Gizmos.DrawLine(previousPosition, centerWorldPosition + new Vector3(x, 0, y));
             }
 
-            previousPosition = worldPosition + new Vector3(x, 0, y);
+            previousPosition = centerWorldPosition + new Vector3(x, 0, y);
         }
     }
     #endregion
     #region Draw Debug Functions
 
-    public static void DrawDebugArrow(Vector3 worldPosition, Vector3 direction, float size = 1f, Color? color = null, float duration = 0.0f)
+    /// <summary>
+    /// Draws a debug arrow with.
+    /// </summary>
+    /// <param name="centerWorldPosition"> Position that the arrow will center around. </param>
+    /// <param name="direction"> The direction to point the arrow towards to. </param>
+    /// <param name="size"> The size of the arrow. </param>
+    /// <param name="color"> The color of the arrow. </param>
+    /// <param name="duration"> The duration of the arrow. </param>
+    public static void DrawDebugArrow(Vector3 centerWorldPosition, Vector3 direction, float size = 1f, Color? color = null, float duration = 0.0f)
     {
         if (direction == Vector3.zero)
         {
@@ -175,8 +299,8 @@ public static class Utilities
 
         float arrowHeadLength = 0.5f * size;
         float arrowHeadAngle = 20.0f;
-        Vector3 startPosition = new Vector3(worldPosition.x - direction.x * size * 0.5f, worldPosition.y - direction.y * size * 0.5f,
-            worldPosition.z - direction.z * size * 0.5f);
+        Vector3 startPosition = new Vector3(centerWorldPosition.x - direction.x * size * 0.5f, centerWorldPosition.y - direction.y * size * 0.5f,
+            centerWorldPosition.z - direction.z * size * 0.5f);
         Vector3 endPosition = startPosition + (direction * size);
 
         if (color == null) color = Color.white;
@@ -189,6 +313,12 @@ public static class Utilities
         Debug.DrawLine(endPosition, endPosition + (left * arrowHeadLength), (Color) color, duration);
     }
 
+    /// <summary>
+    /// Draws a debug path.
+    /// </summary>
+    /// <param name="worldLocations"> The positions to draw lines between. </param>
+    /// <param name="color"> The color of the path. </param>
+    /// <param name="duration"> The duration of the path. </param>
     public static void DrawDebugPathLines(List<Vector3> worldLocations, Color? color = null, float duration = 0.0f)
     {
         if (worldLocations == null || worldLocations.Count == 0)
@@ -205,6 +335,12 @@ public static class Utilities
         }
     }
 
+    /// <summary>
+    /// Draws a debug portal.
+    /// </summary>
+    /// <param name="portal"> The Portal to draw. </param>
+    /// <param name="color"> The color of the Portal. </param>
+    /// <param name="duration"> The duration of the Portal. </param>
     public static void DrawDebugPortal(Portal portal, Color? color = null, float duration = 0.0f)
     {
         if (color == null) color = Color.black;
@@ -219,7 +355,14 @@ public static class Utilities
         Debug.DrawLine(portal.GetEntranceCellAreaBCenterWorldPosition(), posA, (Color) color, duration);
     }
 
-    public static void DrawDebugCircle(Vector3 worldPosition, float radius, Color? color = null, float duration = 0.0f)
+    /// <summary>
+    /// Draws a debug circle.
+    /// </summary>
+    /// <param name="centerWorldPosition"> Position to draw the circle around with. </param>
+    /// <param name="radius"> The radius of the circle. </param>
+    /// <param name="color"> The color of the circle. </param>
+    /// <param name="duration"> The duration of the circle. </param>
+    public static void DrawDebugCircle(Vector3 centerWorldPosition, float radius, Color? color = null, float duration = 0.0f)
     {
         if (radius == 0)
         {
@@ -241,10 +384,10 @@ public static class Utilities
             float y = radius * Mathf.Sin(theta);
             if (i != 0)
             {
-                Debug.DrawLine(previousPosition, worldPosition + new Vector3(x, 0, y), (Color)color, duration);
+                Debug.DrawLine(previousPosition, centerWorldPosition + new Vector3(x, 0, y), (Color)color, duration);
             }
 
-            previousPosition = worldPosition + new Vector3(x, 0, y);
+            previousPosition = centerWorldPosition + new Vector3(x, 0, y);
         }
     }
     #endregion

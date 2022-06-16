@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitName: Unit
   speed: 10
-  acceleration: 20
+  acceleration: 10
   senseDistance: 3
   alignment:
     weight: 1
@@ -39,6 +39,20 @@ MonoBehaviour:
       z: 0
   obstacleAvoidance:
     weight: 5
+    radius: 3
+    force:
+      x: 0
+      y: 0
+      z: 0
+  collisionAvoidance:
+    weight: 0.25
+    radius: 1
+    force:
+      x: 0
+      y: 0
+      z: 0
+  collisionPrediction:
+    weight: 3
     radius: 3
     force:
       x: 0

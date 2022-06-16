@@ -32,16 +32,16 @@ public partial class KillEntitiesSystem : SystemBase
     public float m_killRadius = 10f;
     public Color m_radiusColor = Color.black;
 
-    private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
+    private EndSimulationEntityCommandBufferSystem m_endSimECBS;
 
     protected override void OnCreate()
     {
-        endSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+        m_endSimECBS = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
 
     protected override void OnUpdate()
     {
-        var entityCommandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer();
+        var ecb = m_endSimECBS.CreateCommandBuffer();
         PhysicsWorld physicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().PhysicsWorld;
         float killRadius = m_killRadius;
 
@@ -73,7 +73,7 @@ public partial class KillEntitiesSystem : SystemBase
                             {
                                 if (HasComponent<UnitComponent>(hit.Entity))
                                 {
-                                    entityCommandBuffer.AddComponent<DestroyComponent>(hit.Entity);
+                                    ecb.AddComponent<DestroyComponent>(hit.Entity);
                                 }
                             }
                         }
@@ -82,6 +82,6 @@ public partial class KillEntitiesSystem : SystemBase
             }
         }
 
-        endSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
+        m_endSimECBS.AddJobHandleForProducer(Dependency);
     }
 }

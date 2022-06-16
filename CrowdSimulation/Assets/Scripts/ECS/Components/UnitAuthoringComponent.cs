@@ -27,6 +27,8 @@ public class UnitAuthoringComponent : MonoBehaviour, IConvertGameObjectToEntity
             cohesion = unitSO.cohesion,
             separation = unitSO.separation,
             obstacleAvoidance = unitSO.obstacleAvoidance,
+            collisionAvoidance = unitSO.collisionAvoidance,
+            collisionPrediction = unitSO.collisionPrediction
         });
         dstManager.AddComponentData(entity, new UnitSenseComponent { distance = unitSO.senseDistance });
         dstManager.AddComponent<GridIndexComponent>(entity);

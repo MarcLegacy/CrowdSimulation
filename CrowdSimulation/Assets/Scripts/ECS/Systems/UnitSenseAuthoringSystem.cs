@@ -63,16 +63,16 @@ public partial class UnitSenseSystem : SystemBase
             {
                 if (entitiesSkippedInJob != 0 && entityInQueryIndex % entitiesSkippedInJob != currentWorkingEntityInJob) return;
 
-                //return;
+                float3 forwardVector = math.forward(rotation.Value);
                 float3 leftRayStartPos =
-                    translation.Value + (float3)(Quaternion.Euler(0, -SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value));
+                    translation.Value + (float3)Utilities.RotateVectorYAxis(forwardVector, -SENSE_RAY_ANGLE_OFFSET);
                 float3 leftRayEndPos = translation.Value +
-                                       (float3)(Quaternion.Euler(0, -SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value)) *
+                                       (float3)Utilities.RotateVectorYAxis(forwardVector, -SENSE_RAY_ANGLE_OFFSET) *
                                        unitSenseComponent.distance;
                 float3 rightRayStartPos =
-                    translation.Value + (float3)(Quaternion.Euler(0, SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value));
+                    translation.Value + (float3)Utilities.RotateVectorYAxis(forwardVector, SENSE_RAY_ANGLE_OFFSET);
                 float3 rightRayEndPos = translation.Value +
-                                        (float3)(Quaternion.Euler(0, SENSE_RAY_ANGLE_OFFSET, 0) * math.forward(rotation.Value)) *
+                                        (float3)Utilities.RotateVectorYAxis(forwardVector, SENSE_RAY_ANGLE_OFFSET) *
                                         unitSenseComponent.distance;
 
                 movementForcesComponent.obstacleAvoidance.force = float3.zero;
@@ -94,6 +94,7 @@ public partial class UnitSenseSystem : SystemBase
                 unitSenseComponent.isLeftBlocking = false;
                 unitSenseComponent.isRightBlocking = false;
                 float3 obstacleAvoidanceForce = float3.zero;
+                float3 collisionPredictionForce = float3.zero;
 
                 if (physicsWorld.CastRay(leftRayInput, out RaycastHit hit))
                 {
@@ -102,9 +103,13 @@ public partial class UnitSenseSystem : SystemBase
                         unitSenseComponent.isLeftBlocking = true;
                     }
 
-                    //if (!HasComponent<UnitComponent>(hit.Entity))
+                    if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(-hit.SurfaceNormal.z, hit.SurfaceNormal.y, hit.SurfaceNormal.x);   // Rotates the direction of the surface normal 90 degrees clockwise.
+                    }
+                    else
+                    {
+                        collisionPredictionForce += new float3(-hit.SurfaceNormal.z, hit.SurfaceNormal.y, hit.SurfaceNormal.x);
                     }
                 }
 
@@ -115,13 +120,18 @@ public partial class UnitSenseSystem : SystemBase
                         unitSenseComponent.isRightBlocking = true;
                     }
 
-                    //if (!HasComponent<UnitComponent>(hit.Entity))
+                    if (!HasComponent<UnitComponent>(hit.Entity))
                     {
                         obstacleAvoidanceForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);   // Rotates the direction of the surface normal 90 degrees counter-clockwise.
+                    }
+                    else
+                    {
+                        collisionPredictionForce += new float3(hit.SurfaceNormal.z, hit.SurfaceNormal.y, -hit.SurfaceNormal.x);
                     }
                 }
 
                 movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(obstacleAvoidanceForce);
+                movementForcesComponent.collisionPrediction.force = math.normalizesafe(collisionPredictionForce);
             })
             .ScheduleParallel();
     }

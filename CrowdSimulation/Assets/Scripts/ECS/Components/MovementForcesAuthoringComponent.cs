@@ -40,7 +40,8 @@ public struct MovementForcesComponent : IComponentData
     public MovementForcesInfo cohesion;
     public MovementForcesInfo separation;
     public MovementForcesInfo obstacleAvoidance;
-    public float3 tempAvoidanceDirection;
+    public MovementForcesInfo collisionAvoidance;
+    public MovementForcesInfo collisionPrediction;
 }
 
 

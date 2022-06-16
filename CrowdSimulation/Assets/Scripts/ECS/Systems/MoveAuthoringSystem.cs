@@ -3,12 +3,14 @@ using System.Collections;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
 
 public class MoveAuthoringSystem : AuthoringSystem
 {
     [SerializeField] private float maxForce = 0.05f;
+    [SerializeField] private float sheerAngle = 5f;
 
     private MoveSystem moveSystem;
 
@@ -34,17 +36,26 @@ public class MoveAuthoringSystem : AuthoringSystem
     protected override void SetVariables()
     {
         moveSystem.m_maxForce = maxForce;
+        moveSystem.m_sheerAngle = sheerAngle;
     }
 }
 
 public partial class MoveSystem : SystemBase
 {
-    private const float DELTA_ROTATE_DEGREES = 15f;
+    private const float DELTA_ROTATE_DEGREES = 360;
+    private const float PUSH_AWAY_FORCE = 0.3f;
 
     public float m_maxForce;
+    public float m_sheerAngle;
     public NativeHashMap<int2, int2> m_gridDirectionMap;
-
     public PathingManager m_pathingManager;
+
+    private EndSimulationEntityCommandBufferSystem m_endSimECBS;
+
+    protected override void OnCreate()
+    {
+        m_endSimECBS = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+    }
 
     protected override void OnDestroy()
     {
@@ -58,6 +69,7 @@ public partial class MoveSystem : SystemBase
         float deltaTime = Time.DeltaTime;
         MyGrid<FlowFieldCell> flowFieldGrid = m_pathingManager.FlowField.Grid;
         float maxForce = m_maxForce;
+        float sheerAngle = m_sheerAngle;
         float3 targetPosition = m_pathingManager.TargetPosition;
         float3 gridOriginPosition = flowFieldGrid.OriginPosition;
         float gridCellSize = flowFieldGrid.CellSize;
@@ -65,6 +77,7 @@ public partial class MoveSystem : SystemBase
         EntityQuery entityQuery = GetEntityQuery(ComponentType.ReadOnly<UnitComponent>());
         NativeHashSet<float3> checkPositions = new NativeHashSet<float3>(entityQuery.CalculateEntityCount(), Allocator.TempJob);
         NativeHashSet<float3>.ParallelWriter checkPositionsParallel = checkPositions.AsParallelWriter();
+        var ecb = m_endSimECBS.CreateCommandBuffer().AsParallelWriter();
 
         Entities
             .WithName("Unit_PathForDirection")
@@ -103,9 +116,11 @@ public partial class MoveSystem : SystemBase
             .Schedule();
 
         Entities
-            .WithName("Unit_Moving")
+            .WithName("Unit_NewMoving")
             .WithAll<UnitComponent>()
-            .ForEach((
+            .ForEach(
+                (Entity entity,
+                int entityInQueryIndex,
                 ref Translation translation,
                 ref MoveComponent moveComponent,
                 ref Rotation rotation,
@@ -113,53 +128,70 @@ public partial class MoveSystem : SystemBase
                 in MovementForcesComponent movementForcesComponent,
                 in UnitSenseComponent unitSenseComponent) =>
             {
-                float3 steering = moveToDirectionComponent.direction +
-                                  movementForcesComponent.alignment.force * movementForcesComponent.alignment.weight +
-                                  movementForcesComponent.cohesion.force * movementForcesComponent.cohesion.weight +
-                                  movementForcesComponent.separation.force * movementForcesComponent.separation.weight +
-                                  movementForcesComponent.obstacleAvoidance.force * movementForcesComponent.obstacleAvoidance.weight;
+                float3 steeringVelocity = moveToDirectionComponent.direction +
+                                              movementForcesComponent.alignment.force * movementForcesComponent.alignment.weight +
+                                              movementForcesComponent.cohesion.force * movementForcesComponent.cohesion.weight +
+                                              movementForcesComponent.separation.force * movementForcesComponent.separation.weight +
+                                              movementForcesComponent.obstacleAvoidance.force *
+                                              movementForcesComponent.obstacleAvoidance.weight +
+                                              movementForcesComponent.collisionPrediction.force *
+                                              movementForcesComponent.collisionPrediction.weight;
 
-                moveComponent.velocity = math.normalizesafe(math.lerp(moveComponent.velocity, steering, maxForce));
+                steeringVelocity = math.normalizesafe(steeringVelocity);
+                moveComponent.velocity = math.normalizesafe(moveComponent.velocity);
+                moveComponent.velocity = math.lerp(moveComponent.velocity, steeringVelocity, maxForce);
 
-                if (moveComponent.velocity.Equals(float3.zero)) return;
+                // Makes unit able to steer alongside each other depending on the current speed of the unit
+                if (unitSenseComponent.isRightBlocking && !unitSenseComponent.isLeftBlocking)
+                {
+                    moveComponent.velocity = Utilities.RotateVectorYAxis(moveComponent.velocity, math.lerp(-sheerAngle * 2f, -sheerAngle, moveComponent.currentSpeed / moveComponent.maxSpeed));
+                }
 
-                //rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.m_velocity, Vector3.up), DELTA_ROTATE_DEGREES);   // Seems they can get quicker loose if the rotation is already done before adjusting the m_velocity on the units in front of them
-                rotation.Value = math.slerp(rotation.Value, quaternion.LookRotation(moveComponent.velocity, math.up()), deltaTime * DELTA_ROTATE_DEGREES);
+                if (!unitSenseComponent.isRightBlocking && unitSenseComponent.isLeftBlocking)
+                {
+                    moveComponent.velocity = Utilities.RotateVectorYAxis(moveComponent.velocity, math.lerp(sheerAngle * 2f, sheerAngle, moveComponent.currentSpeed / moveComponent.maxSpeed));
+                }
 
-                if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
+                // Makes sure that units will rotate towards the direction of the cell they're on when standing still.
+                if (moveComponent.currentSpeed < 0.0f && !moveToDirectionComponent.direction.Equals(float3.zero))
+                {
+                    rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(math.normalizesafe(
+                        moveToDirectionComponent.direction + movementForcesComponent.obstacleAvoidance.force *
+                        movementForcesComponent.obstacleAvoidance.weight), Vector3.up), DELTA_ROTATE_DEGREES * deltaTime);
+                }
+                else if (!moveComponent.velocity.Equals(float3.zero))
+                {
+                    rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.velocity, Vector3.up),
+                        DELTA_ROTATE_DEGREES * deltaTime);
+                }
+
+                if (moveToDirectionComponent.direction.Equals(float3.zero) || (unitSenseComponent.isLeftBlocking && unitSenseComponent.isRightBlocking))// || (!movementForcesComponent.collisionAvoidance.force.Equals(float3.zero) && (unitSenseComponent.isLeftBlocking || unitSenseComponent.isRightBlocking)))
+                {
+                    if (moveComponent.currentSpeed > 0f)
+                    {
+                        moveComponent.currentSpeed -= moveComponent.acceleration * deltaTime;
+                    }
+                }
+                else
                 {
                     if (moveComponent.currentSpeed < moveComponent.maxSpeed)
                         moveComponent.currentSpeed += moveComponent.acceleration * deltaTime;
                 }
-                else
-                {
-                    if (moveComponent.currentSpeed > 0f) moveComponent.currentSpeed -= moveComponent.acceleration * deltaTime;
-                }
 
-                // TODO: Maybe rotate instead of m_velocity
-                if (unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
-                {
-                    moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
-                    //moveComponent.velocity = math.lerp(moveComponent.velocity, movementForcesComponent.obstacleAvoidance.force, 0.5f);
-                    //moveComponent.m_velocity = movementForcesComponent.obstacleAvoidance.force;
-                }
+                //ecb.AddComponent(entityInQueryIndex, entity, new URPMaterialPropertyBaseColor { Value = new float4(math.lerp(1, 0, moveComponent.currentSpeed), 0, math.lerp(0, 1, moveComponent.currentSpeed), 1)});
 
-                if (unitSenseComponent.isRightBlocking && !unitSenseComponent.isLeftBlocking)
-                {
-                    moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
-                    //moveComponent.velocity = math.lerp(moveComponent.velocity, movementForcesComponent.obstacleAvoidance.force, 0.5f);
-                    //moveComponent.m_velocity = movementForcesComponent.obstacleAvoidance.force;
-                }
+                moveComponent.velocity *= moveComponent.currentSpeed;
 
-                if (movementForcesComponent.tempAvoidanceDirection.Equals(float3.zero))
+                // Pushes units away from each if in collision range.
+                if (!movementForcesComponent.collisionAvoidance.force.Equals(float3.zero))
                 {
-                    translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
+                    translation.Value += movementForcesComponent.collisionAvoidance.force * movementForcesComponent.collisionAvoidance.weight *
+                                         moveComponent.currentSpeed * deltaTime;
                 }
                 else
                 {
-                    translation.Value += movementForcesComponent.tempAvoidanceDirection * 0.3f * moveComponent.currentSpeed * deltaTime;
+                    translation.Value += moveComponent.velocity * deltaTime;
                 }
-
             })
             .ScheduleParallel();
 
@@ -194,3 +226,64 @@ public partial class MoveSystem : SystemBase
         }
     }
 }
+
+//Entities
+//    .WithName("Unit_OldMoving")
+//    .WithAll<UnitComponent>()
+//    .ForEach(
+//        (ref Translation translation,
+//        ref MoveComponent moveComponent,
+//        ref Rotation rotation,
+//        in MoveToDirectionComponent moveToDirectionComponent,
+//        in MovementForcesComponent movementForcesComponent,
+//        in UnitSenseComponent unitSenseComponent) =>
+//    {
+//        float3 steering = moveToDirectionComponent.direction +
+//                          movementForcesComponent.alignment.force * movementForcesComponent.alignment.weight +
+//                          movementForcesComponent.cohesion.force * movementForcesComponent.cohesion.weight +
+//                          movementForcesComponent.separation.force * movementForcesComponent.separation.weight +
+//                          movementForcesComponent.obstacleAvoidance.force * movementForcesComponent.obstacleAvoidance.weight +
+//                          movementForcesComponent.collisionPrediction.force * movementForcesComponent.collisionPrediction.weight;
+
+//        moveComponent.velocity = math.normalizesafe(math.lerp(moveComponent.velocity, steering, maxForce));
+
+//        if (moveComponent.velocity.Equals(float3.zero)) return;
+
+//        //rotation.Value = Quaternion.RotateTowards(rotation.Value, Quaternion.LookRotation(moveComponent.m_velocity, Vector3.up), DELTA_ROTATE_DEGREES);   // Seems they can get quicker loose if the rotation is already done before adjusting the m_velocity on the units in front of them
+//        rotation.Value = math.slerp(rotation.Value, quaternion.LookRotation(moveComponent.velocity, math.up()), deltaTime * 15f);
+
+//        if (!moveToDirectionComponent.direction.Equals(float3.zero) && !unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
+//        {
+//            if (moveComponent.currentSpeed < moveComponent.maxSpeed)
+//                moveComponent.currentSpeed += moveComponent.acceleration * deltaTime;
+//        }
+//        else
+//        {
+//            if (moveComponent.currentSpeed > 0f) moveComponent.currentSpeed -= moveComponent.acceleration * deltaTime;
+//        }
+
+//        // TODO: Maybe rotate instead of m_velocity
+//        if (unitSenseComponent.isLeftBlocking && !unitSenseComponent.isRightBlocking)
+//        {
+//            //moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, 45f, 0) * moveComponent.velocity, 0.5f);
+//            moveComponent.velocity = math.lerp(moveComponent.velocity, movementForcesComponent.collisionPrediction.force, 0.5f);
+//            //moveComponent.m_velocity = movementForcesComponent.obstacleAvoidance.force;
+//        }
+
+//        if (unitSenseComponent.isRightBlocking && !unitSenseComponent.isLeftBlocking)
+//        {
+//            //moveComponent.velocity = math.lerp(moveComponent.velocity, Quaternion.Euler(0, -45f, 0) * moveComponent.velocity, 0.5f);
+//            moveComponent.velocity = math.lerp(moveComponent.velocity, movementForcesComponent.collisionPrediction.force, 0.5f);
+//            //moveComponent.m_velocity = movementForcesComponent.obstacleAvoidance.force;
+//        }
+
+//        if (movementForcesComponent.collisionAvoidance.force.Equals(float3.zero))
+//        {
+//            translation.Value += moveComponent.velocity * moveComponent.currentSpeed * deltaTime;
+//        }
+//        else
+//        {
+//            translation.Value += movementForcesComponent.collisionAvoidance.force * movementForcesComponent.collisionAvoidance.weight * moveComponent.currentSpeed * deltaTime;
+//        }
+//    })
+//.ScheduleParallel();
