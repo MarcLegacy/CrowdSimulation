@@ -43,7 +43,6 @@ public class MoveAuthoringSystem : AuthoringSystem
 public partial class MoveSystem : SystemBase
 {
     private const float DELTA_ROTATE_DEGREES = 360;
-    private const float PUSH_AWAY_FORCE = 0.3f;
 
     public float m_maxForce;
     public float m_sheerAngle;
@@ -98,7 +97,7 @@ public partial class MoveSystem : SystemBase
 
                 if (!gridDirectionMap.ContainsKey(gridIndexComponent.gridPosition))
                 {
-                    translation.Value += math.normalizesafe(float3.zero - translation.Value); // Makes sure that the entities are pushed towards the middle of the map
+                    translation.Value += math.normalizesafe(float3.zero - translation.Value); // Makes sure that the entities are pushed towards the middle of the map should they wander out of the grid.
                     return;
                 }
 

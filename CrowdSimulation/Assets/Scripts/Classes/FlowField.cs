@@ -98,7 +98,7 @@ public class FlowField
 
                 if (currentNeighborCell.Cost + currentCell.BestCost < currentNeighborCell.BestCost)
                 {
-                    currentNeighborCell.BestCost = (ushort) (currentNeighborCell.Cost + currentCell.BestCost);
+                    currentNeighborCell.BestCost = (ushort)(currentNeighborCell.Cost + currentCell.BestCost);
                     cellsToCheck.Enqueue(currentNeighborCell);
                 }
             }

@@ -32,7 +32,7 @@ MonoBehaviour:
       z: 0
   separation:
     weight: 2
-    radius: 1
+    radius: 2
     force:
       x: 0
       y: 0

@@ -788,7 +788,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnCollider: {fileID: 246783403}
   unitPrefab: {fileID: 641419258966257005, guid: cdd82cce997366a4c89654c1f149bfa0, type: 3}
-  unitAmount: 1000
+  unitAmount: 8000
 --- !u!4 &1153233825
 Transform:
   m_ObjectHideFlags: 0
@@ -940,7 +940,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8702966537788411531, guid: 84ba49b4c99663546973cf7209857f9b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -197.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8702966537788411531, guid: 84ba49b4c99663546973cf7209857f9b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1038,7 +1038,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1821440535
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1195,8 +1195,16 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
+      propertyPath: velocity.color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
+      propertyPath: velocity.color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
       propertyPath: velocity.color.r
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2355398094665727056, guid: 17e7c706ad7e5c5408b6e9a44eee42ec, type: 3}
       propertyPath: alignment.color.a

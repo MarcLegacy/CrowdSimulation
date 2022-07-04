@@ -189,32 +189,6 @@ public partial class MovementForcesSystem : SystemBase
             })
             .ScheduleParallel();
 
-        //Entities
-        //    .WithName("Units_ObstacleAvoidance")
-        //    .WithAll<UnitComponent>()
-        //    .ForEach((
-        //        Entity entity,
-        //        int entityInQueryIndex,
-        //        ref MovementForcesComponent movementForcesComponent,
-        //        in Translation translation,
-        //        in MoveComponent moveComponent) =>
-        //    {
-        //        if (entityInQueryIndex % _entitiesSkippedInObstacleAvoidanceJob != _currentWorkingEntityInObstacleAvoidanceJob) return;
-
-        //        movementForcesComponent.obstacleAvoidance.force = float3.zero;
-
-        //        Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -m_collisionRayAngleOffset, 0) * moveComponent.m_velocity);
-        //        Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, m_collisionRayAngleOffset, 0) * moveComponent.m_velocity);
-        //        float3 m_obstacleAvoidanceForce = float3.zero;
-
-        //        m_obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
-        //        m_obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
-
-        //        movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(m_obstacleAvoidanceForce);
-        //    })
-        //    .WithoutBurst()
-        //    .Run();
-
         CompleteDependency();
     }
 
@@ -230,9 +204,33 @@ public partial class MovementForcesSystem : SystemBase
 
         return float3.zero;
     }
-
-
 }
+
+//Entities
+//    .WithName("Units_ObstacleAvoidance")
+//    .WithAll<UnitComponent>()
+//    .ForEach((
+//        Entity entity,
+//        int entityInQueryIndex,
+//        ref MovementForcesComponent movementForcesComponent,
+//        in Translation translation,
+//        in MoveComponent moveComponent) =>
+//    {
+//        if (entityInQueryIndex % _entitiesSkippedInObstacleAvoidanceJob != _currentWorkingEntityInObstacleAvoidanceJob) return;
+
+//        movementForcesComponent.obstacleAvoidance.force = float3.zero;
+
+//        Ray leftRay = new Ray(translation.Value, Quaternion.Euler(0, -m_collisionRayAngleOffset, 0) * moveComponent.m_velocity);
+//        Ray rightRay = new Ray(translation.Value, Quaternion.Euler(0, m_collisionRayAngleOffset, 0) * moveComponent.m_velocity);
+//        float3 m_obstacleAvoidanceForce = float3.zero;
+
+//        m_obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, leftRay, movementForcesComponent.obstacleAvoidance.radius);
+//        m_obstacleAvoidanceForce += GetAvoidanceForce(translation.Value, rightRay, movementForcesComponent.obstacleAvoidance.radius);
+
+//        movementForcesComponent.obstacleAvoidance.force = math.normalizesafe(m_obstacleAvoidanceForce);
+//    })
+//    .WithoutBurst()
+//    .Run();
 
 //EntityQuery unitQuery = GetEntityQuery(ComponentType.ReadOnly<UnitComponent>(), ComponentType.ReadOnly<Translation>());
 //NativeArray<Entity> unitEntities = unitQuery.ToEntityArray(Allocator.TempJob);
